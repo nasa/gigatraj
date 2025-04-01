@@ -48,6 +48,10 @@ int main()
     real lon;
     real lat;
     real solzen;
+    real lons[5];
+    real lats[5];
+    real vals[5];
+    real* szas;
     
     date = "2015-11-23T16:24:45";
     lon = -76.0;
@@ -66,7 +70,29 @@ int main()
        cerr << "sza mismatch: " << solzen << " vs " << val << std::endl;
        exit(1);
     }
-        
+    
+    lons[0] = 0.0;
+    lats[0] = 0.0;   
+    vals[0] =  70.924582465816300;
+    lons[1] = 180.0;
+    lats[1] = 0.0;
+    vals[1] = 109.075417534183728;   
+    lons[2] = -100.0;
+    lats[2] =  10.0;
+    vals[2] = 42.619649326629705;
+    lons[3] = -100.0;
+    lats[3] =  89.0;  
+    vals[3] = 109.502598441333674;
+    lons[4] = -100.0;
+    lats[4] = -89.0;  
+    vals[4] = 68.772440370039433;  
+    szas = sza.calc( lons, lats, 5, date );
+    for ( int i=0; i<5; i++ ) {
+       if ( mismatch( szas[i], vals[i], 0.00001 ) ) {
+          cerr << "szas mismatch on " << i << ": " << szas[i] << " vs " << vals[i] << std::endl;
+          exit(1);
+       }   
+    }
     
     exit(0);
 
