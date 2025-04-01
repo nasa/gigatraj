@@ -42,6 +42,7 @@ pkginclude_HEADERS = gigatraj.hh \
                        PAltDotOTF.hh \
                        DensOTF.hh \
                        ThetaDotOTF.hh \
+                       SZAOTF.hh \
                     MetGridData.hh \
                        MetGridLatLonData.hh \
                           MetGridSBRot.hh 

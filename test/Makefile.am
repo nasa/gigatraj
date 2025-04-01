@@ -103,8 +103,8 @@ if MPI
 endif  
 EXTRA_DIST += test_BilinearHinterp_MPI.sh 
 
-TESTS += test_ThetaOTF test_TropOTF test_PressOTF test_PAltOTF test_PAltDotOTF test_DensOTF test_ThetaDotOTF test_BalanceThetaDot1OTF
-check_PROGRAMS += test_ThetaOTF test_TropOTF test_PressOTF test_PAltOTF test_PAltDotOTF test_DensOTF test_ThetaDotOTF test_BalanceThetaDot1OTF
+TESTS += test_ThetaOTF test_TropOTF test_PressOTF test_PAltOTF test_PAltDotOTF test_DensOTF test_ThetaDotOTF test_BalanceThetaDot1OTF test_SZAOTF
+check_PROGRAMS += test_ThetaOTF test_TropOTF test_PressOTF test_PAltOTF test_PAltDotOTF test_DensOTF test_ThetaDotOTF test_BalanceThetaDot1OTF test_SZAOTF
 
 
 
@@ -346,6 +346,9 @@ test_ThetaDotOTF_DEPENDENCIES = ../lib/libgigatraj.a
 
 test_BalanceThetaDot1OTF_SOURCES = test_BalanceThetaDot1OTF.cc test_utils.cc  test_utils.hh
 test_BalanceThetaDot1OTF_DEPENDENCIES = ../lib/libgigatraj.a
+
+test_SZAOTF_SOURCES = test_SZAOTF.cc test_utils.cc test_utils.hh
+test_SZAOTF_DEPENDENCIES = ../lib/libgigatraj.a
 
 test_MetSBRot_SOURCES = test_MetSBRot.cc test_utils.cc test_utils.hh
 test_MetSBRot_DEPENDENCIES = ../lib/libgigatraj.a

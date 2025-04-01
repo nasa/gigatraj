@@ -65,6 +65,7 @@ libgigatraj_a_SOURCES = ../include/gigatraj/RandomSrc.hh        RandomSrc.cc \
                         ../include/gigatraj/PAltDotOTF.hh       metsources/PAltDotOTF.cc \
                         ../include/gigatraj/DensOTF.hh          metsources/DensOTF.cc \
                         ../include/gigatraj/MPVOTF.hh           metsources/MPVOTF.cc \
+                        ../include/gigatraj/SZAOTF.hh           metsources/SZAOTF.cc \
                         ../include/gigatraj/ThetaDotOTF.hh      metsources/ThetaDotOTF.cc \
                         ../include/gigatraj/BalanceThetaDot1OTF.hh      metsources/BalanceThetaDot1OTF.cc \
                         ../include/gigatraj/MetData.hh          metsources/MetData.cc\
