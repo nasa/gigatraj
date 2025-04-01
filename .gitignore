@@ -118,6 +118,7 @@ test/test_StreamPrint
 test/test_StreamRead
 test/test_ThetaOTF
 test/test_TropOTF
+test/test_SZAOTF
 test/test_traj000
 test/test_traj001
 test/test_traj010
