@@ -101,6 +101,29 @@ int mismatch( gigatraj::real a, gigatraj::real b, gigatraj::real tol )
 
 }
 
+int mismatchdbl( double a, double b, double tol ) 
+{
+
+    double diff;
+    
+    if ( ! (ISOK(a) && ISOK(b))  ) {
+       return 1;
+    }   
+    
+    diff = a - b;
+    if (diff < 0.0 ) 
+    {
+       diff = - diff;
+    }   
+
+    if ( diff > tol ) {
+       return 1;
+    } 
+    
+    return 0;   
+
+}
+
 
 void cmp_pos(std::vector<gigatraj::Parcel> &vflock0, std::vector<gigatraj::Parcel> &vflock
      , gigatraj::real* max_d, gigatraj::real* min_d, gigatraj::real *avg_d, gigatraj::real *med_d, gigatraj::real *sprd_d )

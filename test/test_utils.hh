@@ -12,6 +12,7 @@ std::string datadir( std::string dir = "" );
 
 int mismatch( gigatraj::real a, gigatraj::real b);
 int mismatch( gigatraj::real a, gigatraj::real b, gigatraj::real tol );
+int mismatchdbl( double a, double b, double tol );
 
 
 void cmp_pos(std::vector<gigatraj::Parcel> &vflock0
