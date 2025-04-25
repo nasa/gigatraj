@@ -114,7 +114,7 @@ class Vinterp : public Interpolator {
                    sub-class of GridFieldSfc.  The calling routine is responsible to dleeting
                    the new object.
            \param z the surface to interpolate to.  This will be the same physical quantity
-                    as in the vertical cooridnate of the \p grid parameter.
+                    as in the vertical coordinate of the \p grid parameter.
            \param grid the 3D grid to interpolate
            \param flags flag values affecting the interpolation
       */            
@@ -125,7 +125,7 @@ class Vinterp : public Interpolator {
       /*! This function
          interpolates a 3D gridded field in one vertical coordinate to a surface using a different
          3D gridded met field having the same vertical coordinate.  This is useful for 
-         changing from a native vertical cooridnate to a user-preferred vertical coordinate.
+         changing from a native vertical coordinate to a user-preferred vertical coordinate.
          
          That is, given physical quantities \c A, \c B, and \c C:
 \verbatim
@@ -365,7 +365,7 @@ class Vinterp : public Interpolator {
           
       }
       
-      /// interpolates a vector of data and a cooridnate to a single coordinate value
+      /// interpolates a vector of data and a coordinate to a single coordinate value
       /*! This function performs an interpolation, given a vector of dependent and independent
           variables.  It takes into account bad or missing data in both variables.
           

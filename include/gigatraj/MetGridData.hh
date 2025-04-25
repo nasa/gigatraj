@@ -805,7 +805,7 @@ class MetGridData : public MetData {
           
           \param input a pointer to a GridData3D object 
           \param quant the quantity desired as the vertical coordinate
-          \param units the units desired for the new vertical cooridnate
+          \param units the units desired for the new vertical coordinate
           \param scale the scale factor to take the new vertical coordinate into MKS units
           \param offset the offset to take the new vertical coordinate into MKS units
           \return a boolean that is true if the conversion was done, and false otherwise

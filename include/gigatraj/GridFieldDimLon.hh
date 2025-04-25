@@ -206,7 +206,7 @@ class GridFieldDimLon : public GridFieldDim {
       void assign( const GridFieldDimLon& src);
       
       
-      ///  sets the cooridnate direction
+      ///  sets the coordinate direction
       /*! This method sets the coordinate direction, based on whether the coordinates increase
           or decrease with array index number.
             \param loadFlags (reserved for future expension)  

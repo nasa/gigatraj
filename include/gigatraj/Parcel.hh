@@ -563,7 +563,7 @@ class Parcel {
 
       /// \brief returns the value of the NonVert status setting
       /*! This method returns the value of the NonVert status
-          for a Parcel: True if the Parcel's vertical cooridnate does not 
+          for a Parcel: True if the Parcel's vertical coordinate does not 
           match the meteorological data source's vertical coordinate,
           False otherwise.
           

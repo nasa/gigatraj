@@ -41,7 +41,7 @@ class MetSBRot : public MetData {
 
    public:
    
-      /// interprocess communications tag: "This is a list of cooridnates"
+      /// interprocess communications tag: "This is a list of coordinates"
       static const int PGR_TAG_COORDS = 51;
       /// interprocess communications tag: "This specifies a quantity"
       static const int PGR_TAG_QUANT = 1050;

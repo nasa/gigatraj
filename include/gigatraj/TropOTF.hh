@@ -177,7 +177,7 @@ class TropOTF : public MetOnTheFly {
 
         /// finds the WMO tropopause from a fields of temperature and an altitude-like coordinate 
          /*! This function calculates the WMO tropopause from 3D fields of temperature and 
-             an altitude-like cooridnate (altitude, pressure, potential temperature, or density).
+             an altitude-like coordinate (altitude, pressure, potential temperature, or density).
          
             \return a pointer to a new GridFieldSfc object containing the tropopause location,
             in terms of the physical quantity of the input \p alt grid, and

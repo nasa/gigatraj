@@ -100,8 +100,8 @@ class GridFieldProfile : public GridField {
       /// returns the units of the vertical coordinate quantity
       /*! This method returns the units of the vertical coordinate quantity.
       
-          \param scale a pointer to a real that will hold the scaling value to take a vertical cooridnate value to MKS units
-          \param offset a pointer to a real that will hold the offset value to take a vertical cooridmate value to MKS units
+          \param scale a pointer to a real that will hold the scaling value to take a vertical coordinate value to MKS units
+          \param offset a pointer to a real that will hold the offset value to take a vertical coordinate value to MKS units
           \return the units of the vertical coordinate
       */    
       std::string vunits(real *scale=NULLPTR, real *offset=NULLPTR) const;

@@ -50,7 +50,7 @@ class PGenDisc : public ParcelGenerator {
           \param lat the central latitude of the disc
           \param level = the central vertical level of the disc
           \param r the radius of the disk, in km
-          \param thickness the thickness of the disk, in current vertical cooridnates
+          \param thickness the thickness of the disk, in current vertical coordinates
           
       */
       PGenDisc( const real lon, const real lat, const real level, const real r=50.0, const real thickness=1e-10 );

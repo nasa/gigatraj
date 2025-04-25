@@ -21,6 +21,7 @@
 #include "gigatraj/ThetaDotOTF.hh"
 #include "gigatraj/PAltOTF.hh"
 #include "gigatraj/PAltDotOTF.hh"
+#include "gigatraj/SZAOTF.hh"
 
 namespace gigatraj {
 
@@ -545,7 +546,7 @@ class MetMyGEOS : public MetGridLatLonData {
           
           \param input a pointer to a GridData3D object 
           \param quant the quantity desired as the vertical coordinate
-          \param units the units desired for the new vertical cooridnate
+          \param units the units desired for the new vertical coordinate
           \param scale the scale factor to take the new vertical coordinate into MKS units
           \param offset the offset to take the new vertical coordinate into MKS units
           \return a boolean that is true if the conversion was done, and false otherwise
@@ -820,7 +821,7 @@ class MetMyGEOS : public MetGridLatLonData {
          
            /*! for vertical grid. The first character must be one of:
              * "P":  standard pressure coordinates (42 levels from 1000 to 0.1 hPa)
-             * "H":  potential temperature (tHeta) cooridnates
+             * "H":  potential temperature (tHeta) coordinates
              * "z":  altitude cooordinates
              * "a": Pressure altitude (PAlt) coordinates
              * "L": model levels (72 levels, from 0 to 71)
@@ -1064,6 +1065,8 @@ class MetMyGEOS : public MetGridLatLonData {
       std::string modellevel_name;
       /// the name of the model edge coordinate (not necc. the same as levelName)
       std::string modeledge_name;
+      /// the name of the solar zenith angle
+      std::string sza_name;
 
       /// describes vertical wind quantities that are available for the different vertical coordinates
       std::map<std::string, Catalog::DataSource> verticalWinds;
@@ -1084,6 +1087,8 @@ class MetMyGEOS : public MetGridLatLonData {
       PAltOTF getpalt;
       /// on-the-fly calculator for time rate of change of pressure altitude
       PAltDotOTF getpaltdot;
+      /// on-the-fly calculator for the solar zenith angle
+      SZAOTF getsza;
       
       /// true if a netcdf file is currently open
       bool is_open;
@@ -1382,6 +1387,18 @@ class MetMyGEOS : public MetGridLatLonData {
       */    
       std::string queryTime( int index=-1, std::string* pre=NULLPTR, std::string* post=NULLPTR );
 
+      /// \brief queries a test DataSource for whether is is an on-the-fly quantity
+      /*! This method determines whether a test DataSource represents a quantity
+          that must be calculated on the fly from other quantities.
+          
+          \param dependents a vector of quantity names that must be read for the OTF calculation to be carrie dout
+          \param index if >=0, the index into the internal vector oif DataSources, selecting the one to be queried
+                       By default, the internal current test index is used.
+          \return true if the quantity is OTF, false otherwise           
+      
+      */
+      bool queryOTF( std::vector<std::string>& dependents, int index=-1 );
+
       /// \brief queries a test DataSource for its dimensionality
       /*! This method returns the number of spatial dimensions associated with a DataSource
       
@@ -1424,7 +1441,7 @@ class MetMyGEOS : public MetGridLatLonData {
           attribute, 'VertCoord',  The value is then coded as one of:
              * "":  unknown/indeterminate
              * "P":  standard pressure coordinates (42 levels from 1000 to 0.1 hPa)
-             * "H":  potential temperature (tHeta) cooridnates
+             * "H":  potential temperature (tHeta) coordinates
              * "z":  altitude cooordinates
              * "a": Pressure altitude (PAlt) coordinates
              * "L": model (layer mid-) levels (72 levels, from 0 to 71)

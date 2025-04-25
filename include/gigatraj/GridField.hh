@@ -74,7 +74,7 @@ const int GFL_PREFILL    = 0x04;
 const int GFS_NODATA = 0x0001;
 /// GridField flag: the grid is not to be cached
 const int GFS_NOCACHE = 0x0002;
-/// GridField flag: the grid has no gridpoint cooridnates defined
+/// GridField flag: the grid has no gridpoint coordinates defined
 const int GFS_NODIMS = 0x0008;
 /// GridField flag: the number of gridpoints does not match what is expected from the coordinate definitions
 const int GFS_GRIDERR = 0x0010;

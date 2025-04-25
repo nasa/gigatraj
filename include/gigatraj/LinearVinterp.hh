@@ -94,7 +94,7 @@ class LinearVinterp : public Vinterp {
                    sub-class of GridFieldSfc. The calling routine is responsible for deleting the
                    new object when it is no longer needed.
            \param z the surface to interpolate to.  This will be the same physical quantity
-                    as in the vertical cooridnate of the \p grid parameter.
+                    as in the vertical coordinate of the \p grid parameter.
            \param grid the 3D grid to interpolate
            \param flags flag values affecting the interpolation
       */            
@@ -113,7 +113,7 @@ class LinearVinterp : public Vinterp {
           return result;
       };
       
-      /// interpolates a vector of data and a cooridnate to a single coordinate value
+      /// interpolates a vector of data and a coordinate to a single coordinate value
       /*! This function performs an interpolation, given a vector of dependent and independent
           variables.  It takes into account bad or missing data in both variables.
           

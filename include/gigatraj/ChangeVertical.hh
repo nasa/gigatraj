@@ -12,7 +12,7 @@ namespace gigatraj {
 /*!
 \ingroup parcelfilters
 
-\brief chnages the vertical cooridnate of a parcel from one physical quantity to another
+\brief chnages the vertical coordinate of a parcel from one physical quantity to another
 
 The ChangeVertical class switches a parcel's vertical coordinate from one vertical quantity to another.
 Using and object of this class, a parcel may be initialized in, say, pressure altitude and
@@ -37,7 +37,7 @@ class ChangeVertical : public ParcelFilter {
            then the vertical coordinate of the meteorological source will be used. 
        
            \param to the name of the vertical coordinate to be converted to
-           \param from the name of the vertical cooridnate to be converted to
+           \param from the name of the vertical coordinate to be converted to
            \param met a pointer to a meteorological data source whose vertical coordinate matches either 
                       the "from" or the "to" coordinate.  If NULL, th 
       */

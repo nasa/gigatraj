@@ -29,7 +29,7 @@ The file must also have data variables "lon" and "lat".
 If must also have at least one variable with the "positive" attribute, which
 denotes a vertical level. There should be one of these variables
 with the attribute :"vertical _coordinate", and that attribute should
-be set to "yes". That data varibale is taken as the vertical cooridnate
+be set to "yes". That data varibale is taken as the vertical coordinate
 of the Parcels.
 
 The file may have a second dimensional variable, "time". If so, then each of 
