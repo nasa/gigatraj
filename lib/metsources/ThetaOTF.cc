@@ -150,7 +150,7 @@ GridField3D* ThetaOTF::calc( const GridField3D& t, int flags ) const
    real tbad, pbad;
    // iterator over input gridpoints
    GridField3D::const_iterator tPnt;
-    // iterator over output gridpoints
+   // iterator over output gridpoints
    GridField3D::iterator destPnt;
    
    // the input field must be temperature on pressure surfaces
