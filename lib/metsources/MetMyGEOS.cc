@@ -94,6 +94,8 @@ MetMyGEOS::MetMyGEOS( const MetMyGEOS&  src) : MetGridLatLonData(src)
      temperature_name = src.temperature_name;
      temperatureDot_name = src.temperatureDot_name;
 
+     sza_name = src.sza_name;
+
      verticalWinds = src.verticalWinds;
      legalDims = src.legalDims;
      otfIDs = src.otfIDs;
@@ -139,6 +141,8 @@ void MetMyGEOS::assign(const MetMyGEOS& src)
 
      temperature_name = src.temperature_name;
      temperatureDot_name = src.temperatureDot_name;
+
+     sza_name = src.sza_name;
 
      verticalWinds = src.verticalWinds;
      legalDims = src.legalDims;
@@ -261,6 +265,8 @@ void MetMyGEOS::setOption( const std::string &name, const std::string &value )
         temperature_name = value;
      } else if ( name == "TemperatureDotName" ) {
         temperatureDot_name = value;
+     } else if ( name == "SolarZenithAngleName" ) {
+        sza_name = value;
      } else {
         MetGridLatLonData::setOption( name, value );
      }
@@ -348,6 +354,9 @@ bool MetMyGEOS::getOption( const std::string &name, std::string &value )
       result = true;
    } else if ( name == "TemperatureDotName" ) {
       value = temperatureDot_name;
+      result = true;
+   } else if ( name == "SolarZenithAngleName" ) {
+      value = sza_name;
       result = true;
    } else {
       result =  MetGridLatLonData::getOption( name, value );
@@ -570,6 +579,11 @@ GridLatLonField3D* MetMyGEOS::new_directGrid3D( const std::string quantity, cons
     MetMyGEOS *defaultThis;
     time_t zeep;
     std::string vcode;
+    std::vector<std::string> OTFquants;
+    int nOTF;
+    GridLatLonField3D** OTFcomponents3D;
+    GridLatLonFieldSfc** OTFcomponentsSfc;
+    bool ok;
 
     if ( dbug > 20 ) {
        std::cerr << "MetMyGEOS::new_directGrid3D: Entering quantity = " << quantity << " @ " << time << std::endl;
@@ -587,10 +601,77 @@ GridLatLonField3D* MetMyGEOS::new_directGrid3D( const std::string quantity, cons
     grid3d = new GridLatLonField3D();
     grid3d->setPgroup( my_pgroup, my_metproc );
 
+    // load up the attributes of the desired quantity
+    // from the catalog, so
+    // we can know what we are dealing with
+    if ( dsInit( quantity, time ) ) {
+       if ( queryDimensionality() != 3 ) {
+          throw (badDimensionality());
+       }
+    }
+
+
     // Some quantities do not exist in files that can be read in,
     // so we need to calculate them on the fly, from quantities
     // that we can read in.
-    if ( quantity == pottemp_name || quantity == "air_potential_temperature" ) {
+    if ( queryOTF( quantity, OTFquants ) ) {
+       nOTF = OTFquants.size();
+       if ( nOTF > 1 ) {
+          OTFcomponents3D = new GridLatLonField3D*[nOTF - 1];
+
+          // We need to read in other quantities and calculate the desired quantity
+          // from them.  We would also like to take advantage of any caching
+          // being done, since for example in this case we would be reading
+          // T in twice: once explicitly and once as part of "reading" P.
+          // Thus, we want to call the Grid3D method instead of Obtain3D.
+          // However, Grid3D will do any horizontal and/or vertical interpolation
+          // that is needed for our final desired grid, and we do not want that at
+          // this stage.  So we use a local instance of the metGEOSfp object,
+          // with default settings (except for caching), and we use that to
+          // read in our component quantities.
+          defaultThis = myNew();
+          
+          // now read in each component quantity
+          for ( int ic=1; ic < nOTF; ic++ ) {
+              OTFcomponents3D[ic - 1] = defaultThis->new_directGrid3D(OTFquants[ic], time);
+          }
+          
+          // now do the calculation
+          tmp1 = NULLPTR;
+          if ( OTFquants[0] == "ThetaOTF") {
+             tmp1 = dynamic_cast<GridLatLonField3D*>(gettheta.calc( *OTFcomponents3D[0], *OTFcomponents3D[1] ));
+          } else if ( OTFquants[0] == "ThetaDot") {
+             tmp1 = dynamic_cast<GridLatLonField3D*>(getthetadot.calc( *OTFcomponents3D[0], *OTFcomponents3D[1] ));
+          } else if ( OTFquants[0] == "PressOTF") {
+             tmp1 = dynamic_cast<GridLatLonField3D*>(getpress.calc( *OTFcomponents3D[0] ));
+          } else if ( OTFquants[0] == "PAltOTF") {
+             tmp1 = dynamic_cast<GridLatLonField3D*>(getpalt.calc( *OTFcomponents3D[0] ));
+          } else if ( OTFquants[0] == "PAltDotOTF") {
+             tmp1 = dynamic_cast<GridLatLonField3D*>(getpaltdot.calc( *OTFcomponents3D[0], *OTFcomponents3D[1] ));
+          } else if ( OTFquants[0] == "SZAOTF") {
+//             tmp1 = dynamic_cast<GridLatLonField3D*>(getSZA.calc( *OTFcomponents3D[0] ));
+          }
+          if ( tmp1 != NULLPTR ) {
+             *grid3d = *tmp1;
+             std::string qq;
+             real scale;
+             real offset;
+             qq = tmp1->units( &scale, &offset );
+             grid3d->set_quantity( quantity );
+             grid3d->set_units( qq, scale, offset );
+             
+             delete tmp1;
+          }
+           
+          // now take down what we set up
+          for ( int ic=1; ic < nOTF; ic++ ) {
+              defaultThis->remove( OTFcomponents3D[ic - 1] );
+          }
+          delete[] OTFcomponents3D;
+          delete defaultThis;
+       }
+       
+    } else if ( quantity == pottemp_name || quantity == "air_potential_temperature" ) {
        // We need to read in other quantities and calculate the desired quantity
        // from them.  We would also like to take advantage of any caching
        // being done, since for example in this case we would be reading
@@ -739,6 +820,12 @@ GridLatLonFieldSfc* MetMyGEOS::new_directGridSfc( const std::string quantity, co
     std::string quantname;
     size_t pos;
     time_t zeep;
+    std::vector<std::string> OTFquants;
+    int nOTF;
+    MetMyGEOS *defaultThis;
+    GridLatLonFieldSfc* tmp1;
+    GridLatLonField3D** OTFcomponents3D;
+    GridLatLonFieldSfc** OTFcomponentsSfc;
 
     if ( quantity == "nodataload" ) {
        throw (MetGridData::baddataload());
@@ -763,6 +850,14 @@ GridLatLonFieldSfc* MetMyGEOS::new_directGridSfc( const std::string quantity, co
     gridsfc = new GridLatLonFieldSfc();
     gridsfc->setPgroup( my_pgroup, my_metproc );
     
+    // load up the attributes of the desired quantity
+    // from the catalog, so
+    // we can know what we are dealing with
+    if ( dsInit( quantity, time ) ) {
+       if ( (queryDimensionality() != 2) && (sfcname != "sfc") ) {
+          throw (badDimensionality());
+       }
+    }
 
     if ( sfcname == "trop" ) {
        // The surface is the tropopause
@@ -791,9 +886,51 @@ GridLatLonFieldSfc* MetMyGEOS::new_directGridSfc( const std::string quantity, co
        delete desiredsfc;
        remove( grid3D );
     } else if ( sfcname == "sfc" ) { 
-       //std::cerr << "About to read " << quantity << " from sfc" << std::endl;
-       readSource( quantity, time, gridsfc );
-       //std::cerr << "Back from reading " << quantity << " from sfc" << std::endl;
+       if ( queryOTF( quantity, OTFquants ) ) {
+          nOTF = OTFquants.size();
+          if ( nOTF > 1 ) {
+             OTFcomponentsSfc = new GridLatLonFieldSfc*[nOTF - 1];
+
+             // We need to read in other quantities and calculate the desired quantity
+             // from them.  We would also like to take advantage of any caching
+             // being done, since for example in this case we would be reading
+             // T in twice: once explicitly and once as part of "reading" P.
+             // Thus, we want to call the Grid3D method instead of Obtain3D.
+             // However, Grid3D will do any horizontal and/or vertical interpolation
+             // that is needed for our final desired grid, and we do not want that at
+             // this stage.  So we use a local instance of the metGEOSfp object,
+             // with default settings (except for caching), and we use that to
+             // read in our component quantities.
+             defaultThis = myNew();
+             
+             // now read in each component quantity
+             for ( int ic=1; ic < nOTF; ic++ ) {
+                 OTFcomponentsSfc[ic - 1] = defaultThis->new_directGridSfc(OTFquants[ic], time);
+             }
+             
+             // now do the calculation
+             tmp1 = NULLPTR;
+             if ( OTFquants[0] == "SZAOTF") {
+                tmp1 = dynamic_cast<GridLatLonFieldSfc*>(getsza.calc( *OTFcomponentsSfc[0] ));
+             }
+             if ( tmp1 != NULLPTR ) {
+                *gridsfc = *tmp1;
+                gridsfc->set_quantity( quantity );
+                delete tmp1;
+             }
+              
+             // now take down what we set up
+             for ( int ic=1; ic < nOTF; ic++ ) {
+                 defaultThis->remove( OTFcomponentsSfc[ic - 1] );
+             }
+             delete[] OTFcomponentsSfc;
+             delete defaultThis;
+          }
+       } else {
+           //std::cerr << "About to read " << quantity << " from sfc" << std::endl;
+           readSource( quantity, time, gridsfc );
+           //std::cerr << "Back from reading " << quantity << " from sfc" << std::endl;
+       }
 
     } else {
       delete gridsfc;
@@ -1705,6 +1842,8 @@ void MetMyGEOS::refresh_OTF()
     getpaltdot.setPressureName(pressure_name);
     getpaltdot.setPressureDotName((vertwind_quants[ pressure_name ]).quantity);
 
+    getsza.set_quantity( sza_name );
+    
 }
 
 void MetMyGEOS::init()
@@ -1759,6 +1898,9 @@ void MetMyGEOS::init()
           }
           if ( catlog.variableValue( "name_of_temperature", qname ) ) {
              temperature_name = qname;
+          }
+          if ( catlog.variableValue( "name_of_solar_zenith_angle", qname ) ) {
+             sza_name = qname;
           }
           if ( catlog.variableValue( "name_of_altitudeDot", qname ) ) {
              altDot_name = qname;
@@ -2062,7 +2204,7 @@ bool  MetMyGEOS::dsInit( const std::string& quantity, const std::string& time )
         if ( result ) {
            test_dsrc = 0;
            opened_dsrc = -1;
-           // TODO: check if the ds is the same as one currently opened, so we don;t have to close and re-open?
+           // TODO: check if the ds is the same as one currently opened, so we don't have to close and re-open?
         }
      } else {
         // no need for any new query
@@ -2171,6 +2313,78 @@ std::string MetMyGEOS::queryTime( int index, std::string* pre, std::string* post
     }
     if ( post != NULLPTR ) {
        *post = myPost;
+    }
+
+    return result;
+
+}
+
+bool MetMyGEOS::queryOTF( const std::string& quantity, std::vector<std::string>& dependents )
+{
+    bool result;
+    bool ok;
+    size_t ci;
+    std::string otfspec;
+    int speclen;
+    std::string depquantity;
+    int index;
+    
+    result = false;
+    
+    ok =  dsInit(quantity);
+    if ( ok ) {
+    
+       result = queryOTF( dependents );
+
+    }
+
+    return result;
+
+}
+
+bool MetMyGEOS::queryOTF( std::vector<std::string>& dependents, int index )
+{
+    bool result;
+    bool ok;
+    size_t ci;
+    std::string otfspec;
+    int speclen;
+    std::string depquantity;
+    
+    result = false;
+    
+    ok =  dsInit();
+    if ( ok ) {
+    
+       if ( index < 0 ) {
+          index = test_dsrc;
+       }
+       
+       result = (ds[test_dsrc].type == 2);
+       
+       dependents.clear();
+       if ( result ) {
+          otfspec = ds[test_dsrc].pre;
+          speclen = otfspec.size(); 
+          // start just after "OTF://"
+          depquantity = "";
+          for ( ci = 6; ci < speclen; ci++ ) {
+              if ( otfspec[ci] != '/' ) {
+                 depquantity.push_back( otfspec[ci] );
+              } else {
+                 if ( depquantity.size() > 0 ) {
+                    dependents.push_back( depquantity );
+                    depquantity.clear();
+                 }
+              }
+          }
+          if ( depquantity.size() > 0 ) {
+             dependents.push_back( depquantity );
+             depquantity.clear();
+          }
+                
+       }
+
     }
 
     return result;

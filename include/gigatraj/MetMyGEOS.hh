@@ -44,7 +44,7 @@ class MetMyGEOS : public MetGridLatLonData {
 
    public:
 
-      /// An exception for an unknown coorindate grid specification
+      /// An exception for an unknown coordinate grid specification
       class badCoordinateGrid {};
 
       /// An exception for failing to find GEOS quantity
@@ -55,6 +55,9 @@ class MetMyGEOS : public MetGridLatLonData {
 
       /// An exception for given dimensions not being in the proper form
       class badDimsForm {};
+
+      /// An exception for a quantity not having the right number of dimensions
+      class badDimensionality {};
 
       /// An exception for an unknown dimension in a variable
       class badUnknownDim {};
@@ -1387,12 +1390,23 @@ class MetMyGEOS : public MetGridLatLonData {
       */    
       std::string queryTime( int index=-1, std::string* pre=NULLPTR, std::string* post=NULLPTR );
 
+      /// \brief queries whether a given quantity is an on-the-fly quantity
+      /*! This method determines whether a given quantity represents a quantity
+          that must be calculated on the fly from other quantities.
+          
+          \param quantity the name of the quantity to be tested
+          \param dependents a vector of quantity names that must be read for the OTF calculation to be carrie dout
+          \return true if the quantity is OTF, false otherwise           
+      
+      */
+      bool queryOTF( const std::string& quantity, std::vector<std::string>& dependents );
+
       /// \brief queries a test DataSource for whether is is an on-the-fly quantity
       /*! This method determines whether a test DataSource represents a quantity
           that must be calculated on the fly from other quantities.
           
           \param dependents a vector of quantity names that must be read for the OTF calculation to be carrie dout
-          \param index if >=0, the index into the internal vector oif DataSources, selecting the one to be queried
+          \param index if >=0, the index into the internal vector of DataSources, selecting the one to be queried
                        By default, the internal current test index is used.
           \return true if the quantity is OTF, false otherwise           
       
