@@ -116,7 +116,7 @@ class ThetaOTF : public MetOnTheFly {
              
             \return a pointer to a new GridField3D object that holds the output potential 
                     temperature field, in Kelvin. The calling routine is responsible for
-                    delting the object when it is no longer needed. 
+                    deleting the object when it is no longer needed. 
             \param t a GridField3D field of air temperatures
             \param p a GridField3D field of air pressures
             \param flags OTF_* flags to to affect the calculation results
@@ -129,7 +129,7 @@ class ThetaOTF : public MetOnTheFly {
              
             \return a pointer to a new GridField3D object that holds the output potential 
                     temperature field, in Kelvin. The calling routine is responsible for
-                    delting the object when it is no longer needed. 
+                    deleting the object when it is no longer needed. 
             \param t a GridField3D field of air temperatures
             \param flags OTF_* flags to to affect the calculation results
 
@@ -144,7 +144,7 @@ class ThetaOTF : public MetOnTheFly {
              
             \return a pointer to a new GridFieldSfc object that holds the output potential 
                     temperature field, in Kelvin. The calling routine is responsible for
-                    delting the object when it is no longer needed. 
+                    deleting the object when it is no longer needed. 
             \param t a GridFieldSfc field of air temperatures
             \param p a GridFieldSfc field of air pressures
             \param flags OTF_* flags to to affect the calculation results
