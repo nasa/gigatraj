@@ -22,30 +22,14 @@ using namespace gigatraj;
 
 SZAOTF::SZAOTF()
 {
+   quant = "solar_zenith_angle";
+   uu = "degrees";
 
 }
 
 SZAOTF::~SZAOTF()
 {
 
-}
-
-GridField3D* SZAOTF::calc( const GridField3D& input, int flags) const
-{
-     GridField3D* result;
-
-     result = NULL;
-     
-     return result;
-}
-
-GridFieldSfc* SZAOTF::calc( const GridFieldSfc& input, int flags) const
-{
-     GridFieldSfc* result;
-
-     result = NULL;
-     
-     return result;
 }
 
 real SZAOTF::calc( real lon, real lat, std::string& time ) const
@@ -299,3 +283,177 @@ real* SZAOTF::calc( real* lons, real* lats, int n, double jday ) const
     return result;
 
 }
+
+
+GridField3D* SZAOTF::calc( const GridField3D& input, int flags ) const
+{
+   // the output SZA
+   GridField3D *result;
+   // indices into the data array
+   int* is;
+   int* js;
+   int* ks;
+   // dimensions of the data
+   int ni, nj, nk;
+   // gridpoint longitudes and latitudes
+   real* lons;
+   real* lats;
+   real* levs;
+   // julian day
+   double jday;
+   // calendar time
+   std::string ctime;
+   // the computed SZAs
+   real* szas;
+   
+
+   // use the input quantity as a base for the result
+   result = input.duplicate();
+
+   // change the quantity and units to SZA
+   result->set_quantity(quant);
+   result->set_units(uu);
+   
+   ctime =  input.met_time();
+   
+   jday = julday( ctime );
+
+   input.dims( &ni, &nj, &nk );
+   
+   /* We'll do one 1st-dim row at a time.
+      This seems ot be a good compromise between
+      doing all the horizontal gridpoints at cone 
+      (which might use a lot of memmory),
+      and computing each gridpont
+      individually (which might be too slow).
+    */ 
+   
+   is = new int[ni];
+   for ( int i=0; i < ni; i++ ) {
+      is[i] = i;
+   }
+   
+   js = new int[ni];
+
+   ks = new int[ni];
+   for ( int i=0; i < ni; i++ ) {
+      ks[i] = 0;
+   }
+   
+   lons = new real[ni];
+   lats = new real[ni];
+   levs = new real[ni];
+   
+   // for each of the second dimension...
+   for ( int j=0; j < nj; j++ ) {
+       for ( int i=0; i < ni; i++ ) {
+           js[i] = j;
+       }
+   
+       // now turn these indices into lats and lons into 
+       input.gridcoords( ni, is, js, ks, lons, lats, levs );
+   
+       // compute
+       szas = calc( lons, lats, ni, jday );     
+   
+       // store
+       for ( int i=0; i < ni ; i++ ) {
+           for ( int k=0; k < nk; k++ ) {
+               (*result)( i, j, k ) = szas[i];
+           }
+       }
+       
+       delete[] szas;
+   }
+   
+   delete[] levs;
+   delete[] lats;
+   delete[] lons;
+   delete[] ks;
+   delete[] js;
+   delete[] is;
+
+   return result;
+
+}
+
+
+GridFieldSfc* SZAOTF::calc( const GridFieldSfc& input, int flags) const
+{
+   // the output SZA
+   GridFieldSfc *result;
+   // indices into the data array
+   int* is;
+   int* js;
+   // dimensions of the data
+   int ni, nj;
+   // gridpoint longitudes and latitudes
+   real* lons;
+   real* lats;
+   // julian day
+   double jday;
+   // calendar time
+   std::string ctime;
+   // the computed SZAs
+   real* szas;
+   
+
+   // use the input quantity as a base for the result
+   result = input.duplicate();
+
+   // change the quantity and units to SZA
+   result->set_quantity(quant);
+   result->set_units(uu);
+   
+   ctime =  input.met_time();
+   
+   jday = julday( ctime );
+
+   input.dims( &ni, &nj );
+   
+   /* We'll do one 1st-dim row at a time.
+      This seems ot be a good compromise between
+      doing all the horizontal gridpoints at cone 
+      (which might use a lot of memmory),
+      and computing each gridpont
+      individually (which might be too slow).
+    */ 
+   
+   is = new int[ni];
+   for ( int i=0; i < ni; i++ ) {
+      is[i] = i;
+   }
+   
+   js = new int[ni];
+
+   lons = new real[ni];
+   lats = new real[ni];
+   
+   // for each of the second dimension...
+   for ( int j=0; j < nj; j++ ) {
+       for ( int i=0; i < ni; i++ ) {
+           js[i] = j;
+       }
+   
+       // now turn these indices into lats and lons into 
+       input.gridcoords( ni, is, js, lons, lats );
+   
+       // compute
+       szas = calc( lons, lats, ni, jday );     
+   
+       // store
+       for ( int i=0; i < ni ; i++ ) {
+           (*result)( i, j ) = szas[i];
+       }
+       
+       delete[] szas;
+   }
+   
+   delete[] lats;
+   delete[] lons;
+   delete[] js;
+   delete[] is;
+
+   return result;
+}
+
