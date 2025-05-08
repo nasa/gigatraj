@@ -668,6 +668,16 @@ int GridLatLonField3D::dataSize() const
 
 }
 
+void GridLatLonField3D::gridcoords( int n, int* is, int* js, int* ks, real* olons, real* olats, real* olevs, int flags) const
+{
+
+     lons.values( n, olons, is );
+     lats.values( n, olats, js );
+     zs.values( n, olevs, ks );
+
+}
+
+
 void GridLatLonField3D::gridpoints( int n, int* is, int* js, int* ks, real* vals, int flags) const
 {
      int* coords;

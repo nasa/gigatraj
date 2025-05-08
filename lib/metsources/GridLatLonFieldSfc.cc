@@ -625,6 +625,14 @@ int GridLatLonFieldSfc::dataSize() const
 
 }
 
+void GridLatLonFieldSfc::gridcoords( int n, int* is, int* js, real* olons, real* olats, int flags ) const
+{
+
+     lons.values( n, olons, is );
+     lats.values( n, olats, js );
+
+}
+
 
 
 void GridLatLonFieldSfc::gridpoints( int n, int* is, int* js, real* vals, int flags) const

@@ -320,6 +320,19 @@ class GridLatLonFieldSfc : public GridFieldSfc {
       int dataSize() const;   
 
 
+      /// returns a set of gridpoint coordinates
+      /*! This method returns the longitude and latitude values
+          of a given set of gridpoints
+      
+      
+          \param n the number of gridpoint coordinates desired
+           \param is n-element array of first-indices into the data array
+           \param js n-element array of second-indices into the data array
+           \param olons n-element array of reals to hold the longitudes
+           \param olats n-element array of reals to hold the latitudes
+      */
+      void gridcoords( int n, int* is, int* js, real* olons, real* olats, int flags=0) const;
+
       ///  returns a set of gridpoint values
       /*!  Returns a set of gridpoint values. 
 

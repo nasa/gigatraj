@@ -380,8 +380,24 @@ class GridField3D : public GridField {
       */
       void newVertical( const std::vector<real>& newz );       
 
-      ///  returns a set of gridpoint values
-      /*!  This method returns a set of gridpoint values.
+      /// returns a set of gridpoint coordinates
+      /*! This method returns the longitude, latitude, and vertical coordinate values
+          of a given set of gridpoints
+      
+      
+          \param n the number of gridpoint coordinates desired
+           \param is n-element array of first-indices into the data array
+           \param js n-element array of second-indices into the data array
+           \param ks n-element array of third-indices into the data array
+           \param olons n-element array of reals to hold the longitudes
+           \param olats n-element array of reals to hold the latitudes
+           \param olevs n-element array of reals to hold the vertical coordinates
+      */
+      virtual void gridcoords( int n, int* is, int* js, int* ks, real* olons, real* olats, real* olevs, int flags=0) const =0;
+      
+
+      ///  returns a set of gridpoint data values
+      /*!  This method returns a set of data values at given gridpoints.
 
            Warning: if you are getting the values from a centralized met processors,
            you must perform some kind of handshaking with the processor 
