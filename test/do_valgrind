@@ -73,6 +73,7 @@ test_PAltDotOTF
 test_DensOTF
 test_ThetaDotOTF
 test_BalanceThetaDot1OTF
+test_SZAOTF
 test_MetSBRot
 test_MetSBRot_serial
 test_MetGridSBRot
