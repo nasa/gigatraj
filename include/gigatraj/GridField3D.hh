@@ -392,6 +392,7 @@ class GridField3D : public GridField {
            \param olons n-element array of reals to hold the longitudes
            \param olats n-element array of reals to hold the latitudes
            \param olevs n-element array of reals to hold the vertical coordinates
+           \param flags (reserved for future expansion)
       */
       virtual void gridcoords( int n, int* is, int* js, int* ks, real* olons, real* olats, real* olevs, int flags=0) const =0;
       

@@ -384,6 +384,7 @@ class GridLatLonField3D : public GridField3D {
            \param olons n-element array of reals to hold the longitudes
            \param olats n-element array of reals to hold the latitudes
            \param olevs n-element array of reals to hold the vertical coordinates
+           \param flags (reserved for future expansion)
       */
       void gridcoords( int n, int* is, int* js, int* ks, real* olons, real* olats, real* olevs, int flags=0) const;
 
