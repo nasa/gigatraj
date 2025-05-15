@@ -915,7 +915,12 @@ GridLatLonFieldSfc* MetMyGEOS::new_directGridSfc( const std::string quantity, co
              }
              if ( tmp1 != NULLPTR ) {
                 *gridsfc = *tmp1;
+                std::string qq;
+                real scale;
+                real offset;
+                qq = tmp1->units( &scale, &offset );
                 gridsfc->set_quantity( quantity );
+                gridsfc->set_units( qq, scale, offset );
                 delete tmp1;
              }
               
@@ -5554,6 +5559,7 @@ void MetMyGEOS::Source_read_data_floats( real** vals, int var_id, int ndims, siz
                      } while ( try_again( err, trial ) );       
 
                      if ( err != NC_NOERR ) {
+                        delete[] *vals;
                         delete[] buffr;   
                         throw(badNetcdfError(err));
                      }

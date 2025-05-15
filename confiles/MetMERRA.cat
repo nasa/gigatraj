@@ -23,6 +23,22 @@ name_of_longitude/S = "XDim"
 name_of_latitude/S = "YDim"
 name_of_time/S = "TIME"
 name_of_vertical/S = "Height"
+# (note: "Z" is geopotential height)
+name_of_altitude/S = "z"
+name_of_altitudeDot/S = "w"
+name_of_modeledge/S = "Model-Edges"
+name_of_modellevel/S = "Model-Levels"
+name_of_potentialtemperature/S = "Theta"
+name_of_potentialtemperatureDot/S = "ThetaDot"
+name_of_pressure/S = "P"
+name_of_pressureDot/S = "OMEGA"
+name_of_pressurealtitude/S = "PAlt"
+name_of_pressurealtitudeDot/S = "PAltDot"
+name_of_temperature/S = "T"
+name_of_temperatureDot/S = "DTDTTOT"
+name_of_solar_zenith_angle/S = "SZA"
+name_of_uwind/S = "U"
+name_of_vwind/S = "V"
 #
 BASEURL0/S = "https://goldsmr2.gesdisc.eosdis.nasa.gov/opendap/MERRA/"
 BASEURL1/S = "https://goldsmr3.gesdisc.eosdis.nasa.gov/opendap/MERRA/"
@@ -33,6 +49,7 @@ RUNSET/S = [${DATE}] < [2001-01-01] ? "MERRA200"
 RUNSET/S = "MERRA300"
 RUNSETX/S = [${DATE}] < [1993-01-01] ? "MERRA101"
 RUNSETX/S = "${RUNSET}"
+START/S = "1979-01-01"
 
 
 # Targets
@@ -60,9 +77,28 @@ target20:= [${YEAR}-${MONTH}-${DOM}T00:30];P1D;1;0;LONMR;LATMR;2;${BASEURL0}/MAT
 target21:= [${YEAR}-${MONTH}-${DOM}T00:00];P1D;3;0;LONMR;LATMR;EDGMR;${BASEURL2}/MAI3NECHM.5.2.0/${YEAR}/${MONTH}/${RUNSET}.prod.assim.inst3_3d_chm_Ne.${YEAR}${MONTH}${DOM}.hdf
 target22:= [${YEAR}-${MONTH}-${DOM}T01:30];P1D;3;0;LONMR;LATMR;EDGMR;${BASEURL2}/MAT3FECHM.5.2.0/${YEAR}/${MONTH}/${RUNSET}.prod.assim.tavg3_3d_chm_Fe.${YEAR}${MONTH}${DOM}.hdf
 target23:= [${YEAR}-${MONTH}-${DOM}T01:30];P1D;3;0;LONMR;LATMR;EDGMR;${BASEURL2}/MAT3NECHM.5.2.0/${YEAR}/${MONTH}/${RUNSET}.prod.assim.tavg3_3d_chm_Ne.${YEAR}${MONTH}${DOM}.hdf
+OTFtarget1:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://PressOTF/T
+OTFtarget2:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://ThetaOTF/T/P
+OTFtarget3:= [${START}T01:30];;3;0;LONFP;LATFP;PRSMR;OTF://ThetaDotOTF/DTDTTOT/P
+OTFtarget4:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://PAltOTF/P
+OTFtarget5:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://PAltDotOTF/OMEGA/P
+OTFtarget6:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://SZAOTF/SLP
 
 
 # Quantities
+# (On-The-Fly quantities)
+P: air_pressure:  3: OTFtarget1
+air_pressure: air_pressure:  3: OTFtarget1
+PAlt: pressure_altitude:  3: OTFtarget4
+pressure_altitude: pressure_altitude:  3: OTFtarget4
+PAltDot: upward_air_velocity:  3: OTFtarget5
+upward_air_velocity: upward_air_velocity:  3: OTFtarget5
+Theta: air_potential_temperature:  3: OTFtarget2
+air_potential_temperature: air_potential_temperature:  3: OTFtarget2
+ThetaDot: air_potential_temperature_time_derivative:  3: OTFtarget3
+net_heating_rate: air_potential_temperature_time_derivative:  3: OTFtarget3
+SZA: solar_zenith_angle:  2: OTFtarget6
+# (Actual MERRA2 quantities)
 ALBEDO: Surface albedo: 2: target6
 ALBNIRDF: Diffuse beam NIR surface albedo: 2: target6
 ALBNIRDR: Direct beam NIR surface albedo: 2: target6

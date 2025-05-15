@@ -354,6 +354,17 @@ int main()
 
     delete grid2d;
 
+    // test a quantity that is calculated on the fly
+    d0 = 108.39;
+    grid2d = metsrc0->GetSfc( "SZA", date0 );
+    dd = (*grid2d)(iLon1,iLat1);
+    if ( mismatch(dd, d0, 0.01) ) {
+       cerr << "Bad 2D  SZA[" << iLon1 << "," << iLat1 << "] value: " 
+            << dd << " vs. " << d0 << endl;
+       exit(1);  
+    }
+    delete grid2d;
+
     //*************  3D-reading tests *******************************
 
     //metsrc0->debug( 1 );
@@ -520,7 +531,7 @@ int main()
     grid3d = metsrc0->Get3D( "air_potential_temperature", date0 );
     dd = (*grid3d)(iLon1,iLat1,iVrt1);
     if ( mismatch(dd, d0, 0.01) ) {
-       cerr << "Assim Bad 3D  Theta[" << iLon1 << "," << iLat1 << "," << iVrt1 << "] value: " 
+       cerr << "Assim Bad 3D  Theta #2[" << iLon1 << "," << iLat1 << "," << iVrt1 << "] value: " 
             << dd << " vs. " << d0 << endl;
        exit(1);  
     }
@@ -729,6 +740,16 @@ int main()
 
     delete grid2d;
 
+    // test a quantity that is calculated on the fly
+    grid2d = metsrc0->GetSfc( "SZA", date0 );
+    dd = (*grid2d)(iLon1,iLat1);
+    if ( dd < 0.0 || dd > 180.0 ) {
+       cerr << "Bad 2D fcst SZA[" << iLon1 << "," << iLat1 << "] value: " 
+            << dd << endl;
+       exit(1);  
+    }
+    delete grid2d;
+
 
     //*************  3D-reading tests *******************************
 
@@ -857,7 +878,14 @@ int main()
             << dd << " vs. " << d0 << endl;
        exit(1);  
     }
-
+    delete grid3d;
+    grid3d = metsrc0->Get3D( "Theta", date0 );
+    dd = (*grid3d)(iLon1,iLat1,iVrt1);
+    if ( mismatch(dd, d0, 0.01) ) {
+       cerr << "Bad fcst 3D  Theta #2[" << iLon1 << "," << iLat1 << "," << iVrt1 << "] value: " 
+            << dd << " vs. " << d0 << endl;
+       exit(1);  
+    }
     delete grid3d;
     
     // test direct access

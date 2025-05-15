@@ -334,6 +334,19 @@ int main()
 
     delete grid2d;
 
+    // test a quantity that is calculated on the fly
+    d0 = 108.39;
+    grid2d = metsrc0->GetSfc( "SZA", date0 );
+    dd = (*grid2d)(iLon1,iLat1);
+    if ( mismatch(dd, d0, 0.01) ) {
+       cerr << "Bad 2D  SZA[" << iLon1 << "," << iLat1 << "] value: " 
+            << dd << " vs. " << d0 << endl;
+       cerr << "This is " << grid2d->longitude(iLon1) << ", " << grid2d->latitude(iLat1) 
+       << " on " << date0 << std::endl;
+       exit(1);  
+    }
+    delete grid2d;
+
     //*************  3D-reading tests *******************************
 
     //metsrc0->debug( 1 );
@@ -504,7 +517,14 @@ int main()
             << dd << " vs. " << d0 << endl;
        exit(1);  
     }
-
+    delete grid3d;
+    grid3d = metsrc0->Get3D( "Theta", date0 );
+    dd = (*grid3d)(iLon1,iLat1,iVrt1);
+    if ( mismatch(dd, d0, 0.01) ) {
+       cerr << "Bad 3D  Theta #2[" << iLon1 << "," << iLat1 << "," << iVrt1 << "] value: " 
+            << dd << " vs. " << d0 << endl;
+       exit(1);  
+    }
     delete grid3d;
     
     // test direct access

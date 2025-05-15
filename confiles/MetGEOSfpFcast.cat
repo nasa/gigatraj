@@ -71,9 +71,28 @@ target19:= [${RUNDATE0}];;3;0;LONFPC;LATFPC;PRSFP;${BASEURL}/inst3_3d_asm_Cp/ins
 target20:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_chm_Np/inst3_3d_chm_Np.${TAG}
 target21:= [${RUNDATE0}];;1;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_lfo_Nx/inst1_2d_lfo_Nx.${TAG}
 target22:= [${RUNDATE0}];;1;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_wwi_Nx/inst1_2d_wwi_Nx.${TAG}
+OTFtarget1:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://PressOTF/t
+OTFtarget2:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://ThetaOTF/t/P
+OTFtarget3:= [${RUNDATE1}];;3;0;LONFP;LATFP;PRSMR;OTF://ThetaDotOTF/dtdttot/P
+OTFtarget4:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://PAltOTF/P
+OTFtarget5:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://PAltDotOTF/omega/P
+OTFtarget6:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://SZAOTF/slp
 
 
 # Quantities
+# (On-The-Fly quantities)
+P: air_pressure:  3: OTFtarget1
+air_pressure: air_pressure:  3: OTFtarget1
+PAlt: pressure_altitude:  3: OTFtarget4
+pressure_altitude: pressure_altitude:  3: OTFtarget4
+PAltDot: upward_air_velocity:  3: OTFtarget5
+upward_air_velocity: upward_air_velocity:  3: OTFtarget5
+Theta: air_potential_temperature:  3: OTFtarget2
+air_potential_temperature: air_potential_temperature:  3: OTFtarget2
+ThetaDot: air_potential_temperature_time_derivative:  3: OTFtarget3
+net_heating_rate: air_potential_temperature_time_derivative:  3: OTFtarget3
+SZA: solar_zenith_angle:  2: OTFtarget6
+# (Actual MERRA2 quantities)
 airdens: moist_air_density: 3: target13|target20|target9
 albedo: surface_albedo: 2: target4
 albnirdf: surface_albedo_for_near_infrared_diffuse: 2: target4

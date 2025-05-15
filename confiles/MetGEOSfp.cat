@@ -129,15 +129,33 @@ target41:= [${START}T00:00];;3;0;LONFP;LATFP;2;${BASEURL}/inst3_2d_gas_Nx
 target42:= [${START}T01:30];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_nav_Nv
 target43:= [${START}T01:30];;3;0;LONFP;LATFP;EDGFP;${BASEURL}/tavg3_3d_lsf_Ne
 target44:= [${START}T01:30];;3;0;LONFP;LATFP;EDGFP;${BASEURL}/tavg3_3d_nav_Ne
-OTFtarget1:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF:/ThetaOTF/t/Pres
-OTFtarget2:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF:/ThetaDotOTF/dtdttot/Pres
-OTFtarget3:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF:/PAltDotOTF/omega/Pres
+OTFtarget1:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://PressOTF/t
+OTFtarget2:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://ThetaOTF/t/P
+OTFtarget3:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://ThetaDotOTF/dtdttot/P
+OTFtarget4:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://PAltOTF/P
+OTFtarget5:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://PAltDotOTF/omega/P
+OTFtarget6:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://SZAOTF/slp
+Fcst_OTFtarget1:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://PressOTF/t
+Fcst_OTFtarget2:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://ThetaOTF/t/P
+Fcst_OTFtarget3:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://ThetaDotOTF/dtdttot/P
+Fcst_OTFtarget4:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://PAltOTF/P
+Fcst_OTFtarget5:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://PAltDotOTF/omega/P
+Fcst_OTFtarget6:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://SZAOTF/slp
 #
 # Quantities
-# (On-The-Fly quantities commented out for now.)
-#PAltDot: upward_air_velocity:  3: OTFtarget3
-#Theta: air_potential_temperature:  3: OTFtarget1
-#ThetaDot: air_potential_temperature_time_derivative:  3: OTFtarget2
+# (On-The-Fly quantities)
+P: air_pressure:  3: OTFtarget1 | Fcst_OTFtarget1
+air_pressure: air_pressure:  3: OTFtarget1 | Fcst_OTFtarget1
+PAlt: pressure_altitude:  3: OTFtarget4 | Fcst_OTFtarget4
+pressure_altitude: pressure_altitude:  3: OTFtarget4 | Fcst_OTFtarget4
+PAltDot: upward_air_velocity:  3: OTFtarget5 | Fcst_OTFtarget5
+upward_air_velocity: upward_air_velocity:  3: OTFtarget5 | Fcst_OTFtarget5
+Theta: air_potential_temperature:  3: OTFtarget2 | Fcst_OTFtarget2
+air_potential_temperature: air_potential_temperature:  3: OTFtarget2 | Fcst_OTFtarget2
+ThetaDot: air_potential_temperature_time_derivative:  3: OTFtarget3 | Fcst_OTFtarget3
+net_heating_rate: air_potential_temperature_time_derivative:  3: OTFtarget3 | Fcst_OTFtarget3
+SZA: solar_zenith_angle:  2: OTFtarget6 | Fcst_OTFtarget6
+# (Actual GEOS FP quantities)
 airdens: moist_air_density:  3: target17|Fcst_target13
 albedo: surface_albedo:  2: target9|Fcst_target4
 albnirdf: surface_albedo_for_near_infrared_diffuse:  2: target9|Fcst_target4

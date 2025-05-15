@@ -88,16 +88,16 @@ target35:= [${YEAR}-${MONTH}-${DOM}T01:30];P1D;3;0;LONMR;LATMR;2;${BASEURL0}/M2T
 target36:= [${YEAR}-${MONTH}-${DOM}T00:00];P1D;3;0;LONMR;LATMR;2;${BASEURL0}/M2I3NXGAS.5.12.4/${YEAR}/${MONTH}/${RUNSET}.inst3_2d_gas_Nx.${YEAR}${MONTH}${DOM}.nc4
 target37:= [${YEAR}-${MONTH}-${DOM}T00:00];P1D;3;0;LONMR;LATMR;LEVMR;${BASEURL1}/M2I3NVCHM.5.12.4/${YEAR}/${MONTH}/${RUNSET}.inst3_3d_chm_Nv.${YEAR}${MONTH}${DOM}.nc4
 target38:= [${YEAR}-${MONTH}-${DOM}T01:30];P1D;3;0;LONMR;LATMR;EDGMR;${BASEURL1}/M2T3NENAV.5.12.4/${YEAR}/${MONTH}/${RUNSET}.tavg3_3d_nav_Ne.${YEAR}${MONTH}${DOM}.nc4
-OTFtarget1:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://PressOTF/T
-OTFtarget2:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://ThetaOTF/T/P
-OTFtarget3:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://ThetaDotOTF/DTDTTOT/P
-OTFtarget4:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://PAltOTF/P
-OTFtarget5:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://PAltDotOTF/OMEGA/P
-OTFtarget6:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://SZAOTF/SLP
+OTFtarget1:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://PressOTF/T
+OTFtarget2:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://ThetaOTF/T/P
+OTFtarget3:= [${START}T01:30];;3;0;LONFP;LATFP;PRSMR;OTF://ThetaDotOTF/DTDTTOT/P
+OTFtarget4:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://PAltOTF/P
+OTFtarget5:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://PAltDotOTF/OMEGA/P
+OTFtarget6:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://SZAOTF/SLP
 
 
 # Quantities
-# (On-The-Fly quantities commented out for now.)
+# (On-The-Fly quantities)
 P: air_pressure:  3: OTFtarget1
 air_pressure: air_pressure:  3: OTFtarget1
 PAlt: pressure_altitude:  3: OTFtarget4
@@ -109,6 +109,7 @@ air_potential_temperature: air_potential_temperature:  3: OTFtarget2
 ThetaDot: air_potential_temperature_time_derivative:  3: OTFtarget3
 net_heating_rate: air_potential_temperature_time_derivative:  3: OTFtarget3
 SZA: solar_zenith_angle:  2: OTFtarget6
+# (Actual MERRA2 quantities)
 AIRDENS: air_density: 3: target27|target37|target13
 ALBEDO: surface_albedo: 2: target4
 ALBNIRDF: surface_albedo_for_near_infrared_diffuse: 2: target4
