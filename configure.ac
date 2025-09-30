@@ -430,9 +430,6 @@ AC_ARG_ENABLE([merra],
  no)  do_merra=false ;;
  *) AC_MSG_ERROR([bad value ${enableval} for --enable-merra]) ;;
  esac], [do_merra=false])
-if test x$do_allmet = xtrue ; then
-   do_merra=true
-fi 
 AM_CONDITIONAL([MERRA], [test x$do_merra = xtrue])
 AC_SUBST([DO_MERRA],[0])
 if test x$do_merra = xtrue ; then
