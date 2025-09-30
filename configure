@@ -3588,9 +3588,6 @@ else
   do_merra=false
 fi
 
-if test x$do_allmet = xtrue ; then
-   do_merra=true
-fi
  if test x$do_merra = xtrue; then
   MERRA_TRUE=
   MERRA_FALSE='#'
