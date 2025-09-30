@@ -50,6 +50,9 @@ pkginclude_HEADERS = gigatraj.hh \
 
 # should be included in the list only once
 # but for any of these conditionals.
+if MYGEOS
+   pkginclude_HEADERS +=  MetMyGEOS.hh 
+else
 if GEOSFP
    pkginclude_HEADERS +=  MetMyGEOS.hh
 else
@@ -58,6 +61,7 @@ if MERRA2
 else
 if MERRA
    pkginclude_HEADERS +=  MetMyGEOS.hh
+endif
 endif
 endif
 endif
@@ -72,9 +76,6 @@ if GEOSFP
    pkginclude_HEADERS +=  MetGEOSfp.hh
    pkginclude_HEADERS +=  MetGEOSfpFcast.hh
    pkginclude_HEADERS +=  MetGEOSfpAssim.hh
-endif
-if MYGEOS
-   pkginclude_HEADERS +=  MetMyGEOS.hh 
 endif
    pkginclude_HEADERS +=  MetSelector.hh 
 
