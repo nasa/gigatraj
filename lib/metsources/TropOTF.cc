@@ -60,17 +60,26 @@ real TropOTF::wmo( const std::vector<real>&t, const std::vector<real>&alt, int f
      unsigned len;
      // the profile of calculated lapse rates
      std::vector<real> lapse_rate;
-     // the profile of altitudes between the given altitudes 
-     // (i.e, centers of the lapse rates)
-     std::vector<real> layer_alt;
      // the altitude of the tropopause
      real trop_alt;
      // the index in the profile that marks the tropopause
      unsigned pick;
      // whether the element was found
      bool picked;
+     // the target lapse rate
+     real target_lapse;
      // debugging
      int debug = 0;
+     // vector index
+     unsigned int i;
+     // altitudes of three points
+     real x0,x1,x2;
+     // temperatures of three points
+     real y0,y1,y2;
+     // fir parameters of y = aa + bb*x + cc*x*x;
+     real bb,cc;
+
+     debug = ( flags & 0x1) != 0;
 
      len = t.size();
      if ( len != alt.size() ) {
@@ -78,36 +87,90 @@ real TropOTF::wmo( const std::vector<real>&t, const std::vector<real>&alt, int f
         throw (badprofile());
      }   
 
-     // calculate the lapse rates along the profile     
-     for ( unsigned i=0; i<(len-1); i++ ) {
+     // calculate the lapse rates along the profile  
+     // We do this by fitting every three points to y = a + b*x + c*x*x.
+     // Then dy/dx = b + 2*c*x
+     
+     // first point
+     i = 0;
+     x0 = alt[i];
+     x1 = alt[i+1];
+     x2 = alt[i+2];
+     y0 = t[i];
+     y1 = t[i+1];
+     y2 = t[i+2];
+     bb = (((x0*x0)*(y2 - y1)) + ((x1*x1)*(y0 - y2)) + ((x2*x2)*(y1 - y0)))/((x1 - x0)*(x2 - x0)*(x2 - x1));
+     cc = (((y0 - y1)/(x1 - x0)) + ((y2 - y1)/(x2 - x1)))/(x2 - x0);
+     // Note the negative:  lapse rate = - dt/dz
+     lapse_rate.push_back( - bb - 2.0*cc*x0 );
+     
+     // middle points   
+     for ( unsigned i=1; i<(len-1); i++ ) {
          if ( alt[i] == alt[i+1] ) {
              std::cerr << "TropOTF::wmo: duplicate vertical level at " << i << " and " << i + 1 << " : " << alt[i] << std::endl; 
              throw (badprofile());
          }    
-         // (note the minus sign)
-         lapse_rate.push_back( - (t[i+1]-t[i])/(alt[i+1]-alt[i]) );
-         layer_alt.push_back( (alt[i]+alt[i+1])/2.0 );
+         x0 = alt[i-1];
+         x1 = alt[i];
+         x2 = alt[i+1];
+         y0 = t[i-1];
+         y1 = t[i];
+         y2 = t[i+1];
+         bb = (((x0*x0)*(y2 - y1)) + ((x1*x1)*(y0 - y2)) + ((x2*x2)*(y1 - y0)))/((x1 - x0)*(x2 - x0)*(x2 - x1));
+         cc = (((y0 - y1)/(x1 - x0)) + ((y2 - y1)/(x2 - x1)))/(x2 - x0);
+         lapse_rate.push_back( - bb - 2.0*cc*x1 );
+     }
+     
+     
+     // last point
+     i = len - 1;
+     x0 = alt[i-2];
+     x1 = alt[i-1];
+     x2 = alt[i];
+     y0 = t[i-2];
+     y1 = t[i-1];
+     y2 = t[i];
+     bb = (((x0*x0)*(y2 - y1)) + ((x1*x1)*(y0 - y2)) + ((x2*x2)*(y1 - y0)))/((x1 - x0)*(x2 - x0)*(x2 - x1));
+     cc = (((y0 - y1)/(x1 - x0)) + ((y2 - y1)/(x2 - x1)))/(x2 - x0);
+     lapse_rate.push_back( - bb - 2.0*cc*x2 );
+     
+     if ( debug ) {
+        std::cerr << " i   z,   t,   dtdz " << len << std::endl;
+        for ( int ix=0; ix < lapse_rate.size(); ix++ ) {
+            std::cerr << " [" << ix << "] " 
+            << alt[ix]/1000.0 << "  " << t[ix]
+            << " " << lapse_rate[ix]*1000.0 
+            << std::endl;
+            
+        }
      }
      
      // now find the lowest-in-altitude lapse rate that lies below 0.002 K/m
      // with no level within 2 km above it having a lapse rate greater 
      // than 0.002 K/m.
+     target_lapse = 0.002;
      picked = false;
      for ( unsigned i=0; 
            (i < lapse_rate.size()) && ( ! picked ) ; 
            i++ ) {
          
-         if ( lapse_rate[i] < 0.002 ) {
+         if ( lapse_rate[i] < target_lapse ) {
             // tentatively assume that this is a right level
             pick = i;
             picked = true;
+            if ( debug ) {
+               std::cerr << "  tentative level: " << alt[i]/1000.0 << std::endl;
+            }   
             for ( unsigned j=i+1; 
-                 (j < lapse_rate.size()) && ((layer_alt[j]-layer_alt[i]) < 2000.0) ; 
+                 (j < lapse_rate.size()) && ((alt[j] - alt[i]) < 2000.0) ; 
                  j++ ) {
-                if ( lapse_rate[j] > 0.002 ) {
+                if ( lapse_rate[j] > target_lapse ) {
                    // within 2 km but lapse rate > 0.002
                    // reset
                    picked = false;
+                   if ( debug ) {
+                      std::cerr << "  reset by " << alt[j] << std::endl;
+                   }
                 }   
             }
          }
@@ -116,14 +179,14 @@ real TropOTF::wmo( const std::vector<real>&t, const std::vector<real>&alt, int f
         std::cerr << "debug message here" << std::endl;
      }
      
-     if ( picked && (pick > 0 || layer_alt[pick] > 17210.4 ) ) {
+     if ( picked && (pick > 0 || alt[pick] > 17210.4 ) ) {
         // found a point.
         // find the altitude of the trop
-        trop_alt = ( 0.002 - lapse_rate[pick-1] )
+        trop_alt = ( target_lapse - lapse_rate[pick-1] )
                   / ( lapse_rate[pick] - lapse_rate[pick-1]  )
-                  * ( layer_alt[pick]-layer_alt[pick-1] ) + layer_alt[pick-1];
+                  * ( alt[pick] - alt[pick-1] ) + alt[pick-1];
         if ( debug ) {
-           std::cerr << "debug message here" << std::endl;
+           std::cerr << "found our trop alt: " << trop_alt << std::endl;
         }
      } else {
         trop_alt = 17210.4;
@@ -277,6 +340,7 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, int flags ) const
 
         // find the altitude of the tropopuase
         value = wmo( dat, alts, debug ); 
+
 
         // convert this trop alt back to the original vertical coordinates
         // but note that altitude is in m right now, so we may
@@ -436,7 +500,7 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
         alts.reserve(n);
         dat.clear();
         dat.reserve(n);
-         
+
         // convert t to SI units, assembling vectors of t and alt with no bad points
         for ( int i=0; i<n; i++ ) {
             tval = (*tp)[i];
@@ -498,7 +562,6 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
         
         // convert back to caller's units, before storing it
         *pnt =  ( value - result->mksOffset )/result->mksScale;
-
         
         delete tp;
         delete ap;

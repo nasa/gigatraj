@@ -22,6 +22,7 @@
 #include "gigatraj/gigatraj.hh"
 #include "gigatraj/MetMERRA2.hh"
 #include "gigatraj/LogLinearVinterp.hh"
+#include "gigatraj/TropOTF.hh"
 
 #include "test_utils.hh"
 
@@ -42,11 +43,13 @@ int main()
     real d0;
     double tyme, tyme2, tyme3;
     GridLatLonField3D *grid3d;
+    GridLatLonField3D *grid3d2;
     GridLatLonFieldSfc *grid2d;
     int nx,ny,nz;
     int i;
     std::string stry;
     std::string test_date;
+    TropOTF* tropo; 
 
     // the met catalog to be used
     std::string metCatalog = "MetMERRA2";
@@ -642,6 +645,71 @@ int main()
     }
     
     
+    
+    // test WMO tropopause calculations
+    
+    tropo = new TropOTF("Trop", "T", "P", "PAlt", "Theta", "rho" );
+    
+    grid3d = metsrc0->Get3D( "T", date0 );
+    grid3d2 = metsrc0->Get3D( "PAlt", date0 );
+   
+    //cerr << "Before" << endl; 
+    grid2d = static_cast<GridLatLonFieldSfc*>( tropo->wmo( *grid3d, *grid3d2 ) );
+    //cerr << "After" << endl; 
+
+    d0 = 8.00810;
+    dd = (*grid2d)(374,300);
+    //std::cout << "trop val = " << dd << endl;
+    if ( mismatch(dd, d0, 0.1) ) {
+       cerr << "Bad Trp pnt #1 (" 
+       << dd << " vs. " << d0 << endl;
+       exit(1);  
+    }
+    d0 = 12.8691;
+    dd = (*grid2d)(264,260);
+    //std::cout << "trop val = " << dd << endl;
+    if ( mismatch(dd, d0, 0.1) ) {
+       cerr << "Bad Trp pnt #2 (" 
+       << dd << " vs. " << d0 << endl;
+       exit(1);  
+    }
+    d0 = 16.3011;
+    dd = (*grid2d)(480,200);
+    //std::cout << "trop val = " << dd << endl;
+    if ( mismatch(dd, d0, 0.1) ) {
+       cerr << "Bad Trp pnt #3 (" 
+       << dd << " vs. " << d0 << endl;
+       exit(1);  
+    }
+    d0 = 16.1523;
+    dd = (*grid2d)(230,160);
+    //std::cout << "trop val = " << dd << endl;
+    if ( mismatch(dd, d0, 0.1) ) {
+       cerr << "Bad Trp pnt #4 (" 
+       << dd << " vs. " << d0 << endl;
+       exit(1);  
+    }
+    d0 = 14.9532;
+    dd = (*grid2d)(315,100);
+    //std::cout << "trop val = " << dd << endl;
+    if ( mismatch(dd, d0, 0.1) ) {
+       cerr << "Bad Trp pnt #5 (" 
+       << dd << " vs. " << d0 << endl;
+       exit(1);  
+    }
+    d0 = 8.98870;
+    dd = (*grid2d)(428,60);
+    //std::cout << "trop val = " << dd << endl;
+    if ( mismatch(dd, d0, 0.1) ) {
+       cerr << "Bad Trp pnt #6 (" 
+       << dd << " vs. " << d0 << endl;
+       exit(1);  
+    }
+    
+    delete grid2d;
+    delete grid3d2;
+    delete grid3d;
+    delete tropo;
     delete metsrc0;
     
 
