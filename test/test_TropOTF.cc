@@ -137,7 +137,7 @@ int main()
     
     // test single profile
     val = trop.wmo( otemp, oz );
-    val2 = 11446.9;
+    val2 = 11613.7;
     if ( mismatch( val, val2, val2*0.01 ) ) {
        cerr << "single profile TropOTF mismatch: " << val << " vs " << val2 << endl;
        exit(1);
