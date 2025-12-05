@@ -5,6 +5,7 @@ AC_CONFIG_SRCDIR([lib/Parcel.cc])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 
+
 AC_ARG_ENABLE([double],
 [  --enable-double	Use double-precision instead of regular floating-point numbers ],
 [case "${enableval}" in
@@ -503,6 +504,12 @@ fi
 
 
 ###### Enough with specifications. Let's start checking for stuff.
+AC_CHECK_PROG( Has_Automake, [automake], [1],[0] )
+# AS_IF([test "x$Has_Automake" = x0 ],
+AC_MSG_WARN([==== Has_automake=${Has_Automake}])
+if test "x${Has_Automake}" != "x1" ; then
+     AC_MSG_ERROR([The GNU automake tool is not installed on this system])
+fi
 
 
 #AC_MSG_WARN([CLIST_CC=${CLIST_CC}])

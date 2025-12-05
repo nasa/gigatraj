@@ -681,6 +681,7 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+Has_Automake
 NCDFLIBS
 NCDFCFLAGS
 DO_NETCDF
@@ -2980,6 +2981,7 @@ END
 fi
 
 
+
 # Check whether --enable-double was given.
 if test "${enable_double+set}" = set; then :
   enableval=$enable_double; case "${enableval}" in
@@ -3720,6 +3722,50 @@ fi
 
 
 ###### Enough with specifications. Let's start checking for stuff.
+# Extract the first word of "automake", so it can be a program name with args.
+set dummy automake; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_Has_Automake+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$Has_Automake"; then
+  ac_cv_prog_Has_Automake="$Has_Automake" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_Has_Automake="1"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_Has_Automake" && ac_cv_prog_Has_Automake="0 "
+fi
+fi
+Has_Automake=$ac_cv_prog_Has_Automake
+if test -n "$Has_Automake"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $Has_Automake" >&5
+$as_echo "$Has_Automake" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+# AS_IF([test "x$Has_Automake" = x0 ],
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ==== Has_automake=${Has_Automake}" >&5
+$as_echo "$as_me: WARNING: ==== Has_automake=${Has_Automake}" >&2;}
+if test "x${Has_Automake}" != "x1" ; then
+     as_fn_error $? "The GNU automake tool is not installed on this system" "$LINENO" 5
+fi
 
 
 #AC_MSG_WARN([CLIST_CC=${CLIST_CC}])
