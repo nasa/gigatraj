@@ -658,7 +658,7 @@ void GridFieldProfile::deserialize(std::istream& is)
        
        if ( nxzs > 0 ) {
           // read the data
-
+          clearData();
           nd = nxzs;
           dater = new real[nd];
           for ( i=0; i < nd; i++ ) {

@@ -325,7 +325,8 @@ void GridLatLonField3D::load( const realvec& indata, const int loadFlags )
    
    if ( lons.size()*lats.size()*zs.size() != indata.size() ) {
       throw(badincompatcoords());
-   }      
+   }
+   clearData();      
    nd = lons.size()*lats.size()*zs.size();
    dater = new real[nd];   
    for ( int i=0; i<nd; i++ ) {

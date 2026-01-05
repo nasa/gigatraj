@@ -248,7 +248,7 @@ void GridFieldSfc::deserialize(std::istream& is)
        // read the version
        is.read(reinterpret_cast<char *>( &version), static_cast<std::streamsize>( sizeof(int)));
           
-       // read the quantity
+       // read the surface quantity
        is.read(reinterpret_cast<char *>( &len), static_cast<std::streamsize>( sizeof(int)));
        str = "";
        if ( len >= 0 ) {

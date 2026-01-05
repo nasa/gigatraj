@@ -43,6 +43,8 @@ GridField::GridField() {
    use_array = false;
    nd = 0;
    dater = NULLPTR;
+   
+   //std::cerr << "+++ creating GridField object" << std::endl;
 
 };
 
@@ -53,7 +55,12 @@ GridField::~GridField()
     
     if ( dater != NULLPTR ) {
        delete[] dater;
+       dater = NULLPTR;
+    } else {
+    int junk1 = 10;
     }
+    //std::cerr << "--- destroying GridField object" << std::endl;
+
 };
 
 // copy constructor
@@ -79,17 +86,15 @@ GridField::GridField(const GridField& src)
     use_array = src.use_array;    
            nd = 0;
         dater = NULLPTR;
+      
+   //std::cerr << "+++ copy-constructing GridField object" << std::endl;
 
     // copy only if we have data
     if ( use_array ) {
        flushData();
-       if ( nd > 0 ) {
-          if ( dater != NULLPTR ) {
-             delete[] dater;
-          }
-       }   
        nd = src.nd;
        if ( nd > 0 ) {
+          // note thet flushDAta() call above ensures dater is a null pointer
           dater = new real[nd];
           for ( int i=0; i < nd; i++ ) {
              dater[i] = src.dater[i];
@@ -146,15 +151,14 @@ void GridField::assign( const GridField& src)
    expiration = src.expiration;
         attrs = src.attrs;
     use_array = src.use_array;    
+
     if ( use_array ) {
        flushData();
+       nd = src.nd;
        if ( nd > 0 ) {
           if ( dater != NULLPTR ) {
              delete[] dater;
           }
-       }
-       nd = src.nd;
-       if ( nd > 0 ) {
           dater = new real[nd];
           for ( int i=0; i < nd; i++ ) {
              dater[i] = src.dater[i];
@@ -167,6 +171,7 @@ void GridField::assign( const GridField& src)
             data = src.dump();
        }
        dater = NULLPTR;
+       nd = 0;
     }
 
 }
@@ -177,8 +182,8 @@ void GridField::flushData()
         if ( dater != NULLPTR ) {
            delete[] dater;
            dater = NULLPTR;
-           nd = 0;
         }
+        nd = 0;
      } else {
         data.clear();
      }
