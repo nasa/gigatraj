@@ -640,7 +640,7 @@ GridLatLonField3D* MetMyGEOS::new_directGrid3D( const std::string quantity, cons
           tmp1 = NULLPTR;
           if ( OTFquants[0] == "ThetaOTF") {
              tmp1 = dynamic_cast<GridLatLonField3D*>(gettheta.calc( *OTFcomponents3D[0], *OTFcomponents3D[1] ));
-          } else if ( OTFquants[0] == "ThetaDot") {
+          } else if ( OTFquants[0] == "ThetaDotOTF") {
              tmp1 = dynamic_cast<GridLatLonField3D*>(getthetadot.calc( *OTFcomponents3D[0], *OTFcomponents3D[1] ));
           } else if ( OTFquants[0] == "PressOTF") {
              tmp1 = dynamic_cast<GridLatLonField3D*>(getpress.calc( *OTFcomponents3D[0] ));
@@ -2784,6 +2784,36 @@ void MetMyGEOS::Source_open( bool pre, int index )
            throw(badNetcdfOpen(err));     
         }
 
+     } else {
+        // So the file is already open.
+        // But the dimensionality of the previously-read variable
+        // might not match the dimenensionality of the variable we are trying 
+        // read now.
+        
+        ok = false;
+        if ( ds[index].type != 2 ) {
+           // not of type OTF.
+           
+           if ( ds[index].dims != ds[opened_dsrc].dims ) {
+              is_open = true;
+              opened_dsrc = index;
+              opened_url = url;
+              test_dsrc = index;
+              ok =  Source_postOpen(index);
+           
+              if ( ! ok ) {
+                 Source_close();
+                 bad_index = index;
+              }
+           }
+              
+        } else {
+           if ( dbug > 5 ) {
+              std::cerr << "Cannot open " << url << " as a netcdf file" << std::endl;
+           }        
+        }
+        
+     
      }
 
 } 
@@ -2811,7 +2841,12 @@ bool MetMyGEOS::Source_postOpen( int index )
      result = true;
 
      update_hgrid();
-     update_vgrid();
+     if ( ds[index].dims != 2 ) {
+        update_vgrid();
+     } else {
+        vgrid.clear();
+        vgrid.code = "2";
+     }
      update_tgrid();
      
      trial = 0;
@@ -2922,7 +2957,7 @@ void MetMyGEOS::Source_close()
     if ( is_open ) {
        trial = 0;
        do {
-          //- std::cerr << "nc_closing url " << opened_url << std::endl;
+          // std::cerr << "nc_closing url " << opened_url << std::endl;
           err = nc_close(ncid);
           //- std::cerr << "nc_closed url" << std::endl;
        } while ( try_again( err, trial ) );   
@@ -7117,18 +7152,23 @@ bool MetMyGEOS::VGridSpec::test( const VGridSpec& cmp ) const
     
     if ( code == cmp.code ) {
        if ( quant == cmp.quant ) {
-          // note: th eunits do NOT have to be he same
+          // note: the units do NOT have to be he same
           
-          if ( nLevs == cmp.nLevs ) {
+          if ( code != "2" ) {
+             if ( nLevs == cmp.nLevs ) {
           
-             result = true;
-             
-             for ( int i = 0; i < nLevs; i++ ) {
-                 if ( ABS( levs[i] - cmp.levs[i] ) > 0.000001 ) {
-                    result = false;
-                    break;
-                 }
+                result = true;
+                
+                for ( int i = 0; i < nLevs; i++ ) {
+                    if ( ABS( levs[i] - cmp.levs[i] ) > 0.000001 ) {
+                       result = false;
+                       break;
+                    }
+                }
              }
+          } else {
+             // for 2D data, we don't need to check any vertical dimension in the file
+             result = true;
           }
        }
     }

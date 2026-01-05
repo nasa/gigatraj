@@ -101,6 +101,7 @@ MetGridData::~MetGridData()
      if ( diskcachedir != NULLPTR ) {
         delete diskcachedir;
      }   
+
 }
 
 // copy constructor
@@ -756,9 +757,10 @@ GridField3D* MetGridData::new_mgmtGrid3D( const std::string& quantity, const std
                          //  A(C) & C(B) -> A(B)
                          newgrid = vin->reProfile( *grid, *vgrid );
                          delete grid;
-                         remove( vgrid );
                          // Note: we do NOT delete vgrid, since it is now in the cache (i.e., a pointer
                          // in the cache points to that memory)!
+                         remove( vgrid );
+                         // our newgrid is now our output grid
                          grid = newgrid;             
                          if ( dbug >= 1 ) {
                             std::cerr << "MetGridData::new_mgmtGrid3D:              reProfiled to get " << grid->quantity() 

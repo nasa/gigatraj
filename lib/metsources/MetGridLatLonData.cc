@@ -1855,52 +1855,68 @@ GridFieldSfc* MetGridLatLonData::readCacheSfc( const std::string quantity, const
        gridsfc->setPgroup( my_pgroup, my_metproc );
        
        cachepath = cachefile( gridsfc );
+       
        if ( cachepath != NULLPTR ) {
+          cachelock = new FileLock;
+          //cachelock->dbug = 1;
           try {
-             cachelock = new FileLock;
              if ( dbug >= 2 ) {
                 std::cerr << "MetGridLatLonData::readCacheSfc: +++ opening cache file " << cachepath->fullpath() << std::endl;
              }
-             incache = cachelock->openr( cachepath->fullpath(), -1 );
-             if ( dbug >= 2 ) {
-                std::cerr << "MetGridLatLonData::readCacheSfc:   reading cached data from " << gridsfc->id() << std::endl;
+             int num_procs = 1;
+             if ( my_pgroup != NULLPTR ) {
+                num_procs = my_pgroup->numberOfProcessors();
              }
-             *incache >> *gridsfc;
-             // check that the data in this cache have not expired
-             expt = gridsfc->expires();
-             if ( expt == 0 || expt <= now ) {
-                // not expired
+             incache = cachelock->openr( cachepath->fullpath(), - num_procs*2 );
+             try {
+             
+                if ( dbug >= 2 ) {                                                                                                                                                            
+                   std::cerr << "MetGridLatLonData::readCacheSfc:   reading cached data from " << gridsfc->id() << std::endl;                                                                 
+                }                                                                                                                                                                             
+                *incache >> *gridsfc;                                                                                                                                                         
+             
+                // check that the data in this cache have not expired                                                                                                                         
+                expt = gridsfc->expires();                                                                                                                                                    
+                if ( expt == 0 || expt <= now ) {                                                                                                                                             
+                   // not expired                                                                                                                                                             
 
-                // hold on, though: the copy read from cache might not not have
-                // the same base time as we do. So check the calendar time
-                // to make sure it is right, and then set the model time
-                // to match ours.
-                if ( time != gridsfc->met_time() ) {
-                   std::cerr << "MetGridLatLonData::readCacheSfc: *******  mismatch of cache and model met times: " << time << " vs " << gridsfc->met_time() << " *********" << std::endl;
-                }
-                gridsfc->set_time(xtime, time);
+                   // hold on, though: the copy read from cache might not not have                                                                                                            
+                   // the same base time as we do. So check the calendar time                                                                                                                 
+                   // to make sure it is right, and then set the model time                                                                                                                   
+                   // to match ours.                                                                                                                                                          
+                   if ( time != gridsfc->met_time() ) {                                                                                                                                       
+                      std::cerr << "MetGridLatLonData::readCacheSfc: *******  mismatch of cache and model met times: " << time << " vs " << gridsfc->met_time() << " *********" << std::endl; 
+                   }                                                                                                                                                                          
+                   gridsfc->set_time(xtime, time);                                                                                                                                            
 
-                usingCache = true;
-             } else {
-                // the data have expired                   
+                   usingCache = true;                                                                                                                                                         
+                } else {                                                                                                                                                                      
+                   // the data have expired                                                                                                                                                   
+                   if ( dbug >= 2 ) {                                                                                                                                                         
+                       std::cerr << "MetGridLatLonData::readCacheSfc :  data read from cache have expired: " << expt << " vs " << now << std::endl;                                           
+                   }                                                                                                                                                                          
+                   usingCache = false;                                                                                                                                                        
+                }                                                                                                                                                                             
+             } catch (...) {
                 if ( dbug >= 2 ) {
-                    std::cerr << "MetGridLatLonData::readCacheSfc :  data read from cache have expired: " << expt << " vs " << now << std::endl;
+                   std::cerr << "MetGridLatLonData::readCache3D :  error reading cache" << std::endl;
                 }
-                usingCache = false;
+                usingCache= false;     
              }
-
              if ( dbug >= 2 ) {
                 std::cerr << "MetGridLatLonData::readCacheSfc:   closing read cache file" << std::endl;
              }
              cachelock->closer(incache);
-             delete cachelock;
-             delete cachepath;
           } catch (...) {
              if ( dbug >= 2 ) {
                 std::cerr << "MetGridLatLonData::readCacheSfc:   no cache to read" << std::endl;
              }
              usingCache= false;     
           }
+          
+          delete cachelock;
+          delete cachepath;
+       
        } else {
           usingCache= false;
        } 
@@ -1911,9 +1927,7 @@ GridFieldSfc* MetGridLatLonData::readCacheSfc( const std::string quantity, const
           gridsfc = NULLPTR;
        }   
 
-    } else {
-       usingCache= false;
-    } 
+    }
 
     return gridsfc;
 
