@@ -312,7 +312,11 @@ int main( int argc, char * const argv[] )
     int debug;
     // delay before each url open
     int delay = 0;
- 
+    // reasonably near-surface value of the vertical coordinate
+    real sfc_val;
+    // names of the pressure and potnetial temperature quantities in the met data set
+    std::string p_name, theta_name;
+    
     // we assume all will go well (until it doesn't)    
     status = 0;
 
@@ -415,6 +419,17 @@ int main( int argc, char * const argv[] )
           vertical = metsource->vertical();
        }
        vertunits = metsource->vunits();
+       
+       metsource->getOption("PressureName", p_name );
+       metsource->getOption("PotentialTemperatureName", theta_name );
+       
+       if ( vertical == p_name ) {
+          sfc_val = 1000.0;
+       } else if ( vertical == theta_name ) {
+          sfc_val = 280.0;
+       } else {
+          sfc_val = 0.0;
+       }
 
        if (verbose) {
           cerr << " using " << src << " for met data" << endl;
@@ -527,7 +542,7 @@ int main( int argc, char * const argv[] )
 
                   // read a single data point of this quantity at this time,
                   // at the equator, prime meridian and surface.
-                  junk = metsource->getData( *q, time, 0.0, 0.0, 0.0 );
+                  junk = metsource->getData( *q, time, 0.0, 0.0, sfc_val );
               }
               if (verbose) {
                  cout << endl;
@@ -535,9 +550,10 @@ int main( int argc, char * const argv[] )
               }
           }
           
-          // All done.  Destroy the data source object.
-          delete metsource;
        }
+
+       // All done.  Destroy the data source object.
+       delete metsource;
     }   
     
     // Leave.
