@@ -69,7 +69,7 @@ FilePath& FilePath::operator=(const FilePath& src)
        return *this;
     }
     
-    topmost = src.topmost;
+    topmost.assign( src.topmost );
     parts = src.parts;
     
     return *this;
@@ -374,8 +374,8 @@ void FilePath::append( const std::string item )
        // and store it
        parts.push_back(xtract);
     
-       // drop the part of the inpout that we have just extracted
-       tmp = tmp.substr(pos+1);
+       // drop the part of the input that we have just extracted
+       tmp = tmp.substr(pos + 1);
        
     }
     // is anything left of the input after our scanning
