@@ -126,6 +126,8 @@ void GridField3D::set_vertical( const std::string vq )
    vquant = vq;
    mksVScale = 1.0;
    mksVOffset = 0.0;
+   
+   zs.set_quantity(vq);
 }
 
 std::string GridField3D::vunits(real *scale, real*offset) const
@@ -145,6 +147,8 @@ void GridField3D::set_vunits( const std::string vu, real scale, real offset )
    vuu = vu;
    mksVScale = scale;
    mksVOffset = offset;
+   
+   zs.set_units( vu, scale, offset );
 }         
 
 void GridField3D::setPgroup( ProcessGrp* pg, int met)
