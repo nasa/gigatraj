@@ -224,7 +224,7 @@ class MetData {
 
      /// clears the Met source from tracing on an iso-surface of the vertical coordinate
      /*! This method clears the internal flag that indicates that the vertical wind
-         is defined as zero. Consequently, the vertical wind native ot the data source is
+         is defined as zero. Consequently, the vertical wind native to the data source is
          used instead.
      */
      void clearIsoVertical();
@@ -474,6 +474,10 @@ class MetData {
 
      /// returns the name of the vertical coordinate in this met data source
      /*! This method returns the name (and optionally the units) of the vertical coordinate in this data source.
+         This is not necessarily the vertical coordinate that is native to the data source,
+         but the one that is actually used for tracing parcels' trajectories. 
+         (Any conversions between any native coordinates and the parcel-tracing
+         coordinate are done internally to the class/subclass.) 
      
          \param units (output) if not NULL, a pointer to a string in which are returned the units of the quantity
          
@@ -496,6 +500,17 @@ class MetData {
           \param units the units of the desired vertical coordinate
       */
       virtual void set_vertical( const std::string quantity, const std::string units ) 
+      {
+          throw (badnotimplemented());
+      }
+      
+      /// returns whether the vertical coordinate increases or decreases with altitude
+      /*! The method returns whether the current vertical coordinate increases or decreases with altitude.
+      
+           \return +1 if the vertical coordinate increases, -1 if it decreases.
+      
+      */
+      virtual int vIncrease() const
       {
           throw (badnotimplemented());
       }
@@ -559,7 +574,7 @@ class MetData {
           to follow.
           
           \param quantity the quantity whose units are desired
-          \param time the model time for which data is valid. (This is used if a data file has ot be read in order to determine the units)
+          \param time the model time for which data is valid. (This is used if a data file has to be read in order to determine the units)
           \param flags flag values:
                   METDATA_MKS = return the units of the quantity if converted to MKS units
                   METDATA_FAILBAD =(ignored)
@@ -905,7 +920,7 @@ class MetData {
       /// match the vertical coordinates
       real wfctr;
 
-      /// holds the name of a config file with settings that vcan be read in
+      /// holds the name of a config file with settings that can be read in
       std::string cfgFile;
 
 
