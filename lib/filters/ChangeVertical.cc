@@ -329,3 +329,24 @@ void ChangeVertical :: apply( Flock& p )
     }    
 
 };
+
+void ChangeVertical :: apply( Swarm& p )
+{
+    Swarm::iterator iter;
+    int n;
+    Parcel px;
+    
+    n = p.size();
+    
+    if ( n <= 0 ) {
+       throw (ParcelFilter::badparcelnum());
+    };  
+  
+
+    for ( iter = p.begin(); iter != p.end(); iter++ ) {
+        px = *iter;
+        apply( px );
+        *iter = px;
+    }    
+
+};

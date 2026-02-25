@@ -6,6 +6,7 @@
 #include "gigatraj/ParcelFilter.hh"
 #include "gigatraj/MetData.hh"
 #include "gigatraj/Flock.hh"
+#include "gigatraj/Swarm.hh"
 
 namespace gigatraj {
 
@@ -155,6 +156,14 @@ class ChangeVertical : public ParcelFilter {
            
       */
       void apply( Flock& p ); 
+
+      /// apply the ChangeVertical filter to  a Swarm of parcels
+      /*! This method applies the ChangeVertical filter to a Swarm of Parcels.
+      
+          \param p the Swarm of Parcel objects to to which the ChangeVertical filter is to be applied
+           
+      */
+      void apply( Swarm& p ); 
 
 
     private:
