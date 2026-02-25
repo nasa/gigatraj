@@ -46,6 +46,15 @@ MetGridData::MetGridData() : MetData()
       wind_ns_name = "northward_wind";
       //  vertical wind
       wind_vert_name = "upward_air_velocity";
+      // other quantities
+      pressure_name = "p";
+      altitude_name = "alt";
+      palt_name = "PAlt";
+      pottemp_name = "Theta";
+      pressureDot_name = "omega";
+      altDot_name = "w";
+      paltDot_name = "PAltDot";
+      thetaDot_name = "ThetaDot";
       
       us = new MetCache3D(wind_vert_name, maxsnaps);
       vs = new MetCache3D(wind_ew_name, maxsnaps);
@@ -203,6 +212,22 @@ void MetGridData::setOption( const std::string &name, const std::string &value )
         if ( str2int( value, &ival ) ) {
            set_thinning( tmp, ival );
         }   
+    } else if ( name == "PressureName" ) {
+        pressure_name = value;
+    } else if ( name == "AltitudeName" ) {
+        altitude_name = value;
+    } else if ( name == "PressureAltitudeName" ) {
+        palt_name = value;
+    } else if ( name == "PotentialTemperatureName" ) {
+        pottemp_name = value;
+    } else if ( name == "PressureDotName" ) {
+        pressureDot_name = value;
+    } else if ( name == "AltitudeDotName" ) {
+        altDot_name = value;
+    } else if ( name == "PressureAltitudeDotName" ) {
+        paltDot_name = value;
+    } else if ( name == "PotentialTemperatureDotName" ) {
+        thetaDot_name = value;
     } else {
         MetData::setOption( name, value ); 
     }
@@ -243,8 +268,32 @@ bool MetGridData::getOption( const std::string &name, std::string &value )
     } else if ( name == "HorizontalGridOffset" ) {
         (void) thinning(&ival);
         result = int2str( ival, value );
+    } else if ( name == "PressureName" ) {
+        value = pressure_name;
+        result = true;
+    } else if ( name == "AltitudeName" ) {
+        value = altitude_name;
+        result = true;
+    } else if ( name == "PressureAltitudeName" ) {
+        value = palt_name;
+        result = true;
+    } else if ( name == "PotentialTemperatureName" ) {
+        value = pottemp_name;
+        result = true;
+    } else if ( name == "PressureDotName" ) {
+        value = pressureDot_name;
+        result = true;
+    } else if ( name == "AltitudeDotName" ) {
+        value = altDot_name;
+        result = true;
+    } else if ( name == "PressureAltitudeDotName" ) {
+        value = paltDot_name;
+        result = true;
+    } else if ( name == "PotentialTemperatureDotName" ) {
+        value = thetaDot_name;
+        result = true;
     } else {
-       result = MetData::getOption( name, value ); 
+        result = MetData::getOption( name, value ); 
     }
      
     return result;
