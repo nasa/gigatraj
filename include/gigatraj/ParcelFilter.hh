@@ -76,6 +76,46 @@ class ParcelFilter {
       virtual void apply( Parcel * const p, const int n ) = 0; 
 
 
+      /// Virtual method for applying applying the filter to a vector of Parcels
+      /*! Apply the filter to a vector of parcels
+      
+      \param p the vector of Parcel objects to which the filter is to be applied
+    
+      */
+      virtual void apply( std::vector<Parcel>& p ) = 0; 
+
+      /// Virtual method for applying applying the filter to a list of Parcels
+      /*! Apply the filter to a list of parcels
+      
+      \param p the list of Parcel objects to which the filter is to be applied
+    
+      */
+      virtual void apply( std::list<Parcel>& p ) = 0; 
+
+      /// Virtual method for applying applying the filter to a deque of Parcels
+      /*! Apply the filter to a deque of parcels
+      
+      \param p the deque of Parcel objects to which the filter is to be applied
+    
+      */
+      virtual void apply( std::deque<Parcel>& p ) = 0; 
+
+      /// Virtual method for applying applying the filter to a Flock of Parcels
+      /*! Apply the filter to a Flock of parcels
+      
+      \param p the Flock of Parcel objects to which the filter is to be applied
+    
+      */
+      virtual void apply( Flock& p ) = 0; 
+
+      /// Virtual method for applying applying the filter to a Swarm of Parcels
+      /*! Apply the filter to a Swarm of parcels
+      
+      \param p the Swarm of Parcel objects to which the filter is to be applied
+    
+      */
+      virtual void apply( Swarm& p ) = 0; 
+
 
 };
 
