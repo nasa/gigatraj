@@ -219,6 +219,11 @@ if NETCDF
    # EXTRA_DIST += test_netcdfIn_data_01.nc4
 endif
 
+
+TESTS += test_Filter_Trop
+check_PROGRAMS += test_Filter_Trop
+
+
 TESTS += test_traj000 test_traj001 test_traj010
 check_PROGRAMS += test_traj000 test_traj001 test_traj010
 EXTRA_DIST += test_traj001.dat
@@ -454,6 +459,9 @@ test_PGenDisc_DEPENDENCIES = ../lib/libgigatraj.a
 
 test_PGenFile_SOURCES = test_PGenFile.cc test_utils.cc test_utils.hh
 test_PGenFile_DEPENDENCIES = ../lib/libgigatraj.a
+
+test_Filter_Trop_SOURCES = test_Filter_Trop.cc test_utils.cc test_utils.hh
+test_Filter_Trop_DEPENDENCIES = ../lib/libgigatraj.a
 
 test_traj000_SOURCES = test_traj000.cc test_utils.cc test_utils.hh
 test_traj000_DEPENDENCIES = ../lib/libgigatraj.a
