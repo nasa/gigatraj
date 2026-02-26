@@ -47,6 +47,13 @@ MetSBRot::MetSBRot() : MetData()
    testBool = false;
    testString = "test string";
 
+   wmo_trop.setTropName("trop");
+   wmo_trop.setTemperatureName("t");
+   wmo_trop.setPressureName("p");
+   wmo_trop.setAltitudeName("PAlt");
+   wmo_trop.setPotentialTemperatureName("Theta");
+   wmo_trop.setDensityName("rho");
+
 };
 
 MetSBRot::MetSBRot(real windspeed, ProcessGrp* pg, int met) : MetData() 
@@ -72,6 +79,13 @@ MetSBRot::MetSBRot(real windspeed, ProcessGrp* pg, int met) : MetData()
    testDouble = 981.0;
    testBool = false;
    testString = "test string";
+
+   wmo_trop.setTropName("trop");
+   wmo_trop.setTemperatureName("t");
+   wmo_trop.setPressureName("p");
+   wmo_trop.setAltitudeName("PAlt");
+   wmo_trop.setPotentialTemperatureName("Theta");
+   wmo_trop.setDensityName("rho");
 
 };
 
@@ -101,6 +115,13 @@ MetSBRot::MetSBRot(real windspeed, real tilt, ProcessGrp* pg, int met) : MetData
    testBool = false;
    testString = "test string";
 
+   wmo_trop.setTropName("trop");
+   wmo_trop.setTemperatureName("t");
+   wmo_trop.setPressureName("p");
+   wmo_trop.setAltitudeName("PAlt");
+   wmo_trop.setPotentialTemperatureName("Theta");
+   wmo_trop.setDensityName("rho");
+
 };
 
 MetSBRot::MetSBRot(real windspeed, real alpha, real beta, real gamma, ProcessGrp* pg, int met) : MetData() 
@@ -125,6 +146,13 @@ MetSBRot::MetSBRot(real windspeed, real alpha, real beta, real gamma, ProcessGrp
    testDouble = 981.0;
    testBool = false;
    testString = "test string";
+
+   wmo_trop.setTropName("trop");
+   wmo_trop.setTemperatureName("t");
+   wmo_trop.setPressureName("p");
+   wmo_trop.setAltitudeName("PAlt");
+   wmo_trop.setPotentialTemperatureName("Theta");
+   wmo_trop.setDensityName("rho");
 
 };
 
@@ -157,6 +185,8 @@ void MetSBRot::assign(const MetSBRot& src)
      testDouble = src.testDouble;
      testBool = src.testBool;
      testString = src.testString;
+
+     wmo_trop = src.wmo_trop;
      
 }
 
@@ -443,6 +473,11 @@ std::string MetSBRot::vunits() const
     return "km";   
 }
 
+int MetSBRot::vIncrease() const
+{
+     return 1;
+}
+
 void MetSBRot::get_uvw( double time, real lon, real lat, real z
 , real *u, real *v, real *w)
 {
@@ -662,6 +697,33 @@ real MetSBRot::getData( string quantity, double time, real lon, real lat, real z
       if ( flags & METDATA_MKS ) {
          dat = dat * 0.10;
       }   
+   } else if ( quantity == "tropz" )
+   {         
+        std::vector<real> z_profile;
+        std::vector<real> t_profile;
+        real val;
+        
+        real z_std[] = {
+           0.00000, 1.00000, 2.00000, 3.00000, 4.00000, 5.00000
+         , 6.00000, 7.00000, 8.00000, 9.00000, 10.0000, 11.0000
+         , 12.0000, 13.0000, 14.0000, 15.0000, 16.0000, 17.0000
+         , 18.0000, 19.0000, 20.0000, 21.0000, 22.0000, 23.0000 };
+        
+        real t_std[] = {
+           288.150, 281.650, 275.150, 268.650, 262.150, 255.650
+         , 249.150, 242.650, 236.150, 229.650, 223.150, 216.650
+         , 216.650, 216.650, 216.650, 216.650, 216.650, 216.650
+         , 216.650, 216.650, 216.650, 217.650, 218.650, 219.650 };
+         
+         for ( int i=0; i<24; i++ ) {
+             z_profile.push_back( z_std[i]*1000.0 );
+             t_profile.push_back( t_std[i] );
+         }
+         
+         // tropopause height is returned in m
+         // The vertical coordinate is always alt in km. 
+         dat = wmo_trop.wmo( t_profile, z_profile )/1000.0;
+                       
    } else if ( quantity == "alt" )
    {         
       

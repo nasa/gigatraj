@@ -6,6 +6,7 @@
 #include "gigatraj/gigatraj.hh"
 #include "gigatraj/CalGregorian.hh"
 #include "gigatraj/MetData.hh"
+#include "gigatraj/TropOTF.hh"
 
 namespace gigatraj {
 
@@ -298,6 +299,13 @@ class MetSBRot : public MetData {
       */
       std::string vunits() const;
 
+      /// returns whether the vertical coordinate increases or decreases with altitude
+      /*! The method returns whether the current vertical coordinate increases or decreases with altitude.
+      
+           \return +1 if the vertical coordinate increases, -1 if it decreases.
+      
+      */
+      int vIncrease() const;
 
 
      /// obtain the values of all three wind components at a given point, in m/s
@@ -613,6 +621,8 @@ class MetSBRot : public MetData {
       bool   testBool;
       /// unusad string for testing getOption() and setOption()
       std::string testString;
+      /// finds the WMO tropopause
+      TropOTF wmo_trop;
            
 };
 }
