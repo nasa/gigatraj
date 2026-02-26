@@ -1,5 +1,5 @@
 #ifndef GIGATRAJ_TROPOTF_H
-#define GIGATRAJ_TROPAOTF_H
+#define GIGATRAJ_TROPOTF_H
 
 #include <string>
 #include <vector>
@@ -39,6 +39,20 @@ i the form desired.  But it can
 also profitably be used by end-users who wish to compare the results of
 different data sources using consistent tropopause definitions.
 
+The tropopause here is calculated in terms of altitude.
+The temperature data is usually given on surfaces of either 
+log-pressure altitude, pressure, pressure altitude,
+or potential temperature. Whichever is used as the temperature vertical
+coordinate, it is converted to altitude first. then the tropopause 
+altitude is calculated, and then it is converted to the temperature
+vertical coordinate. In many cases, though, we want the tropopause to remain
+as altitude--for example, if we are filtering Parcels based on how far they are from the 
+tropopause, then it makes little sense to convert the calculated tropopause to 
+the parcels' vertical coordinate, only to convert it back to altitude again.
+So this class has a flag that can be set to return avoid the final conversion, so
+that the returned values are all altitudes in km.
+
+
 Note that the calc() methods of this class take fields of the
 GridField3D virtual classes as input parameters and produce a new
 GridFieldSfc object as output.  Objects of any single subclass 
@@ -75,9 +89,10 @@ class TropOTF : public MetOnTheFly {
              \param pressure the name of the pressure quantity
              \param altitude the name of the altitude quantity
              \param theta the name of the potential temperature quantity
-             \param density the name of the desnity quantity
+             \param density the name of the density quantity
+             \param tkind the kind of quantity the tropopause is: 0=native coordinates, 1=pressure altitude
          */
-         TropOTF(std::string trop, std::string temperature, std::string pressure, std::string altitude, std::string theta, std::string density );
+         TropOTF(std::string trop, std::string temperature, std::string pressure, std::string altitude, std::string theta, std::string density, int tkind=0 );
          
          /// destructor
          /*! This is the class destructor
@@ -175,9 +190,9 @@ class TropOTF : public MetOnTheFly {
          */   
          GridFieldSfc* wmo( const GridField3D& t, int flags=0 ) const;
 
-        /// finds the WMO tropopause from a fields of temperature and an altitude-like coordinate 
+        /// finds the WMO tropopause from a fields of temperature and an altitude coordinate 
          /*! This function calculates the WMO tropopause from 3D fields of temperature and 
-             an altitude-like coordinate (altitude, pressure, potential temperature, or density).
+             an altitude coordinate (geometric altitude, log-pressure altitude, pressure altitude, geopotential height, etc.).
          
             \return a pointer to a new GridFieldSfc object containing the tropopause location,
             in terms of the physical quantity of the input \p alt grid, and
@@ -186,8 +201,7 @@ class TropOTF : public MetOnTheFly {
 
 
             \param t a GridField3D field of air temperatures
-            \param alt a GridField3D field of an altitude-like quantity.
-                   This may be altitude, pressure, potential temperature, or density.
+            \param alt a GridField3D field of an altitude quantity.
             \param flags OTF_* flags to to affect the calculation results
          */   
          GridFieldSfc* wmo( const GridField3D& t, const GridField3D& alt, int flags=0) const;
@@ -198,6 +212,8 @@ class TropOTF : public MetOnTheFly {
      
         /// the name of the tropopause
         std::string sfc;
+        /// the coordinate type of the tropopause: 0=pressure, 1=altitude
+        int tropkind;
         /// the name of the pressure quantity
         std::string pname;
         /// the name of the temperature quantity

@@ -27,6 +27,7 @@ TropOTF::TropOTF()
 {
    sfc = "tropopause";
    quant = "tropopause_air_pressure";
+   tropkind = 0;
    uu = "mb";
    pname = "air_pressure";
    tname = "air_temperature";
@@ -35,11 +36,12 @@ TropOTF::TropOTF()
    dname = "air_density";
 
 }
-TropOTF::TropOTF(std::string trop, std::string temperature, std::string pressure, std::string altitude, std::string theta, std::string density )
+TropOTF::TropOTF(std::string trop, std::string temperature, std::string pressure, std::string altitude, std::string theta, std::string density, int tkind )
 {
    // the quantity and units are ignored in the calculation methods.
    quant = "tropopause_air_pressure";
    uu = "mb";
+   tropkind = tkind;
    
    sfc = trop;
    pname = pressure;
@@ -201,13 +203,15 @@ real TropOTF::wmo( const std::vector<real>&t, const std::vector<real>&alt, int f
 GridFieldSfc* TropOTF::wmo( const GridField3D& t, int flags ) const
 {
     // the output tropopause field
-    GridFieldSfc* result;
+    GridFieldSfc* tropsfc;
     // iterator over the output grid points
     GridFieldSfc::iterator pnt;
     // iterator over the input grid vertical profiles
     GridField3D::const_profileIterator prof;
     // vector of vertical coordinates from the input grid
-    std::vector<real> rawalts;
+    std::vector<real> rawvrt;
+    // vector of vertical coordinates for usable points from the profile
+    std::vector<real> vrt;
     // length of the input vertical coordinates
     int n;
     // vertical profile of temperatures, as extracted from the input grid, 
@@ -221,6 +225,8 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, int flags ) const
     real value;
     // temperature at a given vertical level
     real tval;
+    // vertical coordinate at a given level
+    real vval;
     // bad-or-missing fill value
     real tbad;
     // indicates what kind of vertical coordinates we are using
@@ -229,65 +235,68 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, int flags ) const
     int debug = 0;
     // MKS vertical units
     std::string vu;
+    // vertical coordinate of the input quantity
+    std::string vcoordname;
 
 
     // the input quantity must be temperature
     if ( t.quantity() != tname ) {
        throw (badprofile());
     }   
+    tbad = t.fillval(); 
+    vcoordname = t.vertical();
 
-    // Extract a surface from the input field.
-    // This ensures that the output has the same horizontal grid as the input.
-    result = t.extractSurface(0);
-    // Set the metadata.
-    // We return the tropopause in terms of the vertical coordinate of t, in the same units
-    result->set_quantity(t.vertical());
-    result->set_units(t.vunits());
-    result->mksScale=t.mksVScale;
-    result->mksOffset=t.mksVOffset;
-    result->set_surface( sfc );
+    // get the vertical coordinate, and scale it to SI units
+    rawvrt = t.levels();
+    // note its length as well
+    n = rawvrt.size();
+    // convert to SI units
+    for ( int i=0; i<n; i++ ) {
+        rawvrt[i] = rawvrt[i]*t.mksVScale + t.mksVOffset;
+    }    
 
     // we can calculate the trop only for these vertical coords
-    if ( t.vertical() == aname ) {
+    if ( vcoordname == aname ) {
        // altitude
        vcoord = 0;
-    } else if ( t.vertical() == pname ) {
+    } else if ( vcoordname == pname ) {
        // pressure
        vcoord = 1;
-    } else if ( t.vertical() == hname ) {
+    } else if ( vcoordname == hname ) {
        // potential temperature
        vcoord = 2;
-    } else if ( t.vertical() == dname ) {
+    } else if ( vcoordname == dname ) {
        // density
        vcoord = 3;
     } else {
         throw (badprofile());
     } 
-    
-    
-    tbad = t.fillval(); 
 
-    // get the vertical coordinate, and scale it to SI units
-    rawalts = t.levels();
-    // note its length as well
-    n = rawalts.size();
-    // convert to SI units
-    for ( int i=0; i<n; i++ ) {
-        rawalts[i] = rawalts[i]*t.mksVScale + t.mksVOffset;
-    }    
-
-    // Do this here, to save a little time
-    // Otherwise, we will be repeating this same calculation 
-    // in every iteration of the profile loop below.
-    if ( vcoord == 1 ) {   
-       // convert pressures to log-P altitudes  
-       for ( int i=0; i<n; i++ ) {
-           rawalts[i] = 7000.0*LOG(100000.0/rawalts[i]);
-       }    
+    // Extract a surface from the input field.
+    // This ensures that the output has the same horizontal grid as the input.
+    tropsfc = t.extractSurface(0);
+    // Set the metadata.
+    if ( tropkind == 0 ) {
+       // We return the tropopause in terms of the vertical coordinate of t, in the same units
+       tropsfc->set_quantity(t.vertical());
+       tropsfc->set_units(t.vunits());
+       tropsfc->mksScale=t.mksVScale;
+       tropsfc->mksOffset=t.mksVOffset;
+       tropsfc->set_surface( "trop" );
+    } else {
+       // We return the tropopause as calculated, in altitude [km]
+       tropsfc->set_quantity("alt");
+       tropsfc->set_units("km");
+       tropsfc->mksScale=100.0;
+       tropsfc->mksOffset=0.0;
+       tropsfc->set_surface( "trop" );    
     }
+    
+    
+
 
     // for each horizontal gridpoint...
-    for ( prof  = t.profileBegin(), pnt = result->begin(); 
+    for ( prof  = t.profileBegin(), pnt = tropsfc->begin(); 
           prof != t.profileEnd(); 
           prof++, pnt++ ) {
 
@@ -296,82 +305,109 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, int flags ) const
         alts.reserve(n);
         dat.clear();
         dat.reserve(n);
+        vrt.clear();
+        vrt.reserve(n);
          
         // extract the temperature profile
         tp = *prof;
         // assemble vectors of T and alt with no bad points
-        for ( int i=0; i<n; i++ ) {
+        // 'i' is the index into the source vertical profile
+        // 'j' is the index into the dat/alts profile
+        int i, j;
+        for ( i=0, j=0; i<n; i++, j++ ) {
+            // we skip past bad-data points
             if ( (*tp)[i] != tbad ) {
               
+               // get the tmeperature in Kelvin
                tval = ((*tp)[i]*t.mksScale+t.mksOffset); 
+               // and whatever vertical coordinate we are using
+               vval = rawvrt[i];
+               // save it
                dat.push_back( tval );
+               vrt.push_back( vval );
                
-               /* note: in some of these cases, we generate a fake
-                  log-pressure altitude.  This is OK, since
-                  we will be using it to convert back to the
-                  original vertical coordinate once we have the
-                  tropopause.
-               */   
                switch (vcoord) {
                case 0: // altitude
-                  value = rawalts[i]; 
+                  value = vval; 
                   break;
-               case 1: // pressure   
-                  value = rawalts[i];  // (see note above)
+               case 1: // pressure
+                  // we integrate the temperature and pressure to get geopotential height
+                  if ( j > 0 ) {   
+                     real dlogp = LOG(vval) - LOG(vrt[j - 1]);
+                     real tavg = (tval + dat[ j - 1])/2.0;
+                     value = alts[j - 1] - 287.04/9.81*tavg*dlogp;
+                  } else {
+                     value = 0.0;
+                  }
                   break;
                case 2: // theta   
-                  // convert theta to fake altitude, given temperature
-                  //  given z=H*ln(p0/p), and theta = t*(p0/p)^kappa,
-                  //  we want: z = -1/kappa * H * ln( theta/t )
-                  value = (7./2.)*7000.0 * LOG( rawalts[i]/tval );
+                  // we integrate the temperature and theta to get geopotential height
+                  if ( j > 0 ) {   
+                     real dlogtheta = LOG(vval) - LOG(vrt[j - 1]);
+                     real dlogt = LOG(tval) - LOG(dat[j - 1]);
+                     real tavg = (tval + dat[ j - 1])/2.0;
+                     value = alts[j - 1] - 287.04/9.81/(2./7.)*tavg*(dlogt - dlogtheta);
+                  } else {
+                     value = 0.0;
+                  }
                   break;
                case 3: // density   
-                  // convert density to fake altitude, given temperature
-                  //  given z=H*ln(p0/p), and p = rho*R*t,
-                  //  we want: z = H * ln( p0/(rho*r*t) )
-                  value = 7000.0*LOG(100000.0/(rawalts[i]*287.04*tval) );
+                  // we integrate the density to get geopotential height
+                  if ( j > 0 ) {   
+                     real dlogrho = LOG(vval) - LOG(vrt[j - 1]);
+                     real dlogt = LOG(dat[j]) - LOG(dat[j - 1]);
+                     real tavg = (tval + dat[ j - 1])/2.0;
+                     value = alts[j - 1] - 287.04/9.81*tavg*(dlogrho + dlogt);
+                  } else {
+                     value = 0.0;
+                  }
                   break;
                } 
                
                alts.push_back( value ); 
-               
+              
             }    
         }
 
-        // find the altitude of the tropopuase
+        // find the altitude of the tropopause
         value = wmo( dat, alts, debug ); 
 
-
-        // convert this trop alt back to the original vertical coordinates
-        // but note that altitude is in m right now, so we may
-        // want to convert it
-        switch (vcoord) {
-        case 0: // altitude
-           // no physical quantity conversion
-           break;
-        case 1: // pressure   
-           // convert back to pressure
-           value = 100000.0*EXP( - value/7000.0 );
-           break;
-        case 2: // theta   
-           // "value" is in altitude.  find the temperature at this altitude
-           tval = intrp( value, alts, dat );
-           // use the temp to convert altitude back to theta
-           value = tval * EXP( (2./7.)*value/7000.0 );
-           break;
-        case 3: // density   
-           // "value" is in altitude.  find the temperature at this altitude
-           tval = intrp( value, alts, dat );
-           // convert altitude to density
-           value = 100000.0*EXP( - value/7000.0 )/287.04/tval;
-           break;        
+        if ( tropkind == 0 ) {
+           // convert this trop alt back to the original vertical coordinates
+           // but note that altitude is in m right now, so we may
+           // want to convert it
+           if ( vcoord != 0 ) {
+              // not an altitude
+              
+              // find the input altitudes that straddle the tropopause
+              real vc = NAN;
+              for ( int i=1; i < vrt.size(); i++ ) {
+                  if ( ((alts[i-1] <= value) && (alts[i]   >= value) )
+                    || ((alts[i]   <= value) && (alts[i-1] >= value)) ) {
+                     // got it
+                     // now interpolate in log coordinates
+                     vc = ( value - alts[i-1] )/(alts[i] - alts[i-1])*( LOG(vrt[i]) - LOG(vrt[i-1]) ) + LOG(vrt[i-1]);
+                     break;
+                  }
+              }
+              if ( FINITE(vc) ) {
+                 value = EXP(vc);
+              } else {
+                 value = vc;
+              }   
+           }              
+           
+           if ( FINITE(value) ) {
+              // convert back to caller's units, before storing it
+              value =  ( value - tropsfc->mksOffset )/tropsfc->mksScale;
+           }
+           *pnt = value;
+        } else {
+           // keep it in m
+           *pnt = value;
         }
-
         
-        // convert back to caller's units, before storing it
-        *pnt =  ( value - result->mksOffset )/result->mksScale;
-
-        
+        // get ready for the next vertical profile
         delete tp;
 
     }
@@ -393,11 +429,11 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, int flags ) const
           vu = "kg/m^3";
           break;        
        }
+       tropsfc->transform(vu, 1.0/tropsfc->mksScale, - tropsfc->mksOffset );
     
-       result->transform( vu );
     }    
 
-    return result;
+    return tropsfc;
 }
 
 
@@ -406,7 +442,7 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, int flags ) const
 GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int flags) const
 {
     // the output tropopause field
-    GridFieldSfc* result;
+    GridFieldSfc* tropsfc;
     // iterator over the output grid points
     GridFieldSfc::iterator pnt;
     // iterators over the input grid vertical profiles
@@ -455,38 +491,22 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
        throw (badprofile());
     }  
     
-    // we can calculate the trop only for these vertical coords
-    if ( alt.quantity() == aname ) {
-       // altitude
-       vcoord = 0;
-    } else if ( alt.quantity() == pname ) {
-       // pressure
-       vcoord = 1;
-    } else if ( alt.quantity() == hname ) {
-       // potential temperature
-       vcoord = 2;
-    } else if ( alt.quantity() == dname ) {
-       // density
-       vcoord = 3;
-    } else {
-        throw (badprofile());
-    } 
 
     // Extract a surface from the input field.
     // This ensures that the output has the same horizontal grid as the input.
-    result = t.extractSurface(0);
+    tropsfc = t.extractSurface(0);
     // We return the tropopause in terms of the alt variable, in the same units
-    result->set_quantity(alt.quantity());
-    result->set_units(alt.units());
-    result->mksScale=alt.mksScale;
-    result->mksOffset=alt.mksOffset;
-    result->set_surface( sfc );
+    tropsfc->set_quantity(alt.quantity());
+    tropsfc->set_units(alt.units());
+    tropsfc->mksScale=alt.mksScale;
+    tropsfc->mksOffset=alt.mksOffset;
+    tropsfc->set_surface( sfc );
 
     tbad = t.fillval(); 
     abad = alt.fillval();
 
     // for each horizontal gridpoint...
-    for (prof=t.profileBegin(), aprof=alt.profileBegin(), pnt=result->begin(); 
+    for (prof=t.profileBegin(), aprof=alt.profileBegin(), pnt=tropsfc->begin(); 
          prof!=t.profileEnd(); 
          prof++, aprof++, pnt++ ) {
 
@@ -508,26 +528,6 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
             if ( tval != tbad  && aval != abad ) {
                tval = (tval*t.mksScale+t.mksOffset); 
                aval = (aval*alt.mksScale+alt.mksOffset); 
-               switch (vcoord) {
-               case 0: // altitude
-                  // no conversion
-                  break;
-               case 1: // pressure   
-                  aval = 7000.0*LOG(100000.0/aval);
-                  break;
-               case 2: // theta   
-                  // convert theta to fake altitude, given temperature
-                  //  given z=H*ln(p0/p), and theta = t*(p0/p)^kappa,
-                  //  we want: z = -1/kappa * H * ln( theta/t )
-                  aval = (7./2.)*7000.0 * LOG( aval/tval );
-                  break;
-               case 3: // density   
-                  // convert density to fake altitude, given temperature
-                  //  given z=H*ln(p0/p), and p = rho*R*t,
-                  //  we want: z = H * ln( p0/(rho*r*t) )
-                  aval = 7000.0*LOG(100000.0/(aval*287.04*tval) );
-                  break;
-               } 
                
                dat.push_back( tval );
                alts.push_back( aval );
@@ -536,32 +536,9 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
 
         // find the trop
         value = wmo( dat, alts, debug ); 
-
-        // convert this trop alt back to the original altitude-like coordinates
-        switch (vcoord) {
-        case 0: // altitude
-           // no conversion
-           break;
-        case 1: // pressure   
-           // convert back to pressure
-           value = 100000.0*EXP( - value/7000.0 );
-           break;
-        case 2: // theta   
-           // "value" is in altitude.  find the temperature at this altitude
-           tval = intrp( value, alts, dat );
-           // use the temp to convert altitude back to theta
-           value = tval * EXP( (2./7.)*value/7000.0 );
-           break;
-        case 3: // density   
-           // "value" is in altitude.  find the temperature at this altitude
-           tval = intrp( value, alts, dat );
-           // convert altitude to density
-           value = 100000.0*EXP( - value/7000.0 )/287.04/tval;
-           break;        
-        }
         
         // convert back to caller's units, before storing it
-        *pnt =  ( value - result->mksOffset )/result->mksScale;
+        *pnt =  ( value - tropsfc->mksOffset )/tropsfc->mksScale;
         
         delete tp;
         delete ap;
@@ -584,11 +561,11 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
           vu = "kg/m^3";
           break;        
        }
+       tropsfc->transform(vu, 1.0/tropsfc->mksScale, - tropsfc->mksOffset );
     
-       result->transform(vu);
     }
 
-    return result;
+    return tropsfc;
 }
 
  
