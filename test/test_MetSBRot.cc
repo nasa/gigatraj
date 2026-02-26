@@ -218,6 +218,17 @@ int main()
        exit(1);  
     } 
     
+    real trop = 11.3892; //from local GSFC ACD IDL wmo_trop() routine
+    val = metsrc->getData( "tropz", 0.0, 0.0, 45.0, 0.0 );
+    if ( mismatch( trop, val, 0.01) ) {
+       cerr << "Bad! 45-deg trop value: " << trop << " vs. " << val << endl;
+       exit(1);  
+    } 
+    val = metsrc->getData( "tropz", 0.0, 180.0, -45.0, 0.0 );
+    if ( mismatch( trop, val, 0.01) ) {
+       cerr << "Bad! -45-deg trop value: " << trop << " vs. " << val << endl;
+       exit(1);  
+    } 
     
     // if we got this far, everything is OK
     exit(0);
