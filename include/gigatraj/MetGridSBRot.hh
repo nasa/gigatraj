@@ -239,6 +239,13 @@ class MetGridSBRot : public MetGridLatLonData {
       */
       void set_vertical( const std::string quantity, const std::string units, const std::vector<real>* levels );
 
+      /// returns whether the vertical coordinate increases or decreases with altitude
+      /*! The method returns whether the current vertical coordinate increases or decreases with altitude.
+      
+           \return +1 if the vertical coordinate increases, -1 if it decreases.
+      
+      */
+      int vIncrease() const;
 
 
       /*! Check that a quantity name is recognized by this data source
@@ -456,6 +463,34 @@ class MetGridSBRot : public MetGridLatLonData {
       */
       std::vector<real>* vcoords( const std::string *coordSys ) const;
 
+
+      /// set up for data access
+      /*! Given a quantity and time, this method sets up any internal parameters that 
+          may be used repeatedly during the course of data access.
+          Because this function is used independently of the caching mechanism, 
+          individual subclass implementations should not actually open access to 
+          original data sources (files, OPeNDAP servers, etc.), since that
+          would partially defeat the purpose of any caching that might be done.
+
+           \param quantity the name of the quantity desired
+           \param time the valid-at time for which data is desired
+           \return  the number of dimensions of a data object (i.e, 2 or 3)
+      */
+      virtual int setup(  const std::string quantity, const double time );    
+  
+      /// set up for data access
+      /*! Given a quantity and time, this method sets up any internal parameters that 
+          may be used repeatedly during the course of data access.
+          Because this function is used independently of the caching mechanism, 
+          individual subclass implementations should not actually open access to 
+          original data sources (files, OPeNDAP servers, etc.), since that
+          would partially defeat the purpose of any caching that might be done.
+
+           \param quantity the name of the quantity desired
+           \param time the valid-at datestamp string for which data is desired
+           \return  the number of dimensions of a data object (i.e, 2 or 3)
+      */
+      virtual int setup(  const std::string quantity, const std::string &time );    
  
       /// get a 3D data field valid at a certain time, using basic access
       /*! This method reads meteorological data from some source and returns

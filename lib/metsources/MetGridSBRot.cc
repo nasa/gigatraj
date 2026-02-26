@@ -36,6 +36,16 @@ MetGridSBRot::MetGridSBRot( real lonspc, real latspc
 
      metfcn = new MetSBRot(windspeed, tilt);
 
+     // quantity names
+     pressure_name = "p";
+     altitude_name = "alt";
+     palt_name = "alt";
+     pottemp_name = "theta";
+     pressureDot_name = "omega";
+     altDot_name = "w";
+     paltDot_name = "PAltDot";
+     thetaDot_name = "ThetaDot";
+
      setgrid( lonspc, latspc );
      setup_vGrid();
      
@@ -585,11 +595,57 @@ void MetGridSBRot::set_vertical( const std::string quantity, const std::string u
          
 }
 
+int MetGridSBRot::vIncrease() const
+{
+    int result;
+    
+    if ( vquant == altitude_name ) {
+       result = 1;
+    } else if ( vquant == pressure_name ) {
+       result = -1;
+    } else if ( vquant == pottemp_name ) {
+       result = 1;
+    } else {
+       // should we throw an exception here?
+       result = 1;
+    }         
+    
+    return result;
+}
+
 bool MetGridSBRot::legalQuantity( const std::string quantity )
 {
     // any quantity is egal
     return true;
 }
+
+
+int MetGridSBRot::setup(  const std::string quantity, const double time )
+{
+    int ndims = 3;
+    
+    if ( quantity == "trop" 
+    || quantity == "tropz" 
+    || quantity == "tropp" ) {
+       ndims = 2;
+    }
+    
+    return ndims;
+}    
+
+int MetGridSBRot::setup(  const std::string quantity, const std::string &time )
+{
+    int ndims = 3;
+
+    if ( quantity == "trop" 
+    || quantity == "tropz" 
+    || quantity == "tropp" ) {
+       ndims = 2;
+    }
+    
+    return ndims;
+}    
+
 
 GridLatLonField3D* MetGridSBRot::new_directGrid3D( const std::string quantity, const std::string time ) 
 {
@@ -691,9 +747,21 @@ GridLatLonFieldSfc* MetGridSBRot::new_directGridSfc( const std::string quantity,
        quantname = quantity.substr(0, pos);
        sfcname = quantity.substr(pos+1);
     } else {
-       //todo:  put in switch block here
-       quantname = quantity;
-       sfcname = "sfc";   // note where we are evaluating the quantity, below
+       
+       if ( quantity == "tropz" ) {
+          quantname = "alt";
+          sfcname = "trop";
+       } else if ( quantity == "tropp" ) {
+          quantname = "p";
+          sfcname = "trop";       
+       } else if ( quantity == "trop" ) {
+          quantname = vquant;
+          sfcname = "trop";       
+       } else {   
+          quantname = quantity;
+          sfcname = "sfc";   // note where we are evaluating the quantity, below
+       }
+       
     }
 
     if ( dbug > 2 ) {
@@ -721,15 +789,17 @@ GridLatLonFieldSfc* MetGridSBRot::new_directGridSfc( const std::string quantity,
        grid3D = new_directGrid3D("t", time); // get temperature on altitude
        // compute tropopause from temp on the desired vertical coordinate
        desiredsfc = dynamic_cast<GridLatLonFieldSfc*>(tropgen.wmo( *grid3D ));
-       // get the desired quantity on destied vertical coord
-       desired3D = new_directGrid3D(quantname, time); 
-       // interpolate the desired quantity onto the desired surface
-       remove( gridsfc );
-
-       gridsfc = dynamic_cast<GridLatLonFieldSfc*>(vin->surface( *desired3D, *desiredsfc ));
-
-       remove( desired3D );
-       remove( desiredsfc );
+       if ( desiredsfc->quantity() != quantname ) {
+          // get the desired quantity on destied vertical coord
+          desired3D = new_directGrid3D(quantname, time); 
+          // interpolate the desired quantity onto the desired surface
+          remove( gridsfc );
+          gridsfc = dynamic_cast<GridLatLonFieldSfc*>(vin->surface( *desired3D, *desiredsfc ));
+          remove( desired3D );
+          remove( desiredsfc );
+       } else {
+          gridsfc = desiredsfc;
+       }
        remove( grid3D );
     } else if ( sfcname == "sfc" ) { 
       data.reserve(nlons*nlats);
