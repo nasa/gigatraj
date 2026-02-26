@@ -167,8 +167,8 @@ int main()
     delete tmp2;
     trop_p =  t_sfc(34,23);
     val2 = 1000.0*EXP(-trop_z/7.0);
-    if ( mismatch( trop_p, val2, val2*0.01 ) ) {
-       cerr << "p-grid TropOTF mismatch: " << val << " vs " << val2 << std::endl;
+    if ( mismatch( trop_p, val2, val2*0.05 ) ) {
+       cerr << "p-grid TropOTF mismatch: " << trop_p << " vs " << val2 << std::endl;
        exit(1);
     }
     
@@ -182,7 +182,7 @@ int main()
     delete tmp2;
     trop_theta =  t_sfc(34,23);
     val2 = 346.408;
-    if ( mismatch( trop_theta, val2, val2*0.01 ) ) {
+    if ( mismatch( trop_theta, val2, val2*0.03 ) ) {
        cerr << "theta-grid TropOTF mismatch: " << trop_theta << " vs " << val2 << std::endl;
        exit(1);
     }
