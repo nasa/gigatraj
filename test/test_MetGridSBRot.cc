@@ -74,7 +74,7 @@ int main()
     // original SBRot source
     metsrc0 = new MetSBRot(20.0, 30.0);
 
-    // *** GRIDED** SBRot source
+    // *** GRIDDED** SBRot source
     metsrc = new MetGridSBRot;
     
     //metsrc->dbug = 1;
@@ -274,6 +274,31 @@ int main()
        cerr << "Bad trop somestuff  value: " << u << " vs. " << val << endl;
        exit(1);  
     } 
+    
+    
+    // tropopause test
+    /* Note: in MetSBRot, the profiles are in alt, bute
+       here the data are on pressure surfaces, which results
+       in slightly different tropopause values:
+          11.3892 km (MetSBRot) vs. 11.6264 (MetGridSBRot) 
+         212.849 mb (MetSBRot) vs. 205.002 (MetGridSBRot)
+    */     
+    real tropz = 11.6264; //from local GSFC ACD IDL wmo_trop() routine
+    val = metsrc->getData( "tropz", 0.0, 0.0, 45.0, 0.0 );
+    if ( mismatch(tropz, val, 0.01) ) {
+       cerr << "Bad trop z value: " << tropz << " vs. " << val << endl;
+       exit(1);  
+    } 
+    real tropp = 205.002; //from local GSFC ACD IDL wmo_trop() routine
+    val = metsrc->getData( "tropp", 0.0, 0.0, 45.0, 0.0 );
+    if ( mismatch(tropp, val, 1.5) ) {
+       cerr << "Bad trop p value: " << tropp << " vs. " << val << endl;
+       exit(1);  
+    } 
+    
+    
+    // tropopause
+    
 
     //=============  time interpolation (testing caching)
     metsrc->set_period(3.5);
