@@ -394,6 +394,14 @@ class MetMyGEOS : public MetGridLatLonData {
       */
       virtual void set_vertical( const std::string quantity, const std::string units, const std::vector<real>* levels );
 
+      /// returns whether the vertical coordinate increases or decreases with altitude
+      /*! The method returns whether the current vertical coordinate increases or decreases with altitude.
+      
+           \return +1 if the vertical coordinate increases, -1 if it decreases.
+      
+      */
+      int vIncrease() const;
+
       /// set the time base/offset and delta to be imposed
       /*! Sometimes it is desired to use only a subset of data snapshots in tracing trajectories.
           For example, if the data are available every three hours starting at 00Z daily, you might want to actually
@@ -1056,14 +1064,6 @@ class MetMyGEOS : public MetGridLatLonData {
       std::string temperature_name;
       /// the name for the temperature derivative quantity
       std::string temperatureDot_name;
-      /// the name of the vertical wind in altitude-space
-      std::string altDot_name;
-      /// the name of the vertical wind in pressure-space
-      std::string pressureDot_name;
-      /// the name of the vertical wind in pressureAltitude-space
-      std::string paltDot_name;
-      /// the name of the vertical wind in potentialTemperature-space
-      std::string thetaDot_name;
       /// the name of the model level coordinate (not necc. the same as levelName)
       std::string modellevel_name;
       /// the name of the model edge coordinate (not necc. the same as levelName)

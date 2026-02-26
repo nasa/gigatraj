@@ -322,32 +322,11 @@ bool MetMyGEOS::getOption( const std::string &name, std::string &value )
    } else if ( name == "TimeName" ) {
       value = timeName;
       result = true;
-   } else if ( name == "PressureName" ) {
-      value = pressure_name;
-      result = true;
-   } else if ( name == "AltitudeName" ) {
-      value = altitude_name;
-      result = true;
-   } else if ( name == "PressureAltitudeName" ) {
-      value = palt_name;
-      result = true;
    } else if ( name == "ModelLevelName" ) {
       value = modellevel_name;
       result = true;
    } else if ( name == "ModelEdgeName" ) {
       value = modeledge_name;
-      result = true;
-   } else if ( name == "PotentialTemperatureName" ) {
-      value = pottemp_name;
-      result = true;
-   } else if ( name == "PressureDotName" ) {
-      value = pressureDot_name;
-   } else if ( name == "AltitudeDotName" ) {
-      value = altDot_name;
-   } else if ( name == "PressureAltitudeDotName" ) {
-      value = paltDot_name;
-   } else if ( name == "PotentialTemperatureDotName" ) {
-      value = thetaDot_name;
       result = true;
    } else if ( name == "TemperatureName" ) {
       value = temperature_name;
@@ -458,6 +437,26 @@ void MetMyGEOS::set_vertical( const std::string quantity, const std::string unit
         zs = *levels;     
      }
 
+}
+
+int MetMyGEOS::vIncrease() const
+{
+    int result;
+    
+    if ( vquant == altitude_name ) {
+       result = 1;
+    } else if ( vquant == palt_name ) {
+       result = 1;
+    } else if ( vquant == pressure_name ) {
+       result = -1;
+    } else if ( vquant == pottemp_name ) {
+       result = 1;
+    } else {
+       // should we throw an exception here?
+       result = 1;
+    }         
+    
+    return result;
 }
  
 void MetMyGEOS::impose_times( double otbase, double otspace )
