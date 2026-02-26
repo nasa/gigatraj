@@ -334,6 +334,14 @@ class MetGridData : public MetData {
           \param levels a pointer to a vector of values of the new vertical coordinate
       */
       virtual void set_vertical( const std::string quantity, const std::string units, const std::vector<real>* levels ) = 0;
+      
+      /// returns whether the vertical coordinate increases or decreases with altitude
+      /*! The method returns whether the current vertical coordinate increases or decreases with altitude.
+      
+           \return +1 if the vertical coordinate increases, -1 if it decreases.
+      
+      */
+      virtual int vIncrease() const = 0;
 
      /// returns the name of the U-wind in this met data source
      /*! This method returns the name (and optionally the units) of the zonal wind in this data source.
@@ -1219,6 +1227,14 @@ class MetGridData : public MetData {
       std::string palt_name;
       /// the name of potential temperature in this data source
       std::string pottemp_name;
+      /// the name of the vertical wind in altitude-space
+      std::string altDot_name;
+      /// the name of the vertical wind in pressure-space
+      std::string pressureDot_name;
+      /// the name of the vertical wind in pressureAltitude-space
+      std::string paltDot_name;
+      /// the name of the vertical wind in potentialTemperature-space
+      std::string thetaDot_name;
       
       /// vertical-wind quantities associated with vertical coordinates
       typedef struct {
