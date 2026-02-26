@@ -270,8 +270,7 @@ int MetGridLatLonData::setup(  const std::string quantity, const std::string &ti
 {
     int ndims = 3;
 
-    //- std::cerr << "in wrong setup " << std::endl;    
-    // logic goies here for inspecting the quantity and
+    // logic goes here for inspecting the quantity and
     // setting ndims =2 if necessary.
     
     return ndims;
@@ -299,6 +298,10 @@ real MetGridLatLonData::getData( string quantity, double time, real lon, real la
      //- std::cerr << "====MetGridLatLonData::getData Entry" << std::endl;  
 
      // handle the special case of the quantity being a simple function of the vertical coordinate
+     if ( quantity == vquant ) {
+        // the simplest function of all: identity
+        return z;
+     }
      if ( quantity == palt_name && vquant == pressure_name ) {
         // given pressure (transformed to Pa), find palt (in km)
         val1 = (z*vMKSscale + vMKSoffset);
