@@ -5,6 +5,7 @@
 #   indented by its level of class inheritance.
 
 pkginclude_HEADERS = gigatraj.hh \
+                   Configuration.hh \
                    RandomSrc.hh \
                    FilePath.hh \
                    FileLock.hh \
@@ -21,6 +22,8 @@ pkginclude_HEADERS = gigatraj.hh \
                     GridFieldProfile.hh \
                     GridFieldSfc.hh \
                     GridField3D.hh \
+                    GridLatLonField3D.hh \
+                    GridLatLonFieldSfc.hh \
                    Interpolator.hh \
                     Vinterp.hh \
                      LinearVinterp.hh \
@@ -45,7 +48,8 @@ pkginclude_HEADERS = gigatraj.hh \
                        SZAOTF.hh \
                     MetGridData.hh \
                        MetGridLatLonData.hh \
-                          MetGridSBRot.hh 
+                          MetGridSBRot.hh \
+                    ChangeVertical.hh      
 
 
 # should be included in the list only once
@@ -93,10 +97,15 @@ pkginclude_HEADERS += \
                     PGenLine.hh \
                     PGenRndLine.hh \
                     PGenFile.hh \
+                    PGenNetcdf.hh \
                    ParcelFilter.hh \
                     ParcelInitializer.hh \
                      StreamLoad.hh \
                      StreamRead.hh \
                     ParcelReporter.hh \
                      StreamDump.hh \
-                     StreamPrint.hh 
+                     StreamPrint.hh \
+                    NetcdfIn.hh \
+                    NetcdfOut.hh \
+                    Filter_Trop.hh
+                     
