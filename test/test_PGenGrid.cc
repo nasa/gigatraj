@@ -35,11 +35,14 @@ using std::istringstream;
 using std::operator<<;
 using std::operator>>;
 
+static Earth e;
+
 int main() 
 {
 
     Parcel p;
     real lon;
+    real wlon;
     real lat;
     real z;
     real xlon;
@@ -69,17 +72,18 @@ int main()
     for ( real z = 320.0; z<= 450.0; z += 10.0 ) {
     for ( real lat = -90.0; lat <= 90.0; lat += 5.0 ) {
     for ( real lon =  0.0; lon <= 355.0; lon += 5.0 ) {
+        wlon = e.wrap( lon );
         aflock[i].getPos( &xlon, &xlat );
         xz = aflock[i].getZ();
         time = aflock[i].getTime();
-        if ( mismatch( xlat, lat ) || mismatch( xlon, lon ) ||  mismatch( xz, z) ) {
-           cerr << "Bad lon,lat,z retrieval on array[" << i << ": (" << lon << "," << lat << ", " << z << ") != (" 
+        if ( mismatch( xlat, lat ) || mismatch( xlon, wlon ) ||  mismatch( xz, z) ) {
+           cerr << "Bad lon,lat,z retrieval on array[" << i << ": (" << wlon << "," << lat << ", " << z << ") != (" 
                 << xlon << ", " << xlat << ", " << xz << ")" << endl;
            exit(1);
         } 
         
         if ( mismatch( time, time0 ) ) {
-           cerr << "Bad time retrieval on deque: (" << lon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
+           cerr << "Bad time retrieval on array: (" << lon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
            exit(1);          
         }  
 
@@ -107,17 +111,18 @@ int main()
     for ( real z = 320.0; z<= 450.0; z += 10.0 ) {
     for ( real lat = -90.0; lat <= 90.0; lat += 5.0 ) {
     for ( real lon =  0.0; lon <= 355.0; lon += 5.0 ) {
+        wlon = e.wrap( lon );
         vit->getPos( &xlon, &xlat );
         xz = vit->getZ();
         time = vit->getTime();
-        if ( mismatch( xlat, lat ) || mismatch( xlon, lon ) ||  mismatch( xz, z) ) {
-           cerr << "Bad lon,lat,z retrieval on vector: (" << lon << "," << lat << ", " << z << ") != (" 
+        if ( mismatch( xlat, lat ) || mismatch( xlon, wlon ) ||  mismatch( xz, z) ) {
+           cerr << "Bad lon,lat,z retrieval on vector: (" << wlon << "," << lat << ", " << z << ") != (" 
                 << xlon << ", " << xlat << ", " << xz << ")" << endl;
            exit(1);
         } 
         
         if ( mismatch( time, time0 ) ) {
-           cerr << "Bad time retrieval on vector: (" << lon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
+           cerr << "Bad time retrieval on vector: (" << wlon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
            exit(1);          
         }  
 
@@ -139,17 +144,18 @@ int main()
     for ( real z = 320.0; z<= 450.0; z += 10.0 ) {
     for ( real lat = -90.0; lat <= 90.0; lat += 5.0 ) {
     for ( real lon =  0.0; lon <= 355.0; lon += 5.0 ) {
+        wlon = e.wrap( lon );
         lit->getPos( &xlon, &xlat );
         xz = lit->getZ();
         time = lit->getTime();
-        if ( mismatch( xlat, lat ) || mismatch( xlon, lon ) ||  mismatch( xz, z) ) {
-           cerr << "Bad lon,lat,z retrieval on list: (" << lon << "," << lat << ", " << z << ") != (" 
+        if ( mismatch( xlat, lat ) || mismatch( xlon, wlon ) ||  mismatch( xz, z) ) {
+           cerr << "Bad lon,lat,z retrieval on list: (" << wlon << "," << lat << ", " << z << ") != (" 
                 << xlon << ", " << xlat << ", " << xz << ")" << endl;
            exit(1);
         } 
         
         if ( mismatch( time, time0 ) ) {
-           cerr << "Bad time retrieval on list: (" << lon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
+           cerr << "Bad time retrieval on list: (" << wlon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
            exit(1);          
         }  
 
@@ -172,17 +178,18 @@ int main()
     for ( real z = 320.0; z<= 450.0; z += 10.0 ) {
     for ( real lat = -90.0; lat <= 90.0; lat += 5.0 ) {
     for ( real lon =  0.0; lon <= 355.0; lon += 5.0 ) {
+        wlon = e.wrap( lon );
         dit->getPos( &xlon, &xlat );
         xz = dit->getZ();
         time = dit->getTime();
-        if ( mismatch( xlat, lat ) || mismatch( xlon, lon ) ||  mismatch( xz, z) ) {
-           cerr << "Bad lon,lat,z retrieval on deque: (" << lon << "," << lat << ", " << z << ") != (" 
+        if ( mismatch( xlat, lat ) || mismatch( xlon, wlon ) ||  mismatch( xz, z) ) {
+           cerr << "Bad lon,lat,z retrieval on deque: (" << wlon << "," << lat << ", " << z << ") != (" 
                 << xlon << ", " << xlat << ", " << xz << ")" << endl;
            exit(1);
         } 
         
         if ( mismatch( time, time0 ) ) {
-           cerr << "Bad time retrieval on deque: (" << lon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
+           cerr << "Bad time retrieval on deque: (" << wlon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
            exit(1);          
         }  
 
@@ -202,17 +209,18 @@ int main()
     for ( real z = 320.0; z<= 450.0; z += 10.0 ) {
     for ( real lat = -90.0; lat <= 90.0; lat += 5.0 ) {
     for ( real lon =  0.0; lon <= 355.0; lon += 5.0 ) {
+        wlon = e.wrap( lon );
         fit->getPos( &xlon, &xlat );
         xz = fit->getZ();
         time = fit->getTime();
-        if ( mismatch( xlat, lat ) || mismatch( xlon, lon ) ||  mismatch( xz, z) ) {
-           cerr << "Bad lon,lat,z retrieval on Flockl: (" << lon << "," << lat << ", " << z << ") != (" 
+        if ( mismatch( xlat, lat ) || mismatch( xlon, wlon ) ||  mismatch( xz, z) ) {
+           cerr << "Bad lon,lat,z retrieval on Flockl: (" << wlon << "," << lat << ", " << z << ") != (" 
                 << xlon << ", " << xlat << ", " << xz << ")" << endl;
            exit(1);
         } 
         
         if ( mismatch( time, time0 ) ) {
-           cerr << "Bad time retrieval on Flock: (" << lon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
+           cerr << "Bad time retrieval on Flock: (" << wlon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
            exit(1);          
         }  
 
@@ -234,17 +242,18 @@ int main()
     for ( real z = 320.0; z<= 450.0; z += 10.0 ) {
     for ( real lat = -90.0; lat <= 90.0; lat += 5.0 ) {
     for ( real lon =  0.0; lon <= 355.0; lon += 5.0 ) {
+        wlon = e.wrap( lon );
         sit->getPos( &xlon, &xlat );
         xz = sit->getZ();
         time = sit->getTime();
-        if ( mismatch( xlat, lat ) || mismatch( xlon, lon ) ||  mismatch( xz, z) ) {
-           cerr << "Bad lon,lat,z retrieval on Swarml: (" << lon << "," << lat << ", " << z << ") != (" 
+        if ( mismatch( xlat, lat ) || mismatch( xlon, wlon ) ||  mismatch( xz, z) ) {
+           cerr << "Bad lon,lat,z retrieval on Swarml: (" << wlon << "," << lat << ", " << z << ") != (" 
                 << xlon << ", " << xlat << ", " << xz << ")" << endl;
            exit(1);
         } 
         
         if ( mismatch( time, time0 ) ) {
-           cerr << "Bad time retrieval on Swarm: (" << lon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
+           cerr << "Bad time retrieval on Swarm: (" << wlon << "," << lat << z << ") :" << time0 << " != (" << time << ")" << endl;
            exit(1);          
         }  
 

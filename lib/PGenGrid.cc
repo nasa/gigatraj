@@ -25,29 +25,21 @@ using namespace gigatraj;
 
 // Use Earth as the default PlanetNav;
 // (We are using this only for longitude wrapping calculations,
-// so it should not matter is we end up using a different
+// so it should not matter if we end up using a different
 // planets in the actual model run.
 static Earth e;
 
-
-int PGenGrid :: count_gridpoints( real beglon, real endlon, real deltalon
-                           , real beglat, real endlat, real deltalat
-                           , real begz, real endz, real deltaz 
-                           )
+int PGenGrid :: count_gridlons( real beglon, real endlon, real deltalon ) const
 {
+     int nlon;
+     
+     
+     nlon = 0;
      
      // sanity checking //
-     if ( (  ( ( deltaz > 0.0 ) && ( begz <= endz ) ) 
-          || ( ( deltaz < 0.0 ) && ( begz >= endz ) )
-          || ( ( deltaz == 0.0) && ( begz == endz ) )
-          ) and 
-          (  ( ( deltalat > 0.0 ) && ( beglat <= endlat ) ) 
-          || ( ( deltalat < 0.0 ) && ( beglat >= endlat ) )
-          || ( ( deltalat == 0.0) && ( beglat == endlat ) ) 
-          ) and
-          (    ( deltalon != 0.0 ) 
+     if (    ( deltalon != 0.0 ) 
           || ( ( deltalon == 0.0 ) && ( beglon == endlon ) ) 
-          ) )  {
+          )  {
           
           // longitudes will always be OK, if they wrap
           real lon0 = e.wrap(beglon);
@@ -57,32 +49,99 @@ int PGenGrid :: count_gridpoints( real beglon, real endlon, real deltalon
           }   
           while ( (deltalon < 0.0 ) && ( lon0 < lon1 ) ) {
              lon1 -= e.fullcircle;
+          }
+          // handle the full-globe case
+          if ( ABS( lon0 - lon1 ) < 0.01 ) {
+             lon1 = lon0 + 359.999;
           }   
           
+          if ( deltalon != 0.0 ) {
+             nlon = (int) ( (lon1 - lon0)/deltalon ) + 1;
+          } else {
+             nlon = 1;
+          }
+
+     }
+     
+     return nlon;
+
+};
+
+int PGenGrid :: count_gridlats( real beglat, real endlat, real deltalat ) const
+{
+     int nlat;
+     
+     nlat = 0;
+     
+     // sanity checking //
+     if (    ( ( deltalat > 0.0 ) && ( beglat <= endlat ) ) 
+          || ( ( deltalat < 0.0 ) && ( beglat >= endlat ) )
+          || ( ( deltalat == 0.0) && ( beglat == endlat ) ) 
+        )  {
+          
+          if ( deltalat != 0.0 ) {
+             nlat = (int) ( (endlat - beglat)/deltalat ) + 1;
+          } else {
+             nlat = 1;
+          }
+
+     }
+     
+     return nlat;
+
+};
+
+int PGenGrid :: count_gridzs( real begz, real endz, real deltaz ) const
+{
+     int nz;
+     
+     nz = 0;
+     
+     // sanity checking //
+     if (    ( ( deltaz > 0.0 ) && ( begz <= endz ) ) 
+          || ( ( deltaz < 0.0 ) && ( begz >= endz ) )
+          || ( ( deltaz == 0.0) && ( begz == endz ) )
+        )  {
+          
           // now count the gridpoints
-          int nz;
           if ( deltaz != 0.0 ) {
              nz = (int) ( (endz-begz)/deltaz ) + 1;
           } else {
              nz = 1;
           }
-          int nlat;
-          if ( deltalat != 0.0 ) {
-             nlat = (int) ( (endlat-beglat)/deltalat ) + 1;
-          } else {
-             nlat = 1;
-          }
-          int nlon;
-          if ( deltalon != 0.0 ) {
-             nlon = (int) ( (lon1-lon0)/deltalon ) + 1;
-          } else {
-             nlon = 1;
-          }
-          return nz*nlat*nlon;          
 
      }
      
-     return 0;
+     return nz;
+
+};
+
+int PGenGrid :: count_gridpoints( real beglon, real endlon, real deltalon
+                           , real beglat, real endlat, real deltalat
+                           , real begz, real endz, real deltaz 
+                           , int* nlon, int* nlat, int* nz
+                           ) const
+{
+     
+     int nlons;
+     int nlats;
+     int nzs;
+     
+     nlons = count_gridlons( beglon, endlon, deltalon );
+     nlats = count_gridlats( beglat, endlat, deltalat );
+     nzs = count_gridzs( begz, endz, deltaz );
+     
+     if ( nlon != NULLPTR ) {
+        *nlon = nlons;
+     }   
+     if ( nlat != NULLPTR ) {
+        *nlat = nlats;
+     }   
+     if ( nz != NULLPTR ) {
+        *nz = nzs;
+     }   
+     
+     return nzs*nlats*nlons;          
 
 };
 
@@ -99,73 +158,40 @@ void PGenGrid :: initgrid( Seq<Parcel>* seq, const Parcel& p
      int nz;
      int nlat;
      int nlon;
+     int nn;
      real dlon, dlat, dz;
      
-     // sanity checking //
-     if ( (  ( ( deltaz > 0.0 ) && ( begz <= endz ) ) 
-          || ( ( deltaz < 0.0 ) && ( begz >= endz ) )
-          || ( ( deltaz == 0.0) && ( begz == endz ) )
-          ) and 
-          (  ( ( deltalat > 0.0 ) && ( beglat <= endlat ) ) 
-          || ( ( deltalat < 0.0 ) && ( beglat >= endlat ) )
-          || ( ( deltalat == 0.0) && ( beglat == endlat ) ) 
-          ) and
-          (    ( deltalon != 0.0 ) 
-          || ( ( deltalon == 0.0 ) && ( beglon == endlon ) ) 
-          ) )  {
-          
-          // longitudes will always be OK, if they wrap
-          real lon0 = e.wrap(beglon);
-          real lon1 = e.wrap(endlon);
-
-          while ( (deltalon > 0.0 ) && ( lon0 > lon1 ) ) {
-             lon1 += e.fullcircle;
-          }   
-          while ( (deltalon < 0.0 ) && ( lon0 < lon1 ) ) {
-             lon1 -= e.fullcircle;
-          } 
-          
-          // now count the gridpoints
-          if ( deltaz != 0.0 ) {
-             nz = (int) ( (endz-begz)/deltaz ) + 1;
-             if ( nz < 2 ) {
-                nz = 2;
-             }
-             dz = (endz - begz)/(nz - 1.0);
-          } else {
-             nz = 1;
-             dz = 0.0;
-          }
-          if ( deltalat != 0.0 ) {
-             nlat = (int) ( (endlat-beglat)/deltalat ) + 1;
-             if ( nlat < 2 ) {
-                nlat = 2;
-             }
-             dlat = (endlat - beglat)/(nlat - 1.0);
-          } else {
-             nlat = 1;
-             dlat = 0.0;
-          }
-          if ( deltalon != 0.0 ) {
-             nlon = (int) ( (lon1-lon0)/deltalon ) + 1;
-             if ( nlon < 2 ) {
-                nlon = 2;
-             }
-             dlon = (endlon - beglon)/(nlon - 1.0);
-          } else {
-             nlon = 1;
-             dlon = 0.0;
-          }
-            
+     int maxn;
+     
+     maxn = seq->size();
+     
+     nn = count_gridpoints( beglon, endlon, deltalon 
+                          , beglat, endlat, deltalat
+                          , begz, endz, deltaz 
+                          , &nlon, &nlat, &nz ); 
+     
+     if ( nlon <= 0 ) {
+        nlon = 1;
+     }
+     if ( nlat <= 0 ) {
+        nlat = 1;
+     }
+     if ( nz <= 0 ) {
+        nz = 1;
+     }
+     
+     nn = nlon*nlat*nz;
+     
+     if ( nn <= seq->size() ) {    
           try {
                typename Seq<Parcel>::iterator it;
                it = seq->begin();
                for ( int iz=0; iz < nz; iz++ ) {
-                  z = begz + iz*dz;
+                  z = begz + iz*deltaz;
                   for ( int ilat=0; ilat < nlat; ilat++ ) {
-                     lat = beglat + ilat*dlat;
+                     lat = beglat + ilat*deltalat;
                      for ( int ilon=0; ilon < nlon; ilon++ ) {
-                        lon = beglon + ilon*dlon;
+                        lon = e.wrap( beglon + ilon*deltalon );
 
                          *it = p;  // copy the input parcel's settings
                          it->setPos( lon, lat);  // set the horizontal position
@@ -203,79 +229,47 @@ Parcel * PGenGrid :: create_array(const Parcel& p, int *np
                                                                                
     int n = PGenGrid::count_gridpoints(beglon,endlon,deltalon                  
                                       ,beglat,endlat,deltalat                  
-                                      ,begz,endz,deltaz);                      
+                                      ,begz,endz,deltaz
+                                      , &nlon, &nlat, &nz);                      
+     if ( nlon <= 0 ) {
+        nlon = 1;
+     }
+     if ( nlat <= 0 ) {
+        nlat = 1;
+     }
+     if ( nz <= 0 ) {
+        nz = 1;
+     }
+     
+     n = nlon*nlat*nz;
 
-    if ( n <= 0 ) {                                                            
-       throw (ParcelGenerator :: badparcelcount());                            
-    };                                                                         
+     if ( n <= 0 ) {                                                            
+        throw (ParcelGenerator :: badparcelcount());                            
+     };                                                                         
+
+     *np = n;
                                                                                
     try {                                                                      
+       
        pa = new Parcel[n];                                                     
-       // initialize the parcel value                                          
+       
+       int i = 0;                                                         
+       for ( int iz=0; iz < nz; iz++ ) {
+          z = begz + iz*deltaz;
+          for ( int ilat=0; ilat < nlat; ilat++ ) {
+             lat = beglat + ilat*deltalat;
+             for ( int ilon=0; ilon < nlon; ilon++ ) {
+                lon = e.wrap( beglon + ilon*deltalon );
 
-       // longitudes will always be OK, if they wrap                           
-       real lon0 = e.wrap(beglon);                                             
-       real lon1 = e.wrap(endlon);                                             
-       while ( (deltalon > 0.0 ) && ( lon0 > lon1 ) ) {                        
-          lon1 += e.fullcircle;                                                
-       }                                                                       
-       while ( (deltalon < 0.0 ) && ( lon0 < lon1 ) ) {                        
-          lon1 -= e.fullcircle;                                                
-       }                                                                       
-          
-       // now count the gridpoints
-       if ( deltaz != 0.0 ) {
-          nz = (int) ( (endz-begz)/deltaz ) + 1;
-          if ( nz < 2 ) {
-             nz = 2;
+                pa[i] = p;  // copy the input parcel's settings          
+                pa[i].setPos( lon, lat);  // set the horizontal position 
+                pa[i].setZ( z );  // set the vertical position           
+                
+                i++;  // next parcel                                     
+             }
           }
-          dz = (endz - begz)/(nz - 1.0);
-       } else {
-          nz = 1;
-          dz = 0.0;
-       }
-       if ( deltalat != 0.0 ) {
-          nlat = (int) ( (endlat-beglat)/deltalat ) + 1;
-          if ( nlat < 2 ) {
-             nlat = 2;
-          }
-          dlat = (endlat - beglat)/(nlat - 1.0);
-       } else {
-          nlat = 1;
-          dlat = 0.0;
-       }
-       if ( deltalon != 0.0 ) {
-          nlon = (int) ( (lon1-lon0)/deltalon ) + 1;
-          if ( nlon < 2 ) {
-             nlon = 2;
-          }
-          dlon = (endlon - beglon)/(nlon - 1.0);
-       } else {
-          nlon = 1;
-          dlon = 0.0;
        }
                                                                                
-       try {                                                                   
-            int i = 0;                                                         
-            for ( int iz=0; iz < nz; iz++ ) {
-               z = begz + iz*dz;
-               for ( int ilat=0; ilat < nlat; ilat++ ) {
-                  lat = beglat + ilat*dlat;
-                  for ( int ilon=0; ilon < nlon; ilon++ ) {
-                      lon = beglon + ilon*dlon;
-                      pa[i] = p;  // copy the input parcel's settings          
-                      pa[i].setPos( lon, lat);  // set the horizontal position 
-                      pa[i].setZ( z );  // set the vertical position           
-                      i++;  // next parcel                                     
-                  }                                                            
-               }                                                               
-            }                                                                  
-            *np = n;                                                           
-       } catch (...) {                                                         
-           throw (ParcelGenerator :: badgeneration());                         
-       }                                                                       
-
-
     } catch(...) {                                                             
        throw ( ParcelGenerator :: badgeneration() );                           
     };                                                                         
@@ -412,7 +406,20 @@ Flock* PGenGrid :: create_Flock(const Parcel& p
 
      n = PGenGrid::count_gridpoints(beglon,endlon,deltalon
                                   ,beglat,endlat,deltalat
-                                  ,begz,endz,deltaz);
+                                  ,begz,endz,deltaz
+                                  , &nlon, &nlat, &nz);
+     if ( nlon <= 0 ) {
+        nlon = 1;
+     }
+     if ( nlat <= 0 ) {
+        nlat = 1;
+     }
+     if ( nz <= 0 ) {
+        nz = 1;
+     }
+     
+     n = nlon*nlat*nz;
+
      if ( n <= 0 ) {
         throw (ParcelGenerator :: badparcelcount());
      };  
@@ -421,105 +428,47 @@ Flock* PGenGrid :: create_Flock(const Parcel& p
         // now create a Flock os that many parcels
         flock = new Flock( p, pgrp, n, r);
 
-        // sanity checking //
-        if ( (  ( ( deltaz > 0.0 ) && ( begz <= endz ) ) 
-             || ( ( deltaz < 0.0 ) && ( begz >= endz ) )
-             || ( ( deltaz == 0.0) && ( begz == endz ) )
-             ) and 
-             (  ( ( deltalat > 0.0 ) && ( beglat <= endlat ) ) 
-             || ( ( deltalat < 0.0 ) && ( beglat >= endlat ) )
-             || ( ( deltalat == 0.0) && ( beglat == endlat ) ) 
-             ) and
-             (    ( deltalon != 0.0 ) 
-             || ( ( deltalon == 0.0 ) && ( beglon == endlon ) ) 
-             ) )  {
-             
-             // longitudes will always be OK, if they wrap
-             real lon0 = e.wrap(beglon);
-             real lon1 = e.wrap(endlon);
-             while ( (deltalon > 0.0 ) && ( lon0 > lon1 ) ) {
-                lon1 += e.fullcircle;
-             }   
-             while ( (deltalon < 0.0 ) && ( lon0 < lon1 ) ) {
-                lon1 -= e.fullcircle;
-             } 
-             // now count the gridpoints
-             if ( deltaz != 0.0 ) {
-                nz = (int) ( (endz-begz)/deltaz ) + 1;
-                if ( nz < 2 ) {
-                   nz = 2;
-                }
-                dz = (endz - begz)/(nz - 1.0);
-             } else {
-                nz = 1;
-                dz = 0.0;
-             }
-             if ( deltalat != 0.0 ) {
-                nlat = (int) ( (endlat-beglat)/deltalat ) + 1;
-                if ( nlat < 2 ) {
-                   nlat = 2;
-                }
-                dlat = (endlat - beglat)/(nlat - 1.0);
-             } else {
-                nlat = 1;
-                dlat = 0.0;
-             }
-             if ( deltalon != 0.0 ) {
-                nlon = (int) ( (lon1-lon0)/deltalon ) + 1;
-                if ( nlon < 2 ) {
-                   nlon = 2;
-                }
-                dlon = (endlon - beglon)/(nlon - 1.0);
-             } else {
-                nlon = 1;
-                dlon = 0.0;
-             }
-
-             // sync all the processors before we start loading
-             if ( pgrp != NULLPTR ) {
-                pgrp->sync();
-             }
-             
-             pcl = p.copy();
-               
-             try {
-                  int i=0;
-                  for ( int iz=0; iz < nz; iz++ ) {
-                     z = begz + iz*dz;
-                     for ( int ilat=0; ilat < nlat; ilat++ ) {
-                        lat = beglat + ilat*dlat;
-                        for ( int ilon=0; ilon < nlon; ilon++ ) {
-                            lon = beglon + ilon*dlon;
-                            
-                            flock->sync();
-                            
-                            pcl->setPos( lon, lat);  // set the horizontal position
-                            pcl->setZ( z );  // set the vertical position
-                            
-                            // If we are the root processor, the parcel pcl
-                            // is valid, and it is sent to the processor
-                            // to which it belongs.
-                            // If we are not the root processor, then
-                            // then pcl has no valid value, but the
-                            // processor will ignore it and receive its
-                            // parcel value from the root processor.
-                            flock->set( i, *pcl, 0 );
-                            
-                            i++;
-                            
-                        }
-                     }
-                  }
-             } catch (...) {
-                 throw (ParcelGenerator :: badgeneration());
-             }
-             
-             delete pcl;
-             
-        } else {
-            throw(ParcelGenerator :: badparcelcount()); 
+        // sync all the processors before we start loading
+        if ( pgrp != NULLPTR ) {
+           pgrp->sync();
         }
-     
+        
+        pcl = p.copy();
+          
+        try {
+             int i=0;
+             for ( int iz=0; iz < nz; iz++ ) {
+                z = begz + iz*deltaz;
+                for ( int ilat=0; ilat < nlat; ilat++ ) {
+                   lat = beglat + ilat*deltalat;
+                   for ( int ilon=0; ilon < nlon; ilon++ ) {
+                       lon = e.wrap( beglon + ilon*deltalon );
+                       
+                       flock->sync();
+                       
+                       pcl->setPos( lon, lat);  // set the horizontal position
+                       pcl->setZ( z );  // set the vertical position
+                       
+                       // If we are the root processor, the parcel pcl
+                       // is valid, and it is sent to the processor
+                       // to which it belongs.
+                       // If we are not the root processor, then
+                       // then pcl has no valid value, but the
+                       // processor will ignore it and receive its
+                       // parcel value from the root processor.
+                       flock->set( i, *pcl, 0 );
+                       
+                       i++;
+                       
+                   }
+                }
+             }
+        } catch (...) {
+            throw (ParcelGenerator :: badgeneration());
+        }
+        
+        delete pcl;
+        
     } catch(...) {
        throw ( ParcelGenerator :: badgeneration() );
     };     
@@ -550,7 +499,20 @@ Swarm* PGenGrid :: create_Swarm(const Parcel& p
 
      n = PGenGrid::count_gridpoints(beglon,endlon,deltalon
                                   ,beglat,endlat,deltalat
-                                  ,begz,endz,deltaz);
+                                  ,begz,endz,deltaz
+                                  , &nlon, &nlat, &nz);
+     if ( nlon <= 0 ) {
+        nlon = 1;
+     }
+     if ( nlat <= 0 ) {
+        nlat = 1;
+     }
+     if ( nz <= 0 ) {
+        nz = 1;
+     }
+     
+     n = nlon*nlat*nz;
+
      if ( n <= 0 ) {
         throw (ParcelGenerator :: badparcelcount());
      };  
@@ -559,105 +521,47 @@ Swarm* PGenGrid :: create_Swarm(const Parcel& p
         // now create a Swarm os that many parcels
         swarm = new Swarm( p, pgrp, n, r);
 
-        // sanity checking //
-        if ( (  ( ( deltaz > 0.0 ) && ( begz <= endz ) ) 
-             || ( ( deltaz < 0.0 ) && ( begz >= endz ) )
-             || ( ( deltaz == 0.0) && ( begz == endz ) )
-             ) and 
-             (  ( ( deltalat > 0.0 ) && ( beglat <= endlat ) ) 
-             || ( ( deltalat < 0.0 ) && ( beglat >= endlat ) )
-             || ( ( deltalat == 0.0) && ( beglat == endlat ) ) 
-             ) and
-             (    ( deltalon != 0.0 ) 
-             || ( ( deltalon == 0.0 ) && ( beglon == endlon ) ) 
-             ) )  {
-             
-             // longitudes will always be OK, if they wrap
-             real lon0 = e.wrap(beglon);
-             real lon1 = e.wrap(endlon);
-             while ( (deltalon > 0.0 ) && ( lon0 > lon1 ) ) {
-                lon1 += e.fullcircle;
-             }   
-             while ( (deltalon < 0.0 ) && ( lon0 < lon1 ) ) {
-                lon1 -= e.fullcircle;
-             } 
-             // now count the gridpoints
-             if ( deltaz != 0.0 ) {
-                nz = (int) ( (endz-begz)/deltaz ) + 1;
-                if ( nz < 2 ) {
-                   nz = 2;
-                }
-                dz = (endz - begz)/(nz - 1.0);
-             } else {
-                nz = 1;
-                dz = 0.0;
-             }
-             if ( deltalat != 0.0 ) {
-                nlat = (int) ( (endlat-beglat)/deltalat ) + 1;
-                if ( nlat < 2 ) {
-                   nlat = 2;
-                }
-                dlat = (endlat - beglat)/(nlat - 1.0);
-             } else {
-                nlat = 1;
-                dlat = 0.0;
-             }
-             if ( deltalon != 0.0 ) {
-                nlon = (int) ( (lon1-lon0)/deltalon ) + 1;
-                if ( nlon < 2 ) {
-                   nlon = 2;
-                }
-                dlon = (endlon - beglon)/(nlon - 1.0);
-             } else {
-                nlon = 1;
-                dlon = 0.0;
-             }
-
-             // sync all the processors before we start loading
-             if ( pgrp != NULLPTR ) {
-                pgrp->sync();
-             }
-             
-             pcl = p.copy();
-               
-             try {
-                  int i=0;
-                  for ( int iz=0; iz < nz; iz++ ) {
-                     z = begz + iz*dz;
-                     for ( int ilat=0; ilat < nlat; ilat++ ) {
-                        lat = beglat + ilat*dlat;
-                        for ( int ilon=0; ilon < nlon; ilon++ ) {
-                            lon = beglon + ilon*dlon;
-                            
-                            swarm->sync();
-                            
-                            pcl->setPos( lon, lat);  // set the horizontal position
-                            pcl->setZ( z );  // set the vertical position
-                            
-                            // If we are the root processor, the parcel pcl
-                            // is valid, and it is sent to the processor
-                            // to which it belongs.
-                            // If we are not the root processor, then
-                            // then pcl has no valid value, but the
-                            // processor will ignore it and receive its
-                            // parcel value from the root processor.
-                            swarm->set( i, *pcl, 0 );
-                            
-                            i++;
-                            
-                        }
-                     }
-                  }
-             } catch (...) {
-                 throw (ParcelGenerator :: badgeneration());
-             }
-             
-             delete pcl;
-             
-        } else {
-            throw(ParcelGenerator :: badparcelcount()); 
+        // sync all the processors before we start loading
+        if ( pgrp != NULLPTR ) {
+           pgrp->sync();
         }
-     
+        
+        pcl = p.copy();
+          
+        try {
+             int i=0;
+             for ( int iz=0; iz < nz; iz++ ) {
+                z = begz + iz*deltaz;
+                for ( int ilat=0; ilat < nlat; ilat++ ) {
+                   lat = beglat + ilat*deltalat;
+                   for ( int ilon=0; ilon < nlon; ilon++ ) {
+                       lon = e.wrap( beglon + ilon*deltalon );
+                       
+                       swarm->sync();
+                       
+                       pcl->setPos( lon, lat);  // set the horizontal position
+                       pcl->setZ( z );  // set the vertical position
+                       
+                       // If we are the root processor, the parcel pcl
+                       // is valid, and it is sent to the processor
+                       // to which it belongs.
+                       // If we are not the root processor, then
+                       // then pcl has no valid value, but the
+                       // processor will ignore it and receive its
+                       // parcel value from the root processor.
+                       swarm->set( i, *pcl, 0 );
+                       
+                       i++;
+                       
+                   }
+                }
+             }
+        } catch (...) {
+            throw (ParcelGenerator :: badgeneration());
+        }
+        
+        delete pcl;
+             
     } catch(...) {
        throw ( ParcelGenerator :: badgeneration() );
     };     

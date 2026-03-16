@@ -32,6 +32,37 @@ coordinates.
 class PGenGrid : public ParcelGenerator {
 
    private:
+
+      /// calculate the number of longitude gridpoints needed
+      /*! This method calculates the number of longitudinal gridpoints needed.
+         \param beglon the beginning longitude value
+         \param endlon the ending longitude value
+         \param deltalon the longitude increment
+         
+         \return the number of longitudes
+      */
+      int count_gridlons( real beglon, real endlon, real deltalon) const;
+   
+      /// calculate the number of latitude gridpoints needed
+      /*! This method calculates the number of latitudinal gridpoints needed.
+         
+         \param beglat the beginning latitude value
+         \param endlat  the ending latitude value
+         \param deltalat the latitude increment
+
+         \return the number of latitudes
+      */
+      int count_gridlats( real beglat, real endlat, real deltalat) const;
+   
+      /// calculate the number of vertical gridpoints needed
+      /*! This method calculates the number of vertical gridpoints needed.
+         \param begz the beginning vertical coordinate value
+         \param endz the ending vertical coordinate value
+         \param deltaz the vertical coordinate increment
+         
+         \return the number of vertical values
+      */
+      int count_gridzs( real begz, real endz, real deltaz) const;
    
       /// calculate the number of gridpoints needed
       /*! This method calculates the number of gridpoints needed.
@@ -51,7 +82,8 @@ class PGenGrid : public ParcelGenerator {
       int count_gridpoints( real beglon, real endlon, real deltalon
                            , real beglat, real endlat, real deltalat
                            , real begz, real endz, real deltaz 
-                           );
+                           , int* nlon=NULLPTR, int* nlat=NULLPTR, int* nz=NULLPTR
+                           ) const;
       
 
       /*! initialize the gridpoints in a sequence container
