@@ -74,7 +74,7 @@ Where do the values of these variable references come from? Some of them are def
 automatically:
 
   * QUANTITY = the name of the quantity being requested
-  * DATETIME = the full "yyyy-mm-ddThh:mm:ss" date string fo rthe valid-at time snapshot
+  * DATETIME = the full "yyyy-mm-ddThh:mm:ss" date string for the valid-at time snapshot
   * DATE = the "yyyy-mm-dd" date string for the valid-at time snapshot
   * TIME = the "hh:mm:ss" time string for the valid-at time snapshot
   * YEAR = the 4-digit year (e.g., 1997) from the valid-at time snapshot
