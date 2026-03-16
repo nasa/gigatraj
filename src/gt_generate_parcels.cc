@@ -505,7 +505,11 @@ int main( int argc, char * argv[] )
                       
                       lonDelta = (URlon - LLlon)/(n3 - 1.0);
                       latDelta = (URlat - LLlat)/(n3 - 1.0);
-                      zDelta = (zhigh - zlow)/(nz - 1.0);
+                      if ( nz > 1.0 ) {
+                         zDelta = (zhigh - zlow)/(nz - 1.0);
+                      } else {
+                         zDelta = (zhigh - zlow)*1.50;
+                      }
                       p_rct_grd = new PGenGrid();
                       //std::cerr << "LL=( " << LLlon << ", " << LLlat << " )" << endl;
                       //std::cerr << "UR=( " << URlon << ", " << URlat << " )" << endl;
