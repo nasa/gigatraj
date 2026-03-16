@@ -355,7 +355,7 @@ int getconfig(int argc, char * const argv[], Configuration& conf, MetSelector &m
     usage +=  " [--netcdf_out outputfile]";
     conf.add("netcdf_out"    , cString,""              , "", 0, "The output is to be sent to the netcdf file specified" );
     usage +=  " [--si]";
-    conf.add("si"    , cBoolean,"N"              , "", 0, "Writes at least the vertical coordinate to netcdf iwth SI units instead of default (km, hPa)" );
+    conf.add("si"    , cBoolean,"N"              , "", 0, "Writes at least the vertical coordinate to netcdf with SI units instead of default (km, hPa)" );
     usage +=  " [--inputnetcdf]";
     conf.add("input_netcdf", cBoolean,"N"               , "", 0, "Parcel input file is a netcdf file" );
 #endif
