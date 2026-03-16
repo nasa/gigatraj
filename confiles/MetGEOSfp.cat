@@ -48,7 +48,7 @@ RUNBEG/S = ${TAG} == "" ? "2500-12-31T23"
 RUNBEG/S = "$4.0{TAG}-$2.4{TAG}-$2.6{TAG}T$2.9{TAG}"
 RUNDATE0/D = [${RUNBEG}]
 # Most GEOS FP products are valid at 00, 03, 06, 09, 12, 15, 18, and 21 hours.
-# and some are vlaid at every hour: 00, 01, 02, ...
+# and some are valid at every hour: 00, 01, 02, ...
 # But some (time-averaged) products are valid at evry hald-hour: 00:30, 01:30, 02:30, etc.
 # This offset accounts for those.
 OFFSET1/F = 30.0/(60.0*24.0)
