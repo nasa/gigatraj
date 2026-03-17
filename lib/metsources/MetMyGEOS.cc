@@ -836,9 +836,15 @@ GridLatLonFieldSfc* MetMyGEOS::new_directGridSfc( const std::string quantity, co
        quantname = quantity.substr(0, pos);
        sfcname = quantity.substr(pos+1);
     } else {
-       //todo:  put in switch block here
-       quantname = quantity;
-       sfcname = "sfc";   // note where we are evaluating the quantity, below
+       std::string tstq;
+       tstq = quantity.substr(0,5);
+       if ( tstq == "tropp" || tstq == "TROPP" ) {
+          quantname = quantity;
+          sfcname = "trop";
+       } else {   
+          quantname = quantity;
+          sfcname = "sfc";   // note where we are evaluating the quantity, below
+       }
     }
 
 
@@ -853,37 +859,46 @@ GridLatLonFieldSfc* MetMyGEOS::new_directGridSfc( const std::string quantity, co
     // from the catalog, so
     // we can know what we are dealing with
     if ( dsInit( quantity, time ) ) {
-       if ( (queryDimensionality() != 2) && (sfcname != "sfc") ) {
+       if ( (queryDimensionality() != 2) 
+       && ( sfcname != "sfc" && sfcname != "trop"  ) ) {
           throw (badDimensionality());
        }
     }
 
     if ( sfcname == "trop" ) {
        // The surface is the tropopause
-       gridsfc->set_quantity(quantity);
-       gridsfc->set_units("");
-       gridsfc->set_time( mtime, time );
-       gridsfc->set_fillval( -9999.0 );
-       gridsfc->set_surface(sfcname);
-    
-       // get the 3D temperatures on our desired vertical coordinate
-       grid3D = new_directGrid3D(temperature_name, time); // get temperature on altitude
-       // compute tropopause from temp on the desired vertical coordinate
-       desiredsfc = new GridLatLonFieldSfc();
-       desiredsfc->setPgroup( my_pgroup, my_metproc );
+       if ( queryDimensionality() != 2 ) {
+          // this is a 3D quanity that we need to interpolate to the tropopause
+          
+          gridsfc->set_quantity(quantity);
+          gridsfc->set_units("");
+          gridsfc->set_time( mtime, time );
+          gridsfc->set_fillval( -9999.0 );
+          gridsfc->set_surface(sfcname);
+       
+          // get the 3D temperatures on our desired vertical coordinate
+          grid3D = new_directGrid3D(temperature_name, time); // get temperature on altitude
+          // compute tropopause from temp on the desired vertical coordinate
+          desiredsfc = new GridLatLonFieldSfc();
+          desiredsfc->setPgroup( my_pgroup, my_metproc );
 
-//       *desiredsfc = dynamic_cast<GridLatLonFieldSfc&>(tropgen.wmo( *grid3D ));
-// FIX THIS!
+   //       *desiredsfc = dynamic_cast<GridLatLonFieldSfc&>(tropgen.wmo( *grid3D ));
+   // FIX THIS!
 
-       // get the desired quantity on desired vertical coord
-       desired3D = new_directGrid3D(quantname, time); 
-       desired3D->setPgroup( my_pgroup, my_metproc );
-       // interpolate the desired quantity onto the desired surface
-       delete gridsfc;
-       gridsfc = dynamic_cast<GridLatLonFieldSfc*>(vin->surface( *desired3D, *desiredsfc ));
-       remove( desired3D );
-       delete desiredsfc;
-       remove( grid3D );
+          // get the desired quantity on desired vertical coord
+          desired3D = new_directGrid3D(quantname, time); 
+          desired3D->setPgroup( my_pgroup, my_metproc );
+          // interpolate the desired quantity onto the desired surface
+          delete gridsfc;
+          gridsfc = dynamic_cast<GridLatLonFieldSfc*>(vin->surface( *desired3D, *desiredsfc ));
+          remove( desired3D );
+          delete desiredsfc;
+          remove( grid3D );
+       } else {
+          // This is a 2D quanity that is inherently on the tropopause
+          readSource( quantity, time, gridsfc );
+          
+       }
     } else if ( sfcname == "sfc" ) { 
        if ( queryOTF( quantity, OTFquants ) ) {
           nOTF = OTFquants.size();
