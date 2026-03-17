@@ -29,10 +29,10 @@ class Filter_Trop {
       /// the constructor
       /*! This is the constructor for Filter_Trop objects.
            
-          \param direction  sets the direction of the parcles to be filtered:
-                            -1 filters parcels heading towards lower altitudes
-                            +1 filters parcels heading towards higher altitudes
-                            0 filters parcels heading either up or down
+          \param direction  sets the direction of the parcels to be filtered:
+                            -1 filters out parcels below the tropopause
+                            +1 filters out parcels above the torpopause
+                            0 filters parcels away from the torpopause in either direction
           
           \param tolerance the distance from the tropopause 
                            (in whatever vertical coordinate is being used) within which 

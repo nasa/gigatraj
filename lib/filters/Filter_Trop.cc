@@ -119,7 +119,11 @@ void Filter_Trop::apply( Parcel& p )
      bool halt;
      real zdif;
      std::string trop_units;
+     bool tooLow;
+     bool tooHigh;
      int vertdir;
+     real zu;
+     real zl;
 
      // we only test Parcels that are bieng traced
      if ( ! p.queryNoTrace() ) {
@@ -147,44 +151,56 @@ void Filter_Trop::apply( Parcel& p )
         if ( FINITE(tropz) ) {
 
            if ( metsrc->vertical() == tkind ) {
+
               z = vert;
+              zl = z - vertdir*tol;
+              zu = z + vertdir*tol;
+     
            } else {
               // convert the parcel's vertical coordinate to tropopause quantity
               z = metsrc->getData( tkind, time, lon, lat, vert, METDATA_NANBAD );
-           }   
-           if ( FINITE(z) ) {
-     
-              // the distance of the parcel from the topropause
-              zdif = z - tropz;
+              zu = metsrc->getData( tkind, time, lon, lat, vert + vertdir*tol, METDATA_NANBAD );
+              zl = metsrc->getData( tkind, time, lon, lat, vert - vertdir*tol, METDATA_NANBAD );
+           } 
            
-              switch (dir*vertdir) {
-              case -1: // must be below the trop 
-                 // (note that we are testing for Parcels that we *keep*,
-                 // not the ones that we want to halt!)
-                 if ( zdif > (-tol) ) {
-                    halt = false;
-                 }
-                 break;
-              case  1: // must be above the trop
-                 if ( zdif < tol ) {
-                    halt = false;
-                 }
-                 break;
-              case 0: // must be away from the trop in either direction
-                 if ( ABS(zdif) < tol ) {
-                    halt = false;
-                 }
-                 break;
+           if ( FINITE(z) && FINITE(zu) && FINITE(zl) ) {
+
+              if ( vertdir >= 0 ) {
+                 tooLow  = zl > tropz;
+                 tooHigh = zu < tropz;
+              } else {
+                 tooLow = zl < tropz;
+                 tooHigh = zu > tropz;                 
               }
+           }
+                 
+           switch (dir) {
+           case -1: // must be below the trop 
            
-              if ( neg ) {
-                 halt = ! halt;
-              }
+              halt = tooLow;
            
-              if ( halt ) {
-                 p.setNoTrace();
-              }
-           }     
+              break;
+           case  1: // must be above the trop
+           
+              halt = tooHigh;
+
+              break;
+           case 0: // must be close to the trop
+              
+              halt = tooLow || tooHigh;
+              
+              break;
+           }
+                 
+           if ( neg ) {
+              halt = ! halt;
+           }
+           
+           
+           if ( halt ) {
+              p.setNoTrace();
+           }
+
         }
      }
 }

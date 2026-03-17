@@ -51,7 +51,8 @@ bool pcheck( int i, Parcel& p, real thresh, MetGridSBRot *metsrc, std::string ta
    p.getPos( &plon, &plat );
    pz = p.getZ();
    ptrop = metsrc->getData("tropz", ptime, plon, plat, pz );
-   if ( (pz - ptrop) < (- thresh) ) {
+   //if ( (pz - ptrop) < (- thresh) ) {
+   if ( ( pz - thresh ) > ptrop ) {
       if ( p.queryNoTrace() ) {
          // good
          result = true;
