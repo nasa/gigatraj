@@ -145,24 +145,35 @@ void Filter_Trop::apply( Parcel& p )
         // trigger the tropopause tests below.
         halt = true;
         
-        // get the trop vert coord at this parcel's location
-        tropz = metsrc->getData( tquant, time, lon, lat, vert, METDATA_NANBAD );
 
-        if ( FINITE(tropz) ) {
+        if ( metsrc->vertical() == tkind ) {
 
-           if ( metsrc->vertical() == tkind ) {
+           // get the trop vert coord at this parcel's location
+           tropz = metsrc->getData( tquant, time, lon, lat, vert, METDATA_NANBAD );
 
+           if ( FINITE(tropz) ) {
+              // note; there is a possibility here
+              // that tropz will be in different units than vert
+              // fixing will require some reform in how MetData handles
+              // vertical coordinates.
+              
               z = vert;
               zl = z - vertdir*tol;
               zu = z + vertdir*tol;
-     
-           } else {
+           }
+        } else {
+           // get the trop vert coord at this parcel's location
+           tropz = metsrc->getData( tquant, time, lon, lat, vert, METDATA_NANBAD | METDATA_MKS );
+
+           if ( FINITE(tropz) ) {
               // convert the parcel's vertical coordinate to tropopause quantity
-              z = metsrc->getData( tkind, time, lon, lat, vert, METDATA_NANBAD );
-              zu = metsrc->getData( tkind, time, lon, lat, vert + vertdir*tol, METDATA_NANBAD );
-              zl = metsrc->getData( tkind, time, lon, lat, vert - vertdir*tol, METDATA_NANBAD );
-           } 
+              //z = metsrc->getData( tkind, time, lon, lat, vert, METDATA_NANBAD | METDATA_MKS );
+              zu = metsrc->getData( tkind, time, lon, lat, vert + vertdir*tol, METDATA_NANBAD | METDATA_MKS );
+              zl = metsrc->getData( tkind, time, lon, lat, vert - vertdir*tol, METDATA_NANBAD | METDATA_MKS );
+           }
+        } 
            
+        if ( FINITE(tropz) ) {
            if ( FINITE(z) && FINITE(zu) && FINITE(zl) ) {
 
               if ( vertdir >= 0 ) {
@@ -259,7 +270,7 @@ void Filter_Trop::apply( std::deque<Parcel>& p )
 void Filter_Trop::apply( Flock& p )
 {
     Flock::iterator iter;
-    
+
     for ( iter=p.begin(); iter != p.end(); iter++ ) {
         apply( *iter );
     }
