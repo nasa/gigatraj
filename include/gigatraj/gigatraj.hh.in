@@ -485,7 +485,7 @@ typedef double real;
 #define TRUNC trunc
 #define ROUND round
 #define RNAN nan
-#define FINITE finite
+#define FINITE isfinite
 
 #else
 
@@ -528,7 +528,7 @@ typedef float real;
 #define TRUNC truncf
 #define ROUND roundf
 #define RNAN nanf
-#define FINITE finitef
+#define FINITE isfinite
 
 #endif
 
