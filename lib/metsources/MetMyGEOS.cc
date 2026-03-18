@@ -7238,8 +7238,8 @@ bool MetMyGEOS::TGridSpec::set( double tstart, double tnext, double tdelta )
     next = tnext;
     delta = tdelta;
     
-    has_next =  finite(next) && ( next >= start );
-    has_delta = finite(delta) && ( delta > 0.0 );
+    has_next =  isfinite(next) && ( next >= start );
+    has_delta = isfinite(delta) && ( delta > 0.0 );
     
     if ( has_next ) {
        // 'next' was specified
@@ -7268,7 +7268,7 @@ bool MetMyGEOS::TGridSpec::set( double tstart, double tnext, double tdelta )
           }
        } else if ( next == start ) {
           // only one time in the spec.
-          if ( finite(delta) && (delta > 0.0) ) {
+          if ( isfinite(delta) && (delta > 0.0) ) {
              given = given | 0x04;
              next = start + delta;
              n = 1;
@@ -7320,7 +7320,7 @@ bool MetMyGEOS::TGridSpec::set( double tstart, double tend, int tn )
     end = tend;
     n = tn;
 
-    has_end = finite(end) && ( end > start );
+    has_end = isfinite(end) && ( end > start );
     has_n = (n > 1 );
 
     if ( has_end ) {
@@ -7374,10 +7374,10 @@ bool MetMyGEOS::TGridSpec::set( double tstart, double tnext, int tn, double tdel
     next = tnext;
     delta = tdelta;
 
-    has_next = finite(next) && ( next > start );
-    has_end = finite(end) && ( end > start );
+    has_next = isfinite(next) && ( next > start );
+    has_end = isfinite(end) && ( end > start );
     has_n = (n >= 1 );
-    has_delta = finite(delta) && ( delta > 0.0);
+    has_delta = isfinite(delta) && ( delta > 0.0);
 
     if ( has_next ) {
        given = given | 0x02;       
@@ -7442,12 +7442,12 @@ bool MetMyGEOS::TGridSpec::test( const TGridSpec& cmp ) const
     // times must match within 10 seconds
     threshold = 10.0/3600.0/24.0;
      
-    has_start  = (given & 0x01) && (cmp.given & 0x01) && finite(start) && finite(cmp.start);
-    has_next   = (given & 0x02) && (cmp.given & 0x02) && finite(next) && finite(cmp.next);
-    has_delta  = (given & 0x04) && (cmp.given & 0x04) && finite(delta) && finite(cmp.delta) 
+    has_start  = (given & 0x01) && (cmp.given & 0x01) && isfinite(start) && isfinite(cmp.start);
+    has_next   = (given & 0x02) && (cmp.given & 0x02) && isfinite(next) && isfinite(cmp.next);
+    has_delta  = (given & 0x04) && (cmp.given & 0x04) && isfinite(delta) && isfinite(cmp.delta) 
                && (delta > 0.0) && (cmp.delta > 0.0 );
     has_n      = (given & 0x08) && (cmp.given & 0x08) && (n > 0) && (cmp.n > 0 );
-    has_end    = (given & 0x10) && (cmp.given & 0x10) && finite(end) && finite(cmp.end);
+    has_end    = (given & 0x10) && (cmp.given & 0x10) && isfinite(end) && isfinite(cmp.end);
     
     // the start times must match
     if ( has_start && (fabs( start - cmp.start ) < threshold) ) {
@@ -7557,17 +7557,17 @@ bool MetMyGEOS::TGridSpec::merge( TGridSpec& in )
      result = this->test( in );
      if ( result ) {
         
-         has_start  = (given & 0x01) && finite(start);
-         has_next   = (given & 0x02) && finite(next) ;
-         has_delta  = (given & 0x04) && finite(delta) && (delta > 0.0);
+         has_start  = (given & 0x01) && isfinite(start);
+         has_next   = (given & 0x02) && isfinite(next) ;
+         has_delta  = (given & 0x04) && isfinite(delta) && (delta > 0.0);
          has_n      = (given & 0x08) && (n > 0);
-         has_end    = (given & 0x10) && finite(end);
+         has_end    = (given & 0x10) && isfinite(end);
         
-         in_has_start  = (in.given & 0x01) && finite(in.start);
-         in_has_next   = (in.given & 0x02) && finite(in.next) ;
-         in_has_delta  = (in.given & 0x04) && finite(in.delta) && (in.delta > 0.0);
+         in_has_start  = (in.given & 0x01) && isfinite(in.start);
+         in_has_next   = (in.given & 0x02) && isfinite(in.next) ;
+         in_has_delta  = (in.given & 0x04) && isfinite(in.delta) && (in.delta > 0.0);
          in_has_n      = (in.given & 0x08) && (in.n > 0);
-         in_has_end    = (in.given & 0x10) && finite(in.end);
+         in_has_end    = (in.given & 0x10) && isfinite(in.end);
          
          if ( ( ! has_start ) && in_has_start ) {
             start = in.start;
@@ -7602,11 +7602,11 @@ bool MetMyGEOS::TGridSpec::get( double desired_time, double& myStart, int& myN, 
      
      // these items may have bene comuted. We can still use them,
      // so we don't have to check 'given' to see whether they were specified 
-     has_start  = finite(start);
-     has_next   = finite(next) ;
-     has_delta  = finite(delta) && (delta > 0.0);
+     has_start  = isfinite(start);
+     has_next   = isfinite(next) ;
+     has_delta  = isfinite(delta) && (delta > 0.0);
      has_n      = (n > 0);
-     has_end    = finite(end);
+     has_end    = isfinite(end);
      
      result = false;
      
