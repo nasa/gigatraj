@@ -30,8 +30,6 @@
 #include <sstream>
 
 
-extern int optind;
-
 using namespace gigatraj;
 
 

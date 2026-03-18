@@ -1579,7 +1579,7 @@ void NetcdfOut::writeout( double t, unsigned int n, real *lons, real *lats, real
    if ( dbug > 5 ) {
       std::cerr << "NetcdfOut::writeout: seeking to write " << n << " Parcels at time " << t << std::endl;
    }
-   if ( ( ip == 0 ) || ( ! finite( tyme ) ) || ( ( t != tyme ) && (! notrace) ) ) {
+   if ( ( ip == 0 ) || ( ! isfinite( tyme ) ) || ( ( t != tyme ) && (! notrace) ) ) {
       // new time to output to file as part of the time dimension
       if ( dbug > 10 ) {
          std::cerr << "NetcdfOut::writeout: advancing time from " << tyme << " to " << t << std::endl;
@@ -1593,7 +1593,7 @@ void NetcdfOut::writeout( double t, unsigned int n, real *lons, real *lats, real
       }
       
       // between the two times, determine which direction we are moving
-      if ( (dir == 0) && (FINITE(tyme)) ) {
+      if ( (dir == 0) && isfinite(tyme) ) {
          if ( tyme < t ) {
             dir = 1;
          } else {
@@ -2597,7 +2597,7 @@ void NetcdfOut::apply( Flock& p )
           }   
       }
       
-      if ( ! FINITE(tt) ) {
+      if ( ! isfinite(tt) ) {
          // No Parcels in this batch being traced.
          // We must therefore be careful, since none
          // of their times are valid for output, and
@@ -2606,7 +2606,7 @@ void NetcdfOut::apply( Flock& p )
          // We start with a valid time
          // but if there is no valid time yet, we use the
          // last valid parcel time that we know of
-         if ( FINITE(tyme) ) {
+         if ( isfinite(tyme) ) {
             tt = tyme;
          } else {
             tt = ttbck;
@@ -2881,9 +2881,9 @@ void NetcdfOut::apply( Swarm& p )
              
           }   
       }
-      if ( ! FINITE(tt) ) {
+      if ( ! isfinite(tt) ) {
          // all Parcels in this batch are no-trace
-         if ( FINITE(tyme) ) {
+         if ( isfinite(tyme) ) {
             tt = tyme;
          } else {
             tt = ttbck;
