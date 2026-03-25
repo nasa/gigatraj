@@ -30,9 +30,9 @@ class Filter_Trop {
       /*! This is the constructor for Filter_Trop objects.
            
           \param direction  sets the direction of the parcels to be filtered:
-                            -1 filters out parcels below the tropopause
-                            +1 filters out parcels above the torpopause
-                            0 filters parcels away from the torpopause in either direction
+                            -1 filters out parcels above the tropopause, leaving those above it
+                            +1 filters out parcels below the tropopause, leaving those below it
+                            0 filters out parcels away from the tropopause in either direction, leaving those close toit
           
           \param tolerance the distance from the tropopause 
                            (in whatever vertical coordinate is being used) within which 
@@ -43,7 +43,7 @@ class Filter_Trop {
                           (This allows a choice for those data sets that have
                           multiple different kinds of tropopause products.)  
                                              
-          \param field     the name of the quantity in the parcels' meteorological data source 
+          \param field    the name of the quantity in the parcels' meteorological data source 
                           that corresponds to the three-dimensional field from
                           which the tropopause is extracted. For example, if
                           the tropopause pressure is "tropp" and the name of pressure

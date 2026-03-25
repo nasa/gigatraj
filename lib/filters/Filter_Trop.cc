@@ -116,12 +116,14 @@ void Filter_Trop::apply( Parcel& p )
      real tropp, tropz;
      real z;
      std::string paname;
+     std::string prsname;
      bool halt;
      real zdif;
      std::string trop_units;
      bool tooLow;
      bool tooHigh;
      int vertdir;
+     int kinddir;
      real zu;
      real zl;
 
@@ -135,9 +137,13 @@ void Filter_Trop::apply( Parcel& p )
         if ( ! metsrc->getOption( "PressureAltitudeName", paname ) ) {
            paname = "PAlt";
         }
-     
+        if ( ! metsrc->getOption( "PressureName", prsname ) ) {
+           prsname = "P";
+        }
+    
         // does the vertical coordinate increase or decrease with altitude?
         vertdir = metsrc->vIncrease();
+        
         
         // we assume that we will halt the Parcel,
         // so that Parcels with invalid tropopause values
@@ -147,6 +153,8 @@ void Filter_Trop::apply( Parcel& p )
         
 
         if ( metsrc->vertical() == tkind ) {
+           
+           kinddir =vertdir;
 
            // get the trop vert coord at this parcel's location
            tropz = metsrc->getData( tquant, time, lon, lat, vert, METDATA_NANBAD );
@@ -162,7 +170,13 @@ void Filter_Trop::apply( Parcel& p )
               zu = z + vertdir*tol;
            }
         } else {
-           // get the trop vert coord at this parcel's location
+        
+           kinddir = 1;
+           if ( tkind == prsname ) {
+              kinddir = -1;
+           }
+        
+           // get the trop value at this parcel's location
            tropz = metsrc->getData( tquant, time, lon, lat, vert, METDATA_NANBAD | METDATA_MKS );
 
            if ( FINITE(tropz) ) {
@@ -174,26 +188,25 @@ void Filter_Trop::apply( Parcel& p )
         } 
            
         if ( FINITE(tropz) ) {
-           if ( FINITE(z) && FINITE(zu) && FINITE(zl) ) {
-
-              if ( vertdir >= 0 ) {
-                 tooLow  = zl > tropz;
-                 tooHigh = zu < tropz;
+           if ( FINITE(zu) && FINITE(zl) ) {
+              if ( kinddir >= 0 ) {
+                 tooLow  = zu < tropz;
+                 tooHigh = zl > tropz;
               } else {
-                 tooLow = zl < tropz;
-                 tooHigh = zu > tropz;                 
+                 tooLow = zu > tropz;
+                 tooHigh = zl < tropz;                 
               }
            }
-                 
+
            switch (dir) {
            case -1: // must be below the trop 
            
-              halt = tooLow;
+              halt = tooHigh;
            
               break;
            case  1: // must be above the trop
            
-              halt = tooHigh;
+              halt = tooLow;
 
               break;
            case 0: // must be close to the trop
@@ -234,9 +247,9 @@ void Filter_Trop::apply( Parcel * const p, const int n )
 void Filter_Trop::apply( std::vector<Parcel>& p )
 {
    std::vector<Parcel>::iterator ip;
-    
+   
    for ( ip=p.begin(); ip != p.end(); ip++ ) {
-    
+
        apply( *ip );
 
    }

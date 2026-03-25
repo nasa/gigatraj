@@ -36,37 +36,67 @@ using namespace gigatraj;
 using std::cerr;
 using std::endl;
 
-bool pcheck( int i, Parcel& p, real thresh, MetGridSBRot *metsrc, std::string tag )
+bool pcheck( int i, Parcel& p, real thresh, int dir, MetGridSBRot *metsrc, std::string tag )
 {
    double ptime;
    real plon;
    real plat;
    real pz;
-   real ptrop;
+   real ztrop;
    bool result;
+   real z_upper;
+   real z_lower;
+   bool too_low;
+   bool too_high;
+   bool filter_out;
    
    result = false;
    
    ptime = p.getTime();
    p.getPos( &plon, &plat );
    pz = p.getZ();
-   ptrop = metsrc->getData("tropz", ptime, plon, plat, pz );
-   //if ( (pz - ptrop) < (- thresh) ) {
-   if ( ( pz - thresh ) > ptrop ) {
+   ztrop = metsrc->getData("tropz", ptime, plon, plat, pz );
+   z_upper = pz + thresh;
+   z_lower = pz - thresh;
+   
+   too_low = false;
+   too_high= false;
+   if ( z_lower > ztrop ) {
+      too_high = true;
+   }
+   if ( z_upper < ztrop ) {
+      too_low = true;
+   }
+   
+   filter_out = false;
+   switch (dir) {
+   case -1: // filter out things that are higher than the trop
+         filter_out = too_high;
+         break;
+   case  0: // filter out things that are too far away from the trop
+         filter_out = too_low || too_high;
+         break;
+   case  1: // filter out things that are lower than the trop
+         filter_out = too_low;
+         break;
+   }
+   
+   if ( filter_out ) {
       if ( p.queryNoTrace() ) {
          // good
          result = true;
       } else {
          // bad:
-         result = -1;
-         cerr << tag << " parcel " << i << ": z=" << pz << ", trop = " << ptrop
+         result = false;
+         cerr << tag << " parcel " << i << ": z=" << pz << ", trop = " << ztrop
               << " (at " << plon << ", " << plat << ") should have been filtered but was not " << endl;
               
       }       
    } else {
       if ( p.queryNoTrace() ) {
          // bad:
-         cerr << tag << " parcel " << i << ": z=" << pz << ", trop = " << ptrop
+         result = false;
+         cerr << tag << " parcel " << i << ": z=" << pz << ", trop = " << ztrop
               << " (at " << plon << ", " << plat << ") should not have been filtered but was " << endl;
               
       } else {
@@ -118,6 +148,8 @@ int main()
     real ptime;
     // tropopause at test parcel
     real ptrop;
+    // filter direction
+    int dir;
 
     // gridded SBRot source
     metsrc = new MetGridSBRot;
@@ -128,10 +160,12 @@ int main()
     
     thresh = 0.2;
 
+    dir = 1; // filter to retain everything above the trop
+
     // set the filter characteristics
     filter.quantity("tropz"); // this is our tropopause quantity
     filter.field("alt"); // this is our tropopause quantity
-    filter.direction(-1); // filter everything below the trop
+    filter.direction(dir); 
     filter.threshold( thresh ); // filter parcels lower than this distance below the trop
     filter.negation(false); // no negation
     
@@ -175,23 +209,23 @@ int main()
         , swarm_i++
         ) {
        
-        if ( ! pcheck( i, p_array[i], thresh, metsrc, "Array" ) ) {
+        if ( ! pcheck( i, p_array[i], thresh, dir, metsrc, "Array" ) ) {
            exit(1);
         }   
         
-        if ( ! pcheck( i, *vector_i, thresh, metsrc, "Vector" ) ) {
+        if ( ! pcheck( i, *vector_i, thresh, dir, metsrc, "Vector" ) ) {
            exit(1);
         }   
-        if ( ! pcheck( i, *list_i, thresh, metsrc, "List" ) ) {
+        if ( ! pcheck( i, *list_i, thresh, dir, metsrc, "List" ) ) {
            exit(1);
         }   
-        if ( ! pcheck( i, *deque_i, thresh, metsrc, "Deque" ) ) {
+        if ( ! pcheck( i, *deque_i, thresh, dir, metsrc, "Deque" ) ) {
            exit(1);
         }   
-        if ( ! pcheck( i, *flock_i, thresh, metsrc, "Flock" ) ) {
+        if ( ! pcheck( i, *flock_i, thresh, dir, metsrc, "Flock" ) ) {
            exit(1);
         }   
-        if ( ! pcheck( i, *swarm_i, thresh, metsrc, "Swarm" ) ) {
+        if ( ! pcheck( i, *swarm_i, thresh, dir, metsrc, "Swarm" ) ) {
            exit(1);
         }   
         
