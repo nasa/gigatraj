@@ -340,7 +340,7 @@ class NetcdfOut : public ParcelReporter {
       int debug();
     
     
-      /// set the maximum pnumber of parcels to write at a time
+      /// set the maximum number of parcels to write at a time
       /*!/ This method sets the maximum number of parcels to write to the netcdf file at one time.
            If the total number of Parcels is massive, is may be inconvenient to write them all out
            to the file at once, so NetcdfOUt will break them into sequebces that are written.
@@ -351,7 +351,7 @@ class NetcdfOut : public ParcelReporter {
       */
       void maxSequence( int n );
       
-      /// returns the maximum pnumber of parcels to write at a time     
+      /// returns the maximum number of parcels to write at a time     
       /*! This method returns the maximum number of parcles to write out at once. Lerger
           numbers of parcels are broken into subsets which are then written to the 
           netcdf file.
