@@ -207,7 +207,7 @@ MPIGrp::~MPIGrp()
          MPI_Group_free(&group);
       }   
    };  
-
+   
 };
 
 int MPIGrp::is_root() const

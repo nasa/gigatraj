@@ -286,7 +286,7 @@ void Swarm::setup( const Parcel &p, ProcessGrp* pgrp, int n, int r)
    metsrc = p.metsrc;
    integ = p.integ;
    
-   if ( sample_p == NULLPTR ) {
+   if ( sample_p != NULLPTR ) {
       delete sample_p;
    }
    sample_p = p.copy();

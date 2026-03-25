@@ -1092,8 +1092,8 @@ void MetGridLatLonData::getData( string quantity, double time, int n, real* lons
         std::cerr << "MetGridLatLonData::getData:___        = " << time << ", " << values[0] << std::endl;
      }
      
-     delete vals2;
-     delete vals1;
+     delete[] vals2;
+     delete[] vals1;
      
      if ( dbug > 3 ) {   
         std::cerr << "MetGridLatLonData::getData: ==== returning " << result << std::endl; 
@@ -1442,10 +1442,10 @@ void MetGridLatLonData::getVectorData( int n, string lonquantity, string latquan
          }
      }
      
-     delete latvals2;
-     delete latvals1;
-     delete lonvals2;
-     delete lonvals1;
+     delete[] latvals2;
+     delete[] latvals1;
+     delete[] lonvals2;
+     delete[] lonvals1;
      
 }
 
@@ -1569,7 +1569,7 @@ double MetGridLatLonData::get_default_timedelta( const std::string &quantity, co
      time = cal2Time( caltime );
       
      bracket( quantity, time, &dbeg, &dend );
-     if ( ABS( dend - dbeg ) < 1e-8 ) {
+     if ( abs( dend - dbeg ) < 1e-8 ) {
         // oop's the test time lies on the boundary between data time ticks
         // shift it by about 10 minutes
         time = time + 10.0/60.0/24.0;

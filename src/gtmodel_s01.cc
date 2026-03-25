@@ -1330,7 +1330,7 @@ int main( int argc, char * argv[] )
            }
            
            // One step closer to printing out
-           accumul_time += ABS(tdelta);
+           accumul_time += abs(tdelta);
            
            //tracing = (tdelta > 0)? (time < endtime) : (time > endtime);
            
@@ -1360,7 +1360,7 @@ int main( int argc, char * argv[] )
            
            // we will do output if we are set to produce output, and it is now time to do so
            if ( outfreq > 0 ) {
-              if ( (outfreq - accumul_time) < ABS(tdelta)/2.0 ) {   
+              if ( (outfreq - accumul_time) < abs(tdelta)/2.0 ) {   
                  do_output = true;
               }   
            }

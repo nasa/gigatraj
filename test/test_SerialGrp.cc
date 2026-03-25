@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
     grp_a->sync();
     
     // subgroup again, this time asking for too many processes
-    grp_b = grp_a->subgroup( grp_a->size()+1 );
+    grp_b = grp_a->subgroup( grp_a->size() + 1 );
     if ( grp_a->size() != grp_b->size() ) {
        cerr << "[" << me << "] too-big subgroup b created with wrong size!" << endl;
        exit(1);
@@ -221,7 +221,7 @@ int main(int argc, char* argv[])
     // subgroup again, again time asking for too many processes, but with strictness this time
     status = 1;
     try {
-       grp_b = grp_a->subgroup( grp_a->size()+1, PG_STRICT );
+       grp_b = grp_a->subgroup( grp_a->size() + 1, PG_STRICT );
     } catch ( ProcessGrp::badgroupsize err) {
        status = 0;
     }
@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
     // =========================  method split
     status = 1;
     try {
-       grp_a->split( grp_a->size()+1, &grp_b, &grp_c, PG_KEEPROOT );
+       grp_a->split( grp_a->size() + 1, &grp_b, &grp_c, PG_KEEPROOT | PG_STRICT );
     } catch ( ProcessGrp::badgroupsize err) {
        status = 0;
     }

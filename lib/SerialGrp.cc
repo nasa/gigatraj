@@ -144,8 +144,9 @@ SerialGrp* SerialGrp::subgroup(int size, int flags, int offset)
       // default to the same number of processors as the current group
       newsize = num_procs;
    }   
+
    if ( newsize > num_procs ) {
-      if ( flags && PG_STRICT ) {
+      if ( flags & PG_STRICT ) {
          throw(ProcessGrp::badgroupsize());
       } else {
          newsize = num_procs;
@@ -186,8 +187,10 @@ void SerialGrp::split( int size, ProcessGrp **a, ProcessGrp **b, int flags ) con
    if ( size_a <= 0 ) {
       throw(ProcessGrp::badgroupsize());
    }
+   // the first group must have only one processor
    if ( size_a > 1 ) {
-      if ( flags && PG_STRICT ) {
+
+      if ( flags & PG_STRICT ) {
          throw(ProcessGrp::badgroupsize());
       } else {
          size_a = 1;
@@ -198,7 +201,7 @@ void SerialGrp::split( int size, ProcessGrp **a, ProcessGrp **b, int flags ) con
    
    // how many processors are left over for the second group?
    size_b = num_procs - size_a;
-   if ( flags && PG_KEEPROOT ) {
+   if ( flags & PG_KEEPROOT ) {
       // we need to keep the root processor here, too
       size_b++;
    }

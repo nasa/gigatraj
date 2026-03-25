@@ -562,6 +562,11 @@ Catalog::VarOp::VarOp( Catalog::VarOperator op, int pri )
            nops = 1;
            priority = 80 + pri;
           break;
+     case NOP:
+           typ = 'U';
+           nops = 0;
+           priority = -1;
+          break;
      }
  
  
@@ -636,6 +641,9 @@ void Catalog::VarOp::dump( int indent ) const
           break;
      case Negate:
           name = "(-)";
+          break;
+     case NOP:
+          name = "()";
           break;
    }
    
@@ -2131,7 +2139,7 @@ bool Catalog::s2Int( const std::string& str, int &result )
               break;            
            }
        }
-       if ( i = slen ) {
+       if ( i == slen ) {
            // got all the way to the end of the string with
            // no unexpected characters
            if ( sign < 0 ) {

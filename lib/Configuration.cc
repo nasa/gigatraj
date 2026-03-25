@@ -82,7 +82,7 @@ Configuration::Configuration(const Configuration& src)
         cfgnames.push_back( *ni );
     }
  
-    status = status;
+    status = src.status;
     params = src.params;
 
 }
@@ -105,7 +105,7 @@ Configuration& Configuration::operator=(const Configuration& src)
         cfgnames.push_back( *ni );
     }
  
-    status = status;
+    status = src.status;
     params = src.params;
 
     return *this;
@@ -612,7 +612,7 @@ void Configuration::cmdLineConfigs(int argc, char * const argv[] )
                 // set the parameter to the option value
                 params[pname].value = std::string(optarg);
                 
-                if ( params[pname].flags && cNoReplace ) {
+                if ( params[pname].flags & cNoReplace ) {
                    std::cerr << "cannot set parameter " << pname << " from cmd line " <<  std::endl;
                    throw(Configuration::badcmdline());               
                 }
@@ -741,7 +741,7 @@ void Configuration::loadfile( const std::string &filename, const std::string cfg
               line = strwht(line);
               
               // ignore empty lines and comments
-              if ( line == "" | line[0] == '#' ) {
+              if ( line == "" || line[0] == '#' ) {
                  continue;
               }
               
@@ -767,7 +767,7 @@ void Configuration::loadfile( const std::string &filename, const std::string cfg
                     }
                     
                     // also, are we even allowed to set this parameter?
-                    if ( p.flags && cNoReplace ) {
+                    if ( p.flags & cNoReplace ) {
                        std::cerr << "cannot set parameter " << keyword << " in " << filename << " on line " << lineno <<  std::endl;
                        throw(Configuration::badcfgread());               
                     }
@@ -869,7 +869,7 @@ int Configuration::loadCmdLine(int argc, char * const argv[] )
              pname = std::string(longopts[opt_index].name);
 
  
-             if ( params[pname].flags && cNoReplace ) {
+             if ( params[pname].flags & cNoReplace ) {
                 std::cerr << "cannot set parameter " << pname << " from cmd line " <<  std::endl;
                 throw(Configuration::badcmdline());               
              }
@@ -911,7 +911,7 @@ int Configuration::loadCmdLine(int argc, char * const argv[] )
                    // set the parameter value from the option value
                    if ( p.shortopt == idx ) {
 
-                      if ( p.flags && cNoReplace ) {
+                      if ( p.flags & cNoReplace ) {
                          std::cerr << "cannot set parameter " << pname << " from cmd line " <<  std::endl;
                          throw(Configuration::badcmdline());               
                       }
@@ -929,7 +929,7 @@ int Configuration::loadCmdLine(int argc, char * const argv[] )
                          // set the value
                          p.value = std::string(optarg);
 
-                         if ( p.flags && cNoReplace ) {
+                         if ( p.flags & cNoReplace ) {
                             std::cerr << "cannot set parameter " << pname << " from cmd line " <<  std::endl;
                             throw(Configuration::badcmdline());               
                          }

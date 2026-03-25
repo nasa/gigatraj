@@ -252,7 +252,7 @@ void GridFieldDimLon::setWraps( const int loadFlags )
       // whether they are close enough that we can consider the values
       // to cover the domain
       
-      wraps =  ( ABS( past_end - dater[0] ) <  ABS(dz/4.0) );
+      wraps =  ( ABS( past_end - dater[0] ) <  ABS(dz)/4.0 );
    
    }
 }
