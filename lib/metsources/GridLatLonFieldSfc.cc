@@ -31,7 +31,7 @@ const std::string GridLatLonFieldSfc::iam = "GridLatLonFieldSfc";
 // Default constructor
 GridLatLonFieldSfc::GridLatLonFieldSfc() : GridFieldSfc()
 {   
-   lons.wrapping( 360.0 );
+   lons.wrapping( 1 );
    
    use_array = 1;
    nd = 0;

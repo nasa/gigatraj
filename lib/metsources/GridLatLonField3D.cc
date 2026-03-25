@@ -31,7 +31,7 @@ const std::string GridLatLonField3D::iam = "GridLatLonField3D";
 // Default constructor
 GridLatLonField3D::GridLatLonField3D(): GridField3D() 
 {
-   lons.wrapping( 360.0 );
+   lons.wrapping( 1 );
 }
 
 // Default destructor

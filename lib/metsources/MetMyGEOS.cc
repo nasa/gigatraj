@@ -2247,7 +2247,7 @@ bool MetMyGEOS::DsValid( const std::string& quant, double t )
             index = test_dsrc;
         }
         if ( is_open && opened_dsrc >= 0 && opened_dsrc < ds.size() ) {
-           index == opened_dsrc;
+           index = opened_dsrc;
         }
         
         if ( quant == ds[index].name ) {
@@ -3147,7 +3147,7 @@ int MetMyGEOS::Source_findtime(const std::string& quantity, const double desired
    
        if ( idx >= 0  ) {
           // should be within 2 minutes
-          if ( ABS(xtime - desired_time) < (2.0/60.0/24.0) ) {
+          if ( abs(xtime - desired_time) < (2.0/60.0/24.0) ) {
              result = idx;
           } else {
             if ( dbug > 5 ) {
@@ -3159,7 +3159,7 @@ int MetMyGEOS::Source_findtime(const std::string& quantity, const double desired
                          << xtime  << "(" << st1 << ")"
                          << " vs " 
                          << desired_time   << "(" << st2  << ")"
-                         << " diff = " << ABS(xtime - desired_time) 
+                         << " diff = " << abs(xtime - desired_time) 
                          << std::endl;
             }
           }   
@@ -3240,8 +3240,10 @@ void MetMyGEOS::Source_dim_attrs(const std::string &dname, const int var_id, con
              }   
 
              Source_read_attr( outval, attrname, var_id, attr_size );
+             
+             aname.assign(attrname);
 
-             if ( dname == legalDims[3] && attrname == "units" ) {
+             if ( dname == legalDims[3] && aname == "units" ) {
                 size_t istart;
                 istart = outval.find(" since ");
                 if ( istart != std::string::npos ) {

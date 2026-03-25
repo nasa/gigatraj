@@ -1290,12 +1290,12 @@ int Flock::advance( double dt )
                   
           }
           
-          delete traceflags;
-          delete statuses;
-          delete flags;
-          delete zs;
-          delete lats;
-          delete lons;
+          delete[] traceflags;
+          delete[] statuses;
+          delete[] flags;
+          delete[] zs;
+          delete[] lats;
+          delete[] lons;
           
           
           met->signalMetDone();

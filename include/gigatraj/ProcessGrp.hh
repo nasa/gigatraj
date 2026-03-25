@@ -182,7 +182,7 @@ class ProcessGrp {
       /// destructor
       /*! This is the  destructor for the ProcessGrp base class.
       */
-      ~ProcessGrp();
+      virtual ~ProcessGrp();
 
       /// returns the number of processors in this group
       /*!  This function returns the number of processors that belong to

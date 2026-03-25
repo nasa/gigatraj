@@ -285,7 +285,7 @@ class GridLatLonField3D : public GridField3D {
                 - METCOMPAT_TIME if time compatibility is required 
           \return true if the dimensions and the times match, false otherwise
       */
-      bool compatible( const GridFieldSfc& obj, int compatFlags = METCOMPAT_HORIZ && METCOMPAT_TIME ) const;
+      bool compatible( const GridFieldSfc& obj, int compatFlags = METCOMPAT_HORIZ | METCOMPAT_TIME ) const;
 
       /// checks for metadata compatibility with a given GridLatLonField3D object
       /*! This method checks whether another GridLatLonField3D object has the same metadata as this one.
