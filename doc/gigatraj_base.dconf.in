@@ -854,11 +854,27 @@ WARN_LOGFILE           = gigatraj_doxygen.log
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = ../include/gigatraj \
+# We are doing something a little tricky here, to accomodate the situation
+# in which the build directory is different from the source directory.
+# The "@@sourcedir@@' part of the paths below will be translated to the actual
+# source path by a command in the Makefile that assembles
+# the doxygen config file from parts.
+# This file here is still a "*.in" file, in which some macro
+# substitutions are made by autoconfig.
+# There are several other such files, whose substited version
+# end up in the build directory tree. To ensure that doxygen finds those,
+# the source directories are repeated, this time with the paths
+# relative to the current directory (i.e., in the build tree). 
+INPUT                  = @@sourcedir@@/../include/gigatraj \
+                         @@sourcedir@@/../lib \
+                         @@sourcedir@@/../lib/metsources \
+                         @@sourcedir@@/../lib/filters \
+                         @@sourcedir@@/../src \
+                         ../include/gigatraj \
                          ../lib \
                          ../lib/metsources \
                          ../lib/filters \
-                         ../src
+                         ../src 
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

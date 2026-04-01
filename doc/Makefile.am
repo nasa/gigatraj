@@ -23,8 +23,8 @@ DOX_TRIGGER = .doc_stamp
 # put the non-manpage doc files here
 docdir=$(prefix)/share/doc/$(PACKAGE)
 
-# This is a tar file to hold the (html) documentation
-docarchive = gigatraj_docs.tgz
+# This is a tar file to hold the (mostly html) documentation
+docarchive = $(srcdir)/gigatraj_docs.tgz
 
 # output docucments
 pdf_out = gigatraj.pdf
@@ -41,7 +41,7 @@ latex_log = gigatraj_latex.log
 dox_logs = $(dox_errors) $(dox_info) $(latext_log)
 
 # documentation dirs that are distributed via tar
-tar_this = html $(pdf_out) $(rtf_out)
+tar_this = html man $(pdf_out) $(rtf_out)
 
 # documentstion dirs that are not distributed
 nodist_dirs = rtf latex
@@ -50,238 +50,20 @@ nodist_dirs = rtf latex
 dox_dirs = html man $(nodist_dirs)
 
 # straight documentation files which, if changed, should trigger a doc refresh
-DOXFILES = ../src/tools.dox
+DOXFILES = $(srcdir)/../src/tools.dox
 
+# HEre we define man page directories in the build tree
+# note that doxygen generates more than just these pages,
+# but we will install only these pages.
+bldmandir = man/
+bldmandir1 = $(bldmandir)/man1gt
+bldmandir3 = $(bldmandir)/man3gt
 
-# note that doxygen generates more than just this page,
-# but we will install only this page.
-mandir = man/man3gt
-manpages = $(mandir)/gtmodel_s01.3gt \
-           $(mandir)/gt_fill_met_cache.3gt
+bldmanpages = $(bldmandir1)/gtmodel_s01.1gt \
+           $(bldmandir1)/gt_fill_met_cache.1gt \
+           $(bldmandir1)/gt_generate_parcels.1gt \
+           $(bldmandir1)/gtmodel_s02.1gt
 
-#man3pages = 
-#$(mandir)/gigatraj.3gt \
-#$(mandir)/gigatraj_BalanceThetaDot1OTF.3gt \
-#$(mandir)/gigatraj_BilinearHinterp.3gt \
-#$(mandir)/gigatraj_CalGregorian.3gt \
-#$(mandir)/gigatraj_CalGregorian_badGregorianDateFormat.3gt \
-#$(mandir)/gigatraj_ChangeVertical.3gt \
-#$(mandir)/gigatraj_ChangeVertical_badvcoordconflict.3gt \
-#$(mandir)/gigatraj_Configuration.3gt \
-#$(mandir)/gigatraj_Configuration_badcfgformat.3gt \
-#$(mandir)/gigatraj_Configuration_badcfgread.3gt \
-#$(mandir)/gigatraj_Configuration_badcmdline.3gt \
-#$(mandir)/gigatraj_Configuration_badmemerr.3gt \
-#$(mandir)/gigatraj_Configuration_badparamconflict.3gt \
-#$(mandir)/gigatraj_Configuration_badparamnotfound.3gt \
-#$(mandir)/gigatraj_Configuration_badparamtype.3gt \
-#$(mandir)/gigatraj_DensOTF.3gt \
-#$(mandir)/gigatraj_Earth.3gt \
-#$(mandir)/gigatraj_FileLock.3gt \
-#$(mandir)/gigatraj_FileLock_badLockExists.3gt \
-#$(mandir)/gigatraj_FileLock_badLockFailed.3gt \
-#$(mandir)/gigatraj_FileLock_badLockFailed_A.3gt \
-#$(mandir)/gigatraj_FileLock_badLockFailed_B.3gt \
-#$(mandir)/gigatraj_FileLock_badLockIOErr.3gt \
-#$(mandir)/gigatraj_FileLock_badLockRmFailed.3gt \
-#$(mandir)/gigatraj_FileLock_badNotReadable.3gt \
-#$(mandir)/gigatraj_FileLock_badNotWriteable.3gt \
-#$(mandir)/gigatraj_FilePath.3gt \
-#$(mandir)/gigatraj_FilePath_badFileName.3gt \
-#$(mandir)/gigatraj_FilePath_badMkdirFailed.3gt \
-#$(mandir)/gigatraj_Flock.3gt \
-#$(mandir)/gigatraj_Flock_badMetIsNotTracer.3gt \
-#$(mandir)/gigatraj_Flock_badgeneration.3gt \
-#$(mandir)/gigatraj_Flock_badparcelcount.3gt \
-#$(mandir)/gigatraj_Flock_badparcelindex.3gt \
-#$(mandir)/gigatraj_Flock_iterator.3gt \
-#$(mandir)/gigatraj_GEOSfpAssim_Directory.3gt \
-#$(mandir)/gigatraj_GEOSfpAssim_Directory_MVarDesc.3gt \
-#$(mandir)/gigatraj_GEOSfpAssim_Directory_MVarLoc.3gt \
-#$(mandir)/gigatraj_GEOSfpAssim_Directory_badName.3gt \
-#$(mandir)/gigatraj_GEOSfpAssim_Directory_badNotFound.3gt \
-#$(mandir)/gigatraj_GEOSfpFcast_Directory.3gt \
-#$(mandir)/gigatraj_GEOSfpFcast_Directory_MVarDesc.3gt \
-#$(mandir)/gigatraj_GEOSfpFcast_Directory_MVarLoc.3gt \
-#$(mandir)/gigatraj_GEOSfpFcast_Directory_badName.3gt \
-#$(mandir)/gigatraj_GEOSfpFcast_Directory_badNotFound.3gt \
-#$(mandir)/gigatraj_GridField.3gt \
-#$(mandir)/gigatraj_GridField3D.3gt \
-#$(mandir)/gigatraj_GridField3D_badDimensionMismatch.3gt \
-#$(mandir)/gigatraj_GridField3D_const_iterator.3gt \
-#$(mandir)/gigatraj_GridField3D_const_profileIterator.3gt \
-#$(mandir)/gigatraj_GridField3D_iterator.3gt \
-#$(mandir)/gigatraj_GridField3D_profileIterator.3gt \
-#$(mandir)/gigatraj_GridFieldSfc.3gt \
-#$(mandir)/gigatraj_GridFieldSfc_const_iterator.3gt \
-#$(mandir)/gigatraj_GridFieldSfc_iterator.3gt \
-#$(mandir)/gigatraj_GridField_badMissingAttr.3gt \
-#$(mandir)/gigatraj_GridField_badProcReq.3gt \
-#$(mandir)/gigatraj_GridField_badcoords.3gt \
-#$(mandir)/gigatraj_GridField_baddataindex.3gt \
-#$(mandir)/gigatraj_GridField_baddataload.3gt \
-#$(mandir)/gigatraj_GridField_baddatareq.3gt \
-#$(mandir)/gigatraj_GridField_badgrid.3gt \
-#$(mandir)/gigatraj_GridField_badincompatcoords.3gt \
-#$(mandir)/gigatraj_GridField_badmemreq.3gt \
-#$(mandir)/gigatraj_GridField_badnodata.3gt \
-#$(mandir)/gigatraj_GridField_badnodims.3gt \
-#$(mandir)/gigatraj_GridLatLonField3D.3gt \
-#$(mandir)/gigatraj_GridLatLonFieldSfc.3gt \
-#$(mandir)/gigatraj_HLatLonInterp.3gt \
-#$(mandir)/gigatraj_Hinterp.3gt \
-#$(mandir)/gigatraj_IntegRK4a.3gt \
-#$(mandir)/gigatraj_Integrator.3gt \
-#$(mandir)/gigatraj_Interpolator.3gt \
-#$(mandir)/gigatraj_Interpolator_badincompatible.3gt \
-#$(mandir)/gigatraj_Interpolator_badnodata.3gt \
-#$(mandir)/gigatraj_Interpolator_badoutofdomain.3gt \
-#$(mandir)/gigatraj_LinearVinterp.3gt \
-#$(mandir)/gigatraj_LogLinearVinterp.3gt \
-#$(mandir)/gigatraj_MERRA2_Directory.3gt \
-#$(mandir)/gigatraj_MERRA2_Directory_MVarDesc.3gt \
-#$(mandir)/gigatraj_MERRA2_Directory_MVarLoc.3gt \
-#$(mandir)/gigatraj_MERRA2_Directory_badName.3gt \
-#$(mandir)/gigatraj_MERRA2_Directory_badNotFound.3gt \
-#$(mandir)/gigatraj_MERRA_Directory.3gt \
-#$(mandir)/gigatraj_MERRA_Directory_MVarDesc.3gt \
-#$(mandir)/gigatraj_MERRA_Directory_MVarLoc.3gt \
-#$(mandir)/gigatraj_MERRA_Directory_badName.3gt \
-#$(mandir)/gigatraj_MERRA_Directory_badNotFound.3gt \
-#$(mandir)/gigatraj_MPIGrp.3gt \
-#$(mandir)/gigatraj_MPVOTF.3gt \
-#$(mandir)/gigatraj_MetData.3gt \
-#$(mandir)/gigatraj_MetData_baddate.3gt \
-#$(mandir)/gigatraj_MetData_badmetdata.3gt \
-#$(mandir)/gigatraj_MetData_badmetfailure.3gt \
-#$(mandir)/gigatraj_MetData_badnotimplemented.3gt \
-#$(mandir)/gigatraj_MetData_badoutofboundsmetdata.3gt \
-#$(mandir)/gigatraj_MetData_badquantity.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_HGridSpec.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_TGridSpec.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_VGridSpec.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_badDataNotFound.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_badDimsForm.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_badDimsMismatch.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_badMissingDim.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_badNetcdfError.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_badNetcdfOpen.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_badNoMem.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_badTimeNotFound.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_badUnknownDim.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_badVerticalCoord.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_spanattr.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_spantrip.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_spantrip_doubletrip.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_spantrip_floattrip.3gt \
-#$(mandir)/gigatraj_MetGEOSPortal_spantrip_inttrip.3gt \
-#$(mandir)/gigatraj_MetGEOSfp.3gt \
-#$(mandir)/gigatraj_MetGEOSfpAssim.3gt \
-#$(mandir)/gigatraj_MetGEOSfpAssim_badNoForecasts.3gt \
-#$(mandir)/gigatraj_MetGEOSfpFcast.3gt \
-#$(mandir)/gigatraj_MetGEOSfpFcast_badNoAssim.3gt \
-#$(mandir)/gigatraj_MetGEOSfp_badModelRun.3gt \
-#$(mandir)/gigatraj_MetGridData.3gt \
-#$(mandir)/gigatraj_MetGridData_MetCache3D.3gt \
-#$(mandir)/gigatraj_MetGridData_MetCacheSfc.3gt \
-#$(mandir)/gigatraj_MetGridData_badIncompatibleVectors.3gt \
-#$(mandir)/gigatraj_MetGridData_badVerticalCoord.3gt \
-#$(mandir)/gigatraj_MetGridData_badVerticalQuantity.3gt \
-#$(mandir)/gigatraj_MetGridData_baddataload.3gt \
-#$(mandir)/gigatraj_MetGridData_badgridobj.3gt \
-#$(mandir)/gigatraj_MetGridData_badgridspec.3gt \
-#$(mandir)/gigatraj_MetGridData_badtimespec.3gt \
-#$(mandir)/gigatraj_MetGridData_badvunits.3gt \
-#$(mandir)/gigatraj_MetGridData_vWindStuff.3gt \
-#$(mandir)/gigatraj_MetGridLatLonData.3gt \
-#$(mandir)/gigatraj_MetGridLatLonData_badsurface.3gt \
-#$(mandir)/gigatraj_MetGridSBRot.3gt \
-#$(mandir)/gigatraj_MetMERRA.3gt \
-#$(mandir)/gigatraj_MetMERRA2.3gt \
-#$(mandir)/gigatraj_MetMERRA2_badModelRun.3gt \
-#$(mandir)/gigatraj_MetMERRA_badModelRun.3gt \
-#$(mandir)/gigatraj_MetOnTheFly.3gt \
-#$(mandir)/gigatraj_MetOnTheFly_badcalculation.3gt \
-#$(mandir)/gigatraj_MetOnTheFly_badgrid.3gt \
-#$(mandir)/gigatraj_MetOnTheFly_badinputquant.3gt \
-#$(mandir)/gigatraj_MetOnTheFly_badinputunits.3gt \
-#$(mandir)/gigatraj_MetOnTheFly_badprofile.3gt \
-#$(mandir)/gigatraj_MetSBRot.3gt \
-#$(mandir)/gigatraj_MetSelector.3gt \
-#$(mandir)/gigatraj_MetSelector_badUnknownSource.3gt \
-#$(mandir)/gigatraj_PAltDotOTF.3gt \
-#$(mandir)/gigatraj_PAltOTF.3gt \
-#$(mandir)/gigatraj_PGenDisc.3gt \
-#$(mandir)/gigatraj_PGenFile.3gt \
-#$(mandir)/gigatraj_PGenGrid.3gt \
-#$(mandir)/gigatraj_PGenRep.3gt \
-#$(mandir)/gigatraj_PGenRnd.3gt \
-#$(mandir)/gigatraj_PGenRndDisc.3gt \
-#$(mandir)/gigatraj_Parcel.3gt \
-#$(mandir)/gigatraj_ParcelFilter.3gt \
-#$(mandir)/gigatraj_ParcelFilter_badfilter.3gt \
-#$(mandir)/gigatraj_ParcelFilter_badparcelnum.3gt \
-#$(mandir)/gigatraj_ParcelGenerator.3gt \
-#$(mandir)/gigatraj_ParcelGenerator_badgeneration.3gt \
-#$(mandir)/gigatraj_ParcelGenerator_badparcelcount.3gt \
-#$(mandir)/gigatraj_ParcelInitializer.3gt \
-#$(mandir)/gigatraj_ParcelInitializer_badinit.3gt \
-#$(mandir)/gigatraj_ParcelReporter.3gt \
-#$(mandir)/gigatraj_ParcelReporter_badreport.3gt \
-#$(mandir)/gigatraj_Parcel_badtime.3gt \
-#$(mandir)/gigatraj_Parcel_badz.3gt \
-#$(mandir)/gigatraj_PlanetNav.3gt \
-#$(mandir)/gigatraj_PlanetNav_badincrement.3gt \
-#$(mandir)/gigatraj_PlanetNav_badlocation.3gt \
-#$(mandir)/gigatraj_PlanetSphereNav.3gt \
-#$(mandir)/gigatraj_PressOTF.3gt \
-#$(mandir)/gigatraj_ProcessGrp.3gt \
-#$(mandir)/gigatraj_ProcessGrp_badgroupsize.3gt \
-#$(mandir)/gigatraj_ProcessGrp_badparallelism.3gt \
-#$(mandir)/gigatraj_ProcessGrp_badprocessor.3gt \
-#$(mandir)/gigatraj_ProcessGrp_badtransfer.3gt \
-#$(mandir)/gigatraj_RandomSrc.3gt \
-#$(mandir)/gigatraj_SerialGrp.3gt \
-#$(mandir)/gigatraj_StreamDump.3gt \
-#$(mandir)/gigatraj_StreamDump_badstreamdump.3gt \
-#$(mandir)/gigatraj_StreamInit.3gt \
-#$(mandir)/gigatraj_StreamInit_badinitformat.3gt \
-#$(mandir)/gigatraj_StreamInit_badinitrejected.3gt \
-#$(mandir)/gigatraj_StreamInit_badinitstream.3gt \
-#$(mandir)/gigatraj_StreamLoad.3gt \
-#$(mandir)/gigatraj_StreamLoad_badinitstream.3gt \
-#$(mandir)/gigatraj_StreamPrint.3gt \
-#$(mandir)/gigatraj_StreamPrint_badprintformat.3gt \
-#$(mandir)/gigatraj_StreamPrint_badstreamprint.3gt \
-#$(mandir)/gigatraj_StreamRead.3gt \
-#$(mandir)/gigatraj_StreamRead_badinitformat.3gt \
-#$(mandir)/gigatraj_StreamRead_badinitrejected.3gt \
-#$(mandir)/gigatraj_StreamRead_badinitstream.3gt \
-#$(mandir)/gigatraj_ThetaDotOTF.3gt \
-#$(mandir)/gigatraj_ThetaOTF.3gt \
-#$(mandir)/gigatraj_TropOTF.3gt \
-#$(mandir)/gigatraj_Vinterp.3gt \
-#$(mandir)/MetDat.3gt \
-#$(mandir)/MetSrc.3gt \
-#$(mandir)/Navigation.3gt \
-#$(mandir)/OnTheFly.3gt \
-#$(mandir)/Tools.3gt \
-#$(mandir)/grid3D.3gt \
-#$(mandir)/gridfield.3gt \
-#$(mandir)/gridsfc.3gt \
-#$(mandir)/hinterpolators.3gt \
-#$(mandir)/integrators.3gt \
-#$(mandir)/interpolators.3gt \
-#$(mandir)/misc.3gt \
-#$(mandir)/parcelfilters.3gt \
-#$(mandir)/parcelgenerators.3gt \
-#$(mandir)/parcelinitializers.3gt \
-#$(mandir)/parcelreporters.3gt \
-#$(mandir)/parcels.3gt \
-#$(mandir)/parcelstuff.3gt \
-#$(mandir)/pgroup.3gt \
-#$(mandir)/vinterpolators.3gt 
 
 if DOXYGEN
    # Use these to select which kinds of Doxygen documentation
@@ -342,14 +124,19 @@ endif
 #####  Automake instructions
 
 # This is the doc data that gets distributed w/ the package
-doc_DATA = $(docarchive)
+#doc_DATA = $(docarchive)
 
 # Depending on whether we have doxygen or not, we may need
 # to include the manpages in the distribution
-#dist_man3_MANS = $(man3pages)
-dist_man_MANS = $(manpages)
+if DOXYGEN
+   man_MANS = $(bldmanpages)
+else
+   dist_man_MANS = $(bldmanpages)
+endif
 
 # these files/directories should be part of the package distribution
+# $(docarchive) = the documentation tarball
+# check_doxygen.sh = a script that checks whether documentation generation was successful
 EXTRA_DIST = $(docarchive) \
              check_doxygen.sh
 
@@ -366,7 +153,7 @@ TESTS = check_doxygen.sh
 
 # When we "make doc", what happens?
 # Well, we make the doc tarball, so it can be installed
-doc: $(docarchive) $(manpages)
+doc: $(docarchive)
 	echo "Made the documentation"
 
 # Let's not make anything
@@ -380,10 +167,15 @@ nodoc:
 # Then remove the doc tarball.
 install-data-hook:
 	if [ ! -d "$(DESTDIR)$(docdir)" ] ; then mkdir -p "$(DESTDIR)$(docdir)" ; fi
-	cd $(DESTDIR)$(docdir) && tar xof $(docarchive) && /bin/rm -f $(docarchive)
+	if [ ! -d "$(mandir)/man3" ] ; then mkdir -p "$(mandir)/man3" ; fi
+	cd $(DESTDIR)$(docdir) \
+    && tar xof $(docarchive) \
+    && for file in `/bin/ls -1 man/man3gt/` ; do mv man/man3gt/$$file $(mandir)/man3/ ; done \
+    && /bin/rm -fr man
 # To uninstall the docs?
 uninstall-hook:
 	cd $(DESTDIR)$(docdir) && /bin/rm -rf $(tar_dirs)
+
 # This should be created when a source file is changed and the library is re-made.
 # But just in case, we can also make it here
 $(TRIGGER_DOCS_REMAKE): 
@@ -393,24 +185,30 @@ $(TRIGGER_DOCS_REMAKE):
 if DOXYGEN
    # We do this only if we can generate documentation files with the Doxygen software
 
-gigatraj.dconf: $(TRIGGER_DOCS_REMAKE) $(DOXFILES) gigatraj_base.dconf html_yes.dconf latex_no.dconf man_no.dconf rtf_no.dconf xml_no.dconf perlmod_no.dconf autogen_no.dconf
-	@cat gigatraj_base.dconf > gigatraj.dconf 
+gigatraj.dconf: $(TRIGGER_DOCS_REMAKE) $(DOXFILES) gigatraj_base.dconf \
+    $(srcdir)/html_yes.dconf \
+    $(srcdir)/man_no.dconf \
+    $(srcdir)/rtf_no.dconf \
+    $(srcdir)/xml_no.dconf \
+    $(srcdir)/perlmod_no.dconf \
+    $(srcdir)/autogen_no.dconf
+	@sed -e "s=@@sourcedir@@=$(srcdir)=" gigatraj_base.dconf > gigatraj.dconf 
 	@echo " *** Generating HTML? $(DOX_DO_HTML)"
-	@cat html_$(DOX_DO_HTML).dconf >> gigatraj.dconf 
+	@cat $(srcdir)/html_$(DOX_DO_HTML).dconf >> gigatraj.dconf 
 	@echo " *** Generating LaTeX? $(DOX_DO_LATEX)"
 	@cat latex_$(DOX_DO_LATEX).dconf >> gigatraj.dconf
 	@echo " *** Generating man? $(DOX_DO_MAN)"
-	@cat man_$(DOX_DO_MAN).dconf >>  gigatraj.dconf
+	@cat $(srcdir)/man_$(DOX_DO_MAN).dconf >>  gigatraj.dconf
 	@echo " *** Generating rtf? $(DOX_DO_RTF)"
-	@cat rtf_$(DOX_DO_RTF).dconf >> gigatraj.dconf
+	@cat $(srcdir)/rtf_$(DOX_DO_RTF).dconf >> gigatraj.dconf
 	@echo " *** Generating XML? $(DOX_DO_XML)"
-	@cat xml_$(DOX_DO_XML).dconf >> gigatraj.dconf  
+	@cat $(srcdir)/xml_$(DOX_DO_XML).dconf >> gigatraj.dconf  
 	@echo " *** Generating perlmod? $(DOX_DO_PERLMOD)"
-	@cat perlmod_$(DOX_DO_PERLMOD).dconf >> gigatraj.dconf  
+	@cat $(srcdir)/perlmod_$(DOX_DO_PERLMOD).dconf >> gigatraj.dconf  
 	@echo " *** Generating DocBook? $(DOX_DO_DOCBOOK)"
-	@cat docbook_$(DOX_DO_DOCBOOK).dconf >> gigatraj.dconf 
+	@cat $(srcdir)/docbook_$(DOX_DO_DOCBOOK).dconf >> gigatraj.dconf 
 	@echo " *** Generating Autogen? $(DOX_DO_AUTOGEN)"
-	@cat autogen_$(DOX_DO_AUTOGEN).dconf >> gigatraj.dconf 
+	@cat $(srcdir)/autogen_$(DOX_DO_AUTOGEN).dconf >> gigatraj.dconf 
 
 
 $(DOX_TRIGGER): gigatraj.dconf  
@@ -427,7 +225,6 @@ $(docarchive): $(DOX_TRIGGER) $(tar_this)
 else
    # We are not doing Doxygen.
    # So must instead rely on pre-existing files
-
 $(DOX_TRIGGER): 
 	rm -rf $(nodist_dirs)
 	echo "Not Generated" > $(DOX_TRIGGER)
@@ -435,7 +232,6 @@ $(DOX_TRIGGER):
 # The tarball should already exist
 $(docarchive): $(DOX_TRIGGER)
 	if [ -f $(docarchive) ] ; then touch $(docarchive) ; else echo "No tar file?!" ; /bin/false ; fi
-
 endif
 
 
@@ -445,9 +241,28 @@ $(pdf_out):  $(DOX_TRIGGER)
 $(rtf_out):  $(DOX_TRIGGER)
 	if test "x$(DOX_DO_RTF)" = "xyes"  ; then  cp rtf/refman.rtf $(rtf_out) ; fi
 
-$(mandir)/gtmodel_s01.3gt:  $(DOX_TRIGGER)
+# We have Doxygen configured to use the "3gt" man section.
+# So even the command-line utility programs get this designations
+# We fix that here.
+$(bldmandir1)/gtmodel_s01.1gt:  $(DOX_TRIGGER)
+	mkdir -p $(bldmandir1)
+	mv $(bldmandir3)/gtmodel_s01.3gt $(bldmandir1)/gtmodel_s01.1gt
+	sed -i -e '/^\.TH/s/3gt/1gt/' $(bldmandir1)/gtmodel_s01.1gt
 	@echo "man page ready"
-$(mandir)/gt_fill_met_cache.3gt:  $(DOX_TRIGGER)
+$(bldmandir1)/gtmodel_s02.1gt:  $(DOX_TRIGGER)
+	mkdir -p $(bldmandir1)
+	mv $(bldmandir3)/gtmodel_s02.3gt $(bldmandir1)/gtmodel_s02.1gt
+	sed -i -e '/^\.TH/s/3gt/1gt/' $(bldmandir1)/gtmodel_s02.1gt
+	@echo "man page ready"
+$(bldmandir1)/gt_fill_met_cache.1gt:  $(DOX_TRIGGER)
+	mkdir -p $(bldmandir1)
+	mv $(bldmandir3)/gt_fill_met_cache.3gt $(bldmandir1)/gt_fill_met_cache.1gt
+	sed -i -e '/^\.TH/s/3gt/1gt/' $(bldmandir1)/gt_fill_met_cache.1gt
+	@echo "man page ready"
+$(bldmandir1)/gt_generate_parcels.1gt:  $(DOX_TRIGGER)
+	mkdir -p $(bldmandir1)
+	mv $(bldmandir3)/gt_generate_parcels.3gt $(bldmandir1)/gt_generate_parcels.1gt
+	sed -i -e '/^\.TH/s/3gt/1gt/' $(bldmandir1)/gt_generate_parcels.1gt
 	@echo "man page ready"
 
 html-local: $(DOX_TRIGGER)

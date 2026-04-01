@@ -6769,7 +6769,7 @@ _ACEOF
 fi
 
 
-ac_config_files="$ac_config_files Makefile include/gigatraj/Makefile include/gigatraj/gigatraj.hh lib/Makefile lib/filters/Makefile lib/metsources/Makefile src/Makefile src/gtmodel_m01 src/gtmodel_m02 confiles/Makefile test/Makefile test/test_MPI.sh doc/gigatraj_base.dconf:doc/gigatraj_base.dconf.in doc/latex_yes.dconf:doc/latex_yes.dconf.in doc/Makefile"
+ac_config_files="$ac_config_files Makefile include/gigatraj/Makefile include/gigatraj/gigatraj.hh lib/Makefile lib/filters/Makefile lib/metsources/Makefile src/Makefile src/gtmodel_m01 src/gtmodel_m02 confiles/Makefile test/Makefile test/test_MPI.sh doc/gigatraj_base.dconf:doc/gigatraj_base.dconf.in doc/latex_yes.dconf:doc/latex_yes.dconf.in doc/latex_no.dconf:doc/latex_no.dconf.in doc/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -7592,6 +7592,7 @@ do
     "test/test_MPI.sh") CONFIG_FILES="$CONFIG_FILES test/test_MPI.sh" ;;
     "doc/gigatraj_base.dconf") CONFIG_FILES="$CONFIG_FILES doc/gigatraj_base.dconf:doc/gigatraj_base.dconf.in" ;;
     "doc/latex_yes.dconf") CONFIG_FILES="$CONFIG_FILES doc/latex_yes.dconf:doc/latex_yes.dconf.in" ;;
+    "doc/latex_no.dconf") CONFIG_FILES="$CONFIG_FILES doc/latex_no.dconf:doc/latex_no.dconf.in" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
