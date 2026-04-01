@@ -169,7 +169,8 @@ int main()
     filter.threshold( thresh ); // filter parcels lower than this distance below the trop
     filter.negation(false); // no negation
     
-    n = 100;
+    //n = 100;
+    n = 5;
     
     // make sure that the sample parcel is set to
     // be traced
