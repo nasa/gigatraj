@@ -497,6 +497,12 @@ test_GridFieldProfile_MPI.sh: test_MPI.sh
 test_GridLatLonFieldSfc_MPI.sh: test_MPI.sh
 	ln -s test_MPI.sh $@  || true
 
+test_GridFieldDim_MPI.sh: test_MPI.sh
+	ln -s test_MPI.sh $@  || true
+
+test_GridFieldDimLon_MPI.sh: test_MPI.sh
+	ln -s test_MPI.sh $@  || true
+
 test_MetGridSBRot_MPI.sh: test_MPI.sh
 	ln -s test_MPI.sh $@  || true
 
