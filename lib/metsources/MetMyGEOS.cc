@@ -1617,6 +1617,7 @@ int MetMyGEOS::prep(  const std::string quantity, const std::string& time )
           // model time and catalog file.
           catTimeOffset = time_zero - tbase;
     } else {
+          std::cerr << "Could not find a Catalog definition of '" << quantity << "'" << std::endl;
           throw(badDataNotFound());
     }
           
@@ -1875,6 +1876,7 @@ void MetMyGEOS::init()
        catlog.confLocator( mettag );
        
        cfgFile = catlog.findConfig();
+
        
        if ( cfgFile != "" ) {
           catlog.load( cfgFile );
@@ -2614,8 +2616,8 @@ void MetMyGEOS::Source_open( bool pre, int index )
      int start_index;
      int bad_index;
      int ds_size;
-
      int waittime;
+     bool need_to_open;
 
      if ( dbug > 2 ) {
         std::cerr << "MetMyGEOS::Source_open: starting" << std::endl;
@@ -2625,29 +2627,82 @@ void MetMyGEOS::Source_open( bool pre, int index )
         index = test_dsrc;
      }
      
+     
      ds_size = ds.size();
 
+     // index into ds of a known-unsuccessful url
+     // As far as we know at this point,
+     // there are no known-unsuccessful urls
+     // so set this to an invalid value
      bad_index = -1;
-     start_index = 0;
-     if ( is_open && (! Source_testDesiredTime()) ) {
-        Source_close();
+
+     // we start off assuming that we
+     // need to open a new URL only if it is not already open.
+     need_to_open = ! is_open;
+     if ( ! need_to_open ) {
+        // but if the desired ds's url is not the one we have open,
+        // then we need to open it
+        need_to_open = ( ds[index].pre != opened_url ) && ( ds[index].post != opened_url );
+     }
+     if ( (! need_to_open) && (! Source_testDesiredTime()) ) {
+        // if we have a file open, and the url is current,
+        // but the desired time is not in that url, then 
+        // we need to find a new data source
+   
+        // our known bad URL is the current one
         bad_index = test_dsrc;
+        
+        // and we start from that point
         start_index = test_dsrc;
+        // and advance one beyond it, if we can
         if ( test_dsrc < (ds_size - 1) ) { 
             start_index++;
         }    
         if ( dbug > 5 ) {
-           std::cerr << "source closed and start_index now adjusted to " << start_index << std::endl;
+           std::cerr << "source to be closed ,and start_index now adjusted to " << start_index << std::endl;
         }
+        // unless we have been instructed otherwise,
+        // we will use this next url
         if ( index == test_dsrc ) {
            index = start_index;
         }
-     }
-     if ( ( bad_index >= 0 ) && (bad_index == index) && ( (bad_index + 1) < ds_size) ) {
-        index = bad_index + 1;
-     }
         
-     // try this one first
+        if ( ( bad_index >= 0 ) && (bad_index == index) && ( (bad_index + 1) < ds_size) ) {
+           index = bad_index + 1;
+        }
+        
+        need_to_open = true;
+        
+     }
+
+//     // next index into ds to try
+//     start_index = 0;
+//     // if we have a URL open but out time is not in that URL....
+//     if ( is_open && (! Source_testDesiredTime()) ) {
+//        // close the old one
+//        Source_close();
+//        // our known bad URL is the current one
+//        bad_index = test_dsrc;
+//        // and we start from that point
+//        start_index = test_dsrc;
+//        // and advance one beyond it, if we can
+//        if ( test_dsrc < (ds_size - 1) ) { 
+//            start_index++;
+//        }    
+//        if ( dbug > 5 ) {
+//           std::cerr << "source closed and start_index now adjusted to " << start_index << std::endl;
+//        }
+//        // unless we have been instructed otherwise,
+//        // we will use this next url
+//        if ( index == test_dsrc ) {
+//           index = start_index;
+//        }
+//     }
+//     if ( ( bad_index >= 0 ) && (bad_index == index) && ( (bad_index + 1) < ds_size) ) {
+//        index = bad_index + 1;
+//     }
+        
+     // try this url from the desired data source (ds)
      url = "_INVALID_";
      if ( (index >= 0) && (index < ds_size)  ) {
         if ( pre ) {
@@ -2657,15 +2712,16 @@ void MetMyGEOS::Source_open( bool pre, int index )
         }
      }
      
+     if ( need_to_open ) {
+        // close the old one
+        // before we try to open a new one
+        Source_close();
+     }
+     
      // No need to re-open the same URL unless:
      //  a) it's not open
      //  b) it's not the same URL
      if ( ( ! is_open) || ( url != opened_url ) ) { 
-
-        // close the old one, if it is open
-        if ( is_open ) {
-           Source_close();
-        }
 
         if ( dbug > 2 ) {
            std::cerr << "MetMyGEOS::Source_open: attempting initial nc_open of ds index " << index 
@@ -2706,6 +2762,7 @@ void MetMyGEOS::Source_open( bool pre, int index )
               ok =  Source_postOpen(index);
               
               if ( ! ok ) {
+                 std::cerr << "MetMyGEOS::Source_open: failed post-open initialization on " << url << std::endl;
                  Source_close();
                  bad_index = index;
               }
@@ -2816,6 +2873,7 @@ void MetMyGEOS::Source_open( bool pre, int index )
               ok =  Source_postOpen(index);
            
               if ( ! ok ) {
+                 std::cerr << "Failed to do post-open initialization for " << url << std::endl;
                  Source_close();
                  bad_index = index;
               }
@@ -2953,11 +3011,17 @@ bool MetMyGEOS::Source_postOpen( int index )
 
      // do the initial inquiries to get basic sizes and shapes
      Source_read_all_dims();
+     if ( dbug > 4  ) {
+        std::cerr << "MetMyGEOS::Source_postOpen: read all dimensions" << std::endl;
+     }
      
      // check if there there is a desired time in p[lay,
      // and if there is then check thjat this freshly-opened
      // file has the desired time in it
      result = Source_testDesiredTime();
+     if ( dbug > 4  ) {
+        std::cerr << "MetMyGEOS::Source_postOpen: tested desired time: " << result << std::endl;
+     }
 
      return result;
 }
@@ -4807,6 +4871,11 @@ void MetMyGEOS::Source_read_all_dims()
     tstart = tstart*scale + offset;
     tend = tend*scale + offset;
     tdelta = tdelta*scale;
+    if ( dbug > 10 ) {
+       std::cerr << "MetMyGEOS::Source_read_all_dims: read time dimension: start=" << tstart 
+                 << ", tend = " << tend 
+                 << " , tdelta=" << tdelta << std::endl;
+    }
     //url_tgrid.set( tstart, tstart + tn*tdelta, tdelta );
     url_tgrid.set( tstart, tstart + tn*tdelta, tn, tdelta, tend );
     if ( tgrid.test( url_tgrid ) ) {
@@ -7514,6 +7583,7 @@ bool MetMyGEOS::TGridSpec::inside( double t )
     if ( n > 0 ) {
        // multiple time steps in URL, so 'end' is valid
        // do the easy--and most likely--check first
+
        result = ( t >= start ) && ( t <= end );
        // but the equality tests might not be right, so
        // be a little more careful, maybe
