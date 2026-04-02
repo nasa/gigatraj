@@ -56,8 +56,8 @@ DOXFILES = $(srcdir)/../src/tools.dox
 # note that doxygen generates more than just these pages,
 # but we will install only these pages.
 bldmandir = man/
-bldmandir1 = $(bldmandir)/man1gt
-bldmandir3 = $(bldmandir)/man3gt
+bldmandir1 = $(bldmandir)man1gt
+bldmandir3 = $(bldmandir)man3gt
 
 bldmanpages = $(bldmandir1)/gtmodel_s01.1gt \
            $(bldmandir1)/gt_fill_met_cache.1gt \
@@ -170,7 +170,7 @@ install-data-hook:
 	if [ ! -d "$(mandir)/man3" ] ; then mkdir -p "$(mandir)/man3" ; fi
 	cd $(DESTDIR)$(docdir) \
     && tar xof $(docarchive) \
-    && for file in `/bin/ls -1 man/man3gt/` ; do mv man/man3gt/$$file $(mandir)/man3/ ; done \
+    && for file in `/bin/ls -1 man/man3gt/` ; do if [ -f man/man3gt/$$file ] ; then mv man/man3gt/$$file $(mandir)/man3/ ; fi ; done \
     && /bin/rm -fr man
 # To uninstall the docs?
 uninstall-hook:
@@ -244,6 +244,7 @@ $(rtf_out):  $(DOX_TRIGGER)
 # We have Doxygen configured to use the "3gt" man section.
 # So even the command-line utility programs get this designations
 # We fix that here.
+if DOXYGEN
 $(bldmandir1)/gtmodel_s01.1gt:  $(DOX_TRIGGER)
 	mkdir -p $(bldmandir1)
 	mv $(bldmandir3)/gtmodel_s01.3gt $(bldmandir1)/gtmodel_s01.1gt
@@ -264,6 +265,24 @@ $(bldmandir1)/gt_generate_parcels.1gt:  $(DOX_TRIGGER)
 	mv $(bldmandir3)/gt_generate_parcels.3gt $(bldmandir1)/gt_generate_parcels.1gt
 	sed -i -e '/^\.TH/s/3gt/1gt/' $(bldmandir1)/gt_generate_parcels.1gt
 	@echo "man page ready"
+else
+$(bldmandir1)/gtmodel_s01.1gt:  $(DOX_TRIGGER)
+	mkdir -p $(bldmandir1)
+	tar -xvf $(docarchive) $(bldmandir1)/gtmodel_s01.1gt
+	@echo "man page ready"
+$(bldmandir1)/gtmodel_s02.1gt:  $(DOX_TRIGGER)
+	mkdir -p $(bldmandir1)
+	tar -xvf $(docarchive) $(bldmandir1)/gtmodel_s02.1gt
+	@echo "man page ready"
+$(bldmandir1)/gt_fill_met_cache.1gt:  $(DOX_TRIGGER)
+	mkdir -p $(bldmandir1)
+	tar -xvf $(docarchive) $(bldmandir1)/gt_fill_met_cache.1gt
+	@echo "man page ready"
+$(bldmandir1)/gt_generate_parcels.1gt:  $(DOX_TRIGGER)
+	mkdir -p $(bldmandir1)
+	tar -xvf $(docarchive) $(bldmandir1)/gt_generate_parcels.1gt
+	@echo "man page ready"
+endif
 
 html-local: $(DOX_TRIGGER)
 	@echo "Generated Doxygen HTML (and possibly other) docs"
