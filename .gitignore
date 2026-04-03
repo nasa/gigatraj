@@ -30,6 +30,7 @@ doc/latex
 doc/man
 doc/rtf
 doc/latex_yes.dconf
+doc/latex_no.dconf
 doc/gigatraj_base.dconf
 doc/.doc_stamp
 doc/.remake_trigger
