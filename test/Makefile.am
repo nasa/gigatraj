@@ -229,6 +229,7 @@ check_PROGRAMS += test_traj000 test_traj001 test_traj010
 EXTRA_DIST += test_traj001.dat
 
 TESTS += test_gtmodel_s01.sh
+check_PROGRAMS += check_traj_diffs
 EXTRA_DIST += test_gtmodel_s01.sh \
               gtmodel_s01_input.txt \
               gtmodel_s01_original.txt
@@ -472,6 +473,9 @@ test_traj001_DEPENDENCIES = ../lib/libgigatraj.a
 test_traj010_SOURCES = test_traj010.cc test_utils.cc test_utils.hh
 test_traj010_DEPENDENCIES = ../lib/libgigatraj.a
 
+check_traj_diffs_SOURCES = check_traj_diffs.cc test_utils.cc test_utils.hh
+check_traj_diffs_DEPENDENCIES = ../lib/libgigatraj.a
+
 # We need the following if the build directory is 
 # not the same asthe source directory.
 # (If they are the same, then the link fails and true is executed.)
@@ -523,6 +527,5 @@ test_StreamReadMPI.sh: test_MPI.sh
 
 test_SwarmMPI.sh: test_MPI.sh
 	ln -s test_MPI.sh $@  || true
-
 
         

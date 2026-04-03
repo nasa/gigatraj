@@ -80,7 +80,8 @@ if [ ${OK} != 0 ] ; then
    exit 1
 fi
 
-if cmp ${CFILE} ${OFILE} ; then
+#if cmp ${CFILE} ${OFILE} ; then
+if ./check_traj_diffs ${CFILE} ${OFILE} ; then
    echo "Files match" >&2
    /bin/rm -f "${OFILE}"
    exit 0

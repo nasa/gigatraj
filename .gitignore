@@ -67,6 +67,7 @@ test/Makefile.in
 test/.deps/
 test/junknotes
 test/comms_notes
+test/check_traj_diffs
 test/test_BilinearHinterp
 test/test_BilinearHinterp_MPI
 test/test_BilinearHinterp_serial
