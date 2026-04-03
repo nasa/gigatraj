@@ -918,7 +918,7 @@ class MetMyGEOS : public MetGridLatLonData {
            /// the number of time snapshots in the file
            int n;
            /// The time of the first snapshot of the file, in day fractions
-           // (i.e., fractrional part of start)
+           // (i.e., fractional part of start)
            double toff;
            /*! bitwise indicators for which items have been specified (as opposed to computed)
                  0x01 = start

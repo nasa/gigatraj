@@ -614,9 +614,17 @@ GridLatLonField3D* MetMyGEOS::new_directGrid3D( const std::string quantity, cons
     // so we need to calculate them on the fly, from quantities
     // that we can read in.
     if ( queryOTF( quantity, OTFquants ) ) {
+    
+       if ( dbug > 50 ) {
+          std::cerr << "MetMyGEOS::new_directGrid3D: " << quantity
+          << " is an OTF quantity" << std::endl; 
+       }
+    
        nOTF = OTFquants.size();
        if ( nOTF > 1 ) {
           OTFcomponents3D = new GridLatLonField3D*[nOTF - 1];
+
+
 
           // We need to read in other quantities and calculate the desired quantity
           // from them.  We would also like to take advantage of any caching
@@ -632,10 +640,18 @@ GridLatLonField3D* MetMyGEOS::new_directGrid3D( const std::string quantity, cons
           
           // now read in each component quantity
           for ( int ic=1; ic < nOTF; ic++ ) {
+              if ( dbug > 50 ) {
+                 std::cerr << "MetMyGEOS::new_directGrid3D: reading OTF component "
+                 << OTFquants[ic] << " at " << time << std::endl; 
+              }
               OTFcomponents3D[ic - 1] = defaultThis->new_directGrid3D(OTFquants[ic], time);
           }
           
           // now do the calculation
+          if ( dbug > 50 ) {
+             std::cerr << "MetMyGEOS::new_directGrid3D: doing the OTF calculation "
+             << std::endl; 
+          }
           tmp1 = NULLPTR;
           if ( OTFquants[0] == "ThetaOTF") {
              tmp1 = dynamic_cast<GridLatLonField3D*>(gettheta.calc( *OTFcomponents3D[0], *OTFcomponents3D[1] ));
@@ -648,7 +664,8 @@ GridLatLonField3D* MetMyGEOS::new_directGrid3D( const std::string quantity, cons
           } else if ( OTFquants[0] == "PAltDotOTF") {
              tmp1 = dynamic_cast<GridLatLonField3D*>(getpaltdot.calc( *OTFcomponents3D[0], *OTFcomponents3D[1] ));
           } else if ( OTFquants[0] == "SZAOTF") {
-//             tmp1 = dynamic_cast<GridLatLonField3D*>(getSZA.calc( *OTFcomponents3D[0] ));
+               std::cerr << "Should never get here: SZA as 32D field" << std::endl;
+//             tmp1 = dynamic_cast<GridLatLonField3D*>(getsza.calc( *OTFcomponents3D[0] ));
           }
           if ( tmp1 != NULLPTR ) {
              *grid3d = *tmp1;
@@ -895,12 +912,16 @@ GridLatLonFieldSfc* MetMyGEOS::new_directGridSfc( const std::string quantity, co
           delete desiredsfc;
           remove( grid3D );
        } else {
-          // This is a 2D quanity that is inherently on the tropopause
+          // This is a 2D quantity that is inherently on the tropopause
           readSource( quantity, time, gridsfc );
           
        }
     } else if ( sfcname == "sfc" ) { 
        if ( queryOTF( quantity, OTFquants ) ) {
+          if ( dbug > 50 ) {
+             std::cerr << "MetMyGEOS::new_directGridSfc: " << quantity
+             << " is an OTF quantity" << std::endl; 
+          }
           nOTF = OTFquants.size();
           if ( nOTF > 1 ) {
              OTFcomponentsSfc = new GridLatLonFieldSfc*[nOTF - 1];
@@ -919,10 +940,18 @@ GridLatLonFieldSfc* MetMyGEOS::new_directGridSfc( const std::string quantity, co
              
              // now read in each component quantity
              for ( int ic=1; ic < nOTF; ic++ ) {
+                 if ( dbug > 50 ) {
+                    std::cerr << "MetMyGEOS::new_directGridSfc: reading OTF component "
+                    << OTFquants[ic] << " at " << time << std::endl; 
+                 }
                  OTFcomponentsSfc[ic - 1] = defaultThis->new_directGridSfc(OTFquants[ic], time);
              }
              
              // now do the calculation
+             if ( dbug > 50 ) {
+                std::cerr << "MetMyGEOS::new_directGridSfc: doing the OTF calculation "
+                << std::endl; 
+             }
              tmp1 = NULLPTR;
              if ( OTFquants[0] == "SZAOTF") {
                 tmp1 = dynamic_cast<GridLatLonFieldSfc*>(getsza.calc( *OTFcomponentsSfc[0] ));
@@ -2623,13 +2652,14 @@ void MetMyGEOS::Source_open( bool pre, int index )
         std::cerr << "MetMyGEOS::Source_open: starting" << std::endl;
      }
 
+     // if the index into the dat sources (dS) is not valid,
+     // set it to the current data source's index
      if ( index < 0 ) {
         index = test_dsrc;
      }
-     
-     
+          
      ds_size = ds.size();
-
+     
      // index into ds of a known-unsuccessful url
      // As far as we know at this point,
      // there are no known-unsuccessful urls
@@ -2639,10 +2669,23 @@ void MetMyGEOS::Source_open( bool pre, int index )
      // we start off assuming that we
      // need to open a new URL only if it is not already open.
      need_to_open = ! is_open;
+     if ( dbug >= 100 ) {
+        std::cerr << "MetMyGEOS::Source_open: is a file open? ";
+        if ( is_open ) {
+           std::cerr << " yes (" << opened_url << ")";
+        } else {
+           std::cerr << " no";
+        }
+        std::cerr << std::endl;
+        std::cerr << "MetMyGEOS::Source_open: index " << index << ": need to open #1? " << need_to_open << " (" << is_open << ")" << std::endl;
+     }
      if ( ! need_to_open ) {
         // but if the desired ds's url is not the one we have open,
         // then we need to open it
         need_to_open = ( ds[index].pre != opened_url ) && ( ds[index].post != opened_url );
+        if ( dbug >= 100 ) {
+           std::cerr << "MetMyGEOS::Source_open: index " << index << ": need to open #3? " << need_to_open << std::endl;
+        }
      }
      if ( (! need_to_open) && (! Source_testDesiredTime()) ) {
         // if we have a file open, and the url is current,
@@ -2672,6 +2715,9 @@ void MetMyGEOS::Source_open( bool pre, int index )
         }
         
         need_to_open = true;
+        if ( dbug >= 100 ) {
+           std::cerr << "MetMyGEOS::Source_open: index " << index << ": need to open #3? " << need_to_open << std::endl;
+        }
         
      }
 
@@ -2712,9 +2758,12 @@ void MetMyGEOS::Source_open( bool pre, int index )
         }
      }
      
-     if ( need_to_open ) {
+     if ( need_to_open && is_open ) {
         // close the old one
         // before we try to open a new one
+        if ( dbug >= 100 ) {
+           std::cerr << "MetMyGEOS::Source_open: closing open file: " << opened_url << std::endl;
+        }
         Source_close();
      }
      
@@ -2762,7 +2811,9 @@ void MetMyGEOS::Source_open( bool pre, int index )
               ok =  Source_postOpen(index);
               
               if ( ! ok ) {
-                 std::cerr << "MetMyGEOS::Source_open: failed post-open initialization on " << url << std::endl;
+                 if ( dbug >= 10 ) {
+                    std::cerr << "MetMyGEOS::Source_open: failed post-open initialization on " << url << std::endl;
+                 }
                  Source_close();
                  bad_index = index;
               }
@@ -2779,10 +2830,20 @@ void MetMyGEOS::Source_open( bool pre, int index )
         
         // either there was no first attempt, or there was one and it was unsuccessful
         if ( (index < 0) || (index >= ds_size) || (! ok) ) {
+           if ( dbug > 10 ) {
+              std::cerr << "MetMyGEOS::Source_open: re-trying data read. Failed on ds index " << index << std::endl;
+              std::cerr << "MetMyGEOS::Source_open: now trying " << start_index << " to " << ds_size - 1 << std::endl;
+           }
+        
+           start_index = index;
         
            // ok, then try each DataSource in turn
            for ( index=start_index; index < ds_size; index++ ) {
         
+               if ( dbug > 5 ) {
+                  std::cerr << "MetMyGEOS::Source_open: ds index " << index << " with bad index " << bad_index << std::endl;
+               }
+               
                if ( index != bad_index ) {
         
                   if ( pre ) {
@@ -2792,7 +2853,7 @@ void MetMyGEOS::Source_open( bool pre, int index )
                   }
            
                   if ( dbug > 5 ) {
-                     std::cerr << "MetMyGEOS::Source_open: attempting nc_open of ds index " << index 
+                     std::cerr << "MetMyGEOS::Source_open: re-try, attempting nc_open of ds index " << index 
                      << ": <<" << url  << ">>" << std::endl;
                   }
            
@@ -2864,6 +2925,11 @@ void MetMyGEOS::Source_open( bool pre, int index )
         ok = false;
         if ( ds[index].type != 2 ) {
            // not of type OTF.
+           
+           if ( dbug > 2 ) {
+              std::cerr << "MetMyGEOS::Source_open: checking dims of ds index " << index 
+              << ": <<" << url  << ">>" << std::endl;
+           }
            
            if ( ds[index].dims != ds[opened_dsrc].dims ) {
               is_open = true;
@@ -3085,6 +3151,15 @@ bool MetMyGEOS::Source_testDesiredTime()
     result = true;
     
     if (target_time_valid) {
+       if ( dbug >= 100 ) {
+          std::cerr << "MetMyGEOS::Source_testDesiredTime: target_time=" << target_time 
+          << " against " << url_tgrid.start 
+          << ", " << url_tgrid.next 
+          << ", " << url_tgrid.delta 
+          << ", " << url_tgrid.end 
+          << ", " << url_tgrid.n 
+          << std::endl;
+       }
        result = url_tgrid.inside( target_time );
     } 
     
@@ -7580,6 +7655,8 @@ bool MetMyGEOS::TGridSpec::inside( double t )
 {
     bool result;
 
+    //   std::cerr << "MetMyGEOS::TGridSpec::inside:: testing time " << t
+    //   << " against " << start << ", " << next << ", " << n << std::endl; 
     if ( n > 0 ) {
        // multiple time steps in URL, so 'end' is valid
        // do the easy--and most likely--check first

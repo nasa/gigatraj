@@ -741,6 +741,7 @@ int main()
     delete grid2d;
 
     // test a quantity that is calculated on the fly
+    //metsrc0->dbug = 100;
     grid2d = metsrc0->GetSfc( "SZA", date0 );
     dd = (*grid2d)(iLon1,iLat1);
     if ( dd < 0.0 || dd > 180.0 ) {
