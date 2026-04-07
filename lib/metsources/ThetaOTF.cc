@@ -52,6 +52,11 @@ ThetaOTF::ThetaOTF(const ThetaOTF& src) : MetOnTheFly(src)
 
 ThetaOTF& ThetaOTF::operator=(const ThetaOTF& src)
 {
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
     this->assign( src ) ;
     
     return *this;

@@ -38,6 +38,11 @@ SZAOTF::SZAOTF(const SZAOTF& src) : MetOnTheFly(src)
 
 SZAOTF& SZAOTF::operator=(const SZAOTF& src)
 {
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
     this->assign( src ) ;
     
     return *this;

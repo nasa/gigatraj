@@ -65,6 +65,11 @@ BalanceThetaDot1OTF::BalanceThetaDot1OTF(const BalanceThetaDot1OTF& src) : MetOn
 
 BalanceThetaDot1OTF& BalanceThetaDot1OTF::operator=(const BalanceThetaDot1OTF& src)
 {
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
     this->assign( src ) ;
     
     return *this;

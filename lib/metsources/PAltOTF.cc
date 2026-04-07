@@ -70,6 +70,11 @@ PAltOTF::PAltOTF(const PAltOTF& src) : MetOnTheFly(src)
 
 PAltOTF& PAltOTF::operator=(const PAltOTF& src)
 {
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
     this->assign( src ) ;
     
     return *this;

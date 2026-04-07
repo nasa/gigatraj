@@ -53,6 +53,11 @@ MPVOTF::MPVOTF(const MPVOTF& src) : MetOnTheFly(src)
 
 MPVOTF& MPVOTF::operator=(const MPVOTF& src)
 {
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
     this->assign( src ) ;
     
     return *this;

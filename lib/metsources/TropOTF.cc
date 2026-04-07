@@ -78,6 +78,11 @@ TropOTF::TropOTF(const TropOTF& src) : MetOnTheFly(src)
 
 TropOTF& TropOTF::operator=(const TropOTF& src)
 {
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
     this->assign( src ) ;
     
     return *this;

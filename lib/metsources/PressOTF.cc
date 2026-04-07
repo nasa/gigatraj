@@ -84,6 +84,11 @@ PressOTF::PressOTF(const PressOTF& src) : MetOnTheFly(src)
 
 PressOTF& PressOTF::operator=(const PressOTF& src)
 {
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
     this->assign( src ) ;
     
     return *this;

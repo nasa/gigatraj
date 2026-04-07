@@ -51,6 +51,11 @@ DensOTF::DensOTF(const DensOTF& src) : MetOnTheFly(src)
 
 DensOTF& DensOTF::operator=(const DensOTF& src)
 {
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
     this->assign( src ) ;
     
     return *this;
