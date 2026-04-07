@@ -168,8 +168,11 @@ nodoc:
 install-data-hook:
 	if [ ! -d "$(DESTDIR)$(docdir)" ] ; then mkdir -p "$(DESTDIR)$(docdir)" ; fi
 	if [ ! -d "$(mandir)/man3" ] ; then mkdir -p "$(mandir)/man3" ; fi
-	cd $(DESTDIR)$(docdir) \
-    && tar xof $(docarchive) \
+	SrcDeer=`dirname $(docarchive)` \
+	&& TarBall=`basename $(docarchive)` \
+	&& FullSrc=`( cd $$SrcDeer && pwd )` \
+	&& cd $(DESTDIR)$(docdir) \
+    && tar xof $$FullSrc/$$TarBall \
     && for file in `/bin/ls -1 man/man3gt/` ; do if [ -f man/man3gt/$$file ] ; then mv man/man3gt/$$file $(mandir)/man3/ ; fi ; done \
     && /bin/rm -fr man
 # To uninstall the docs?
