@@ -72,8 +72,6 @@ MetGridData::MetGridData() : MetData()
       override_tbase = -1;
       override_tspace = -1;
     
-      getpalt.set_quantity(palt_name);
-      getpalt.setPressureName( pressure_name );
 
       vw.quantity = "PAltDot";
       vw.units = "km/s";
@@ -81,11 +79,7 @@ MetGridData::MetGridData() : MetData()
       vw.MKSoffset = 0.0;
       vertwind_quants[ palt_name ] = vw;
 
-      getpaltdot.set_quantity((vertwind_quants[ palt_name ]).quantity);
-      getpaltdot.setPressureAltitudeName(palt_name);
-      getpaltdot.setPressureName(pressure_name);
-      getpaltdot.setPressureDotName("unknown");
-
+      MetGridData::updateOTF();
 }
 
 // destructor
@@ -187,6 +181,8 @@ void MetGridData::assign( const MetGridData& src )
       override_tbase = src.override_tbase;
       override_tspace = src.override_tspace;
 
+      MetGridData::updateOTF();
+
       // Note: we do not copy the actual cached met data. 
       // Those data will be loaded afresh into this object
       // as requests are made to it.    
@@ -231,6 +227,8 @@ void MetGridData::setOption( const std::string &name, const std::string &value )
     } else {
         MetData::setOption( name, value ); 
     }
+    
+    MetGridData::updateOTF();
 }
 
 void MetGridData::setOption( const std::string &name, int value )
@@ -608,6 +606,17 @@ bool MetGridData::vConvert( GridField3D *input, std::string quant, std::string u
     return false;
 }
 
+void MetGridData::updateOTF()
+{
+      getpalt.set_quantity(palt_name);
+      getpalt.setPressureName( pressure_name );
+
+      getpaltdot.set_quantity((vertwind_quants[ palt_name ]).quantity);
+      getpaltdot.setPressureAltitudeName(palt_name);
+      getpaltdot.setPressureName(pressure_name);
+      getpaltdot.setPressureDotName(pressureDot_name);
+
+}
 
 GridField3D* MetGridData::new_mgmtGrid3D( const std::string& quantity, const std::string& time )
 {

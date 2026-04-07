@@ -285,7 +285,6 @@ class MetGridData : public MetData {
       */
       virtual bool getOption( const std::string &name, double &value );
 
-
       /// returns a copy of the object, cast to the MetGridData class
       /*!
            Sometimes a routine that deals with objects of a MetGridData subclass
@@ -820,6 +819,22 @@ class MetGridData : public MetData {
       
       */
       virtual bool vConvert( GridField3D *input, std::string quant, std::string units, real scale=1.0, real offset=0.0 );
+
+      /// sets quantity names in any OTF members from current quantity name values
+      /*!
+           This class (and potentially its subclasses) contain some MetOnTheFly (OTF)
+           objects as members. These often contain the names of various physical quantities
+           used in their calculations, in order to recognize from their methods' aprameters
+           which calculations they need to do.
+           
+           However, when those quantity names are altered form their defaults in this class (as for example
+           when they are read in from a Catalog), those quantity names must be
+           set in the OTF member objects as well.
+           
+           This method does that.
+           
+      */
+      virtual void updateOTF();
 
 
       /// generate a fle path to a cache file for a gridded met field
