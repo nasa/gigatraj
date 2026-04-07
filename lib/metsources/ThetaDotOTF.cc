@@ -24,6 +24,7 @@ using namespace gigatraj;
 ThetaDotOTF::ThetaDotOTF() 
 {
     quant = "tendency_of_air_potential_temperature";
+    uu = "K/s";
     dtdt_name = "tendency_of_air_temperature";
     press_name = "air_pressure";
     temp_name = "air_temperature";
@@ -45,6 +46,32 @@ ThetaDotOTF::ThetaDotOTF(const std::string& dthdt,const std::string& dtdt, const
 
 ThetaDotOTF::~ThetaDotOTF() 
 {
+}
+
+ThetaDotOTF::ThetaDotOTF(const ThetaDotOTF& src) : MetOnTheFly(src)
+{
+     dtdt_name = src.dtdt_name;
+     temp_name = src.temp_name;
+     press_name = src.press_name;
+     theta_name = src.theta_name;
+     omega_name = src.omega_name;
+}
+
+ThetaDotOTF& ThetaDotOTF::operator=(const ThetaDotOTF& src)
+{
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void ThetaDotOTF::assign( const ThetaDotOTF& src)
+{
+     MetOnTheFly::assign( src );
+     dtdt_name = src.dtdt_name;
+     temp_name = src.temp_name;
+     press_name = src.press_name;
+     theta_name = src.theta_name;
+     omega_name = src.omega_name;
 }
 
 GridField3D* ThetaDotOTF::calc( const GridField3D& input1, const GridField3D& input2, int flags) const

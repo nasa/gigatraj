@@ -57,6 +57,29 @@ class SZAOTF : public MetOnTheFly {
          /*! This is the class destructor
          */
          ~SZAOTF();
+      
+         /// copy constructor                                       
+         /*!                                                        
+            This is the copy contructor method for the SZAOTF class.    
+                                                                    
+            \param src the source SZAOTF object to copy from            
+         */                                                         
+         SZAOTF(const SZAOTF& src);                                         
+
+         /// copy assignment                                        
+         /*!                                                        
+             This is the copy assignment operator for the SZAOTF class. 
+         */                                                         
+         SZAOTF& operator=(const SZAOTF& src);                              
+
+         /// copies settings from a source object to this one       
+         /*!                                                        
+              This method copies settings from a source SZAOTF object   
+              to this one.                                          
+                                                                    
+              \param src the source SZAOTF object                       
+         */                                                         
+         void assign( const SZAOTF& src);                               
 
          /// does the calculation to produce a solar zenith angle field from a gridded 3D field
          /*! This function computes solar zenith angle (SZA) from a single input 3D field.

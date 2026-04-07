@@ -34,6 +34,9 @@ TropOTF::TropOTF()
    aname = "altitude";
    hname = "air_potential_temperature";
    dname = "air_density";
+   
+   palt.setPressureName(pname);
+   palt.set_quantity(aname);
 
 }
 TropOTF::TropOTF(std::string trop, std::string temperature, std::string pressure, std::string altitude, std::string theta, std::string density, int tkind )
@@ -49,10 +52,52 @@ TropOTF::TropOTF(std::string trop, std::string temperature, std::string pressure
    aname = altitude;
    hname = theta;
    dname = density;
+
+   palt.setPressureName(pname);
+   palt.set_quantity(aname);
 }
 
-TropOTF::~TropOTF()
+TropOTF::~TropOTF() 
 {
+}
+
+TropOTF::TropOTF(const TropOTF& src) : MetOnTheFly(src)
+{
+   tropkind = src.tropkind;   
+   sfc = src.sfc;
+   pname = src.pname;
+   tname = src.tname;
+   aname = src.aname;
+   hname = src.hname;
+   dname = src.dname;
+   palt = src.palt;
+
+   palt.setPressureName(pname);
+   palt.set_quantity(aname);
+}
+
+TropOTF& TropOTF::operator=(const TropOTF& src)
+{
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void TropOTF::assign( const TropOTF& src)
+{
+    MetOnTheFly::assign( src );
+
+    tropkind = src.tropkind;   
+    sfc = src.sfc;
+    pname = src.pname;
+    tname = src.tname;
+    aname = src.aname;
+    hname = src.hname;
+    dname = src.dname;
+    palt = src.palt;
+
+    palt.setPressureName(pname);
+    palt.set_quantity(aname);
 }
 
 
@@ -318,7 +363,7 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, int flags ) const
             // we skip past bad-data points
             if ( (*tp)[i] != tbad ) {
               
-               // get the tmeperature in Kelvin
+               // get the temperature in Kelvin
                tval = ((*tp)[i]*t.mksScale+t.mksOffset); 
                // and whatever vertical coordinate we are using
                vval = rawvrt[i];
@@ -443,6 +488,12 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
 {
     // the output tropopause field
     GridFieldSfc* tropsfc;
+    // the altitudes
+    const GridField3D* alts3d;
+    // flag for what the "alts" parameter is
+    int alts_arg_is;
+    // temporary holding surface
+    GridFieldSfc* tmp2d;
     // iterator over the output grid points
     GridFieldSfc::iterator pnt;
     // iterators over the input grid vertical profiles
@@ -482,15 +533,28 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
        debug = 1;
     }
 
+    alts_arg_is = -1; 
+    if ( alt.quantity() == aname ) {
+       alts_arg_is = 0; // it's altitude
+    } else if ( alt.quantity() == pname ) {
+       alts_arg_is = 1; // it's pressure
+   
+    }   
+
     // the input quantities must be correct
-    if ( t.quantity() != tname || alt.quantity() != aname ) {
+    if ( t.quantity() != tname || alts_arg_is == -1 ) {
        throw (badprofile());
     }  
-    // and the two inout grids must be compatible
+    // and the two input grids must be compatible
     if ( ! t.compatible(alt) ) {
        throw (badprofile());
     }  
     
+    if ( alts_arg_is == 0 ) {
+       alts3d = &alt;
+    } else {
+       alts3d = palt.calc( alt );
+    }   
 
     // Extract a surface from the input field.
     // This ensures that the output has the same horizontal grid as the input.
@@ -544,6 +608,12 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
         delete ap;
 
     }
+    if ( alts_arg_is == 1 ) {
+       delete alts3d;
+       tmp2d = tropsfc;
+       tropsfc = palt.clac( *tmp2d );
+       delete tmp2d;
+    }   
 
     if ( flags & OTF_MKS ) {
        switch (vcoord) {

@@ -76,6 +76,29 @@ class MPVOTF : public MetOnTheFly {
          /*! This is the class destructor
          */
          ~MPVOTF();
+      
+         /// copy constructor
+         /*!
+            This is the copy contructor method for the MPVOTF class.
+            
+            \param src the source MPVOTF object to copy from
+         */
+         MPVOTF(const MPVOTF& src);
+
+         /// copy assignment
+         /*! 
+             This is the copy assignment operator for the MPVOTF class.
+         */
+         MPVOTF& operator=(const MPVOTF& src);
+
+         /// copies settings from a source object to this one
+         /*! 
+              This method copies settings from a source MPVOTF object
+              to this one.
+              
+              \param src the source MPVOTF object
+         */     
+         void assign( const MPVOTF& src);
 
          /// sets the name of the input quantity used for EPV
          /*! This function sets the name used to identify an input field as 

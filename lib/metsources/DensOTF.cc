@@ -41,6 +41,30 @@ DensOTF::~DensOTF()
 {
 }
 
+DensOTF::DensOTF(const DensOTF& src) : MetOnTheFly(src)
+{
+     dens_name = src.dens_name;
+     press_name = src.press_name;
+     temp_name = src.temp_name;
+     theta_name = src.theta_name;
+}
+
+DensOTF& DensOTF::operator=(const DensOTF& src)
+{
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void DensOTF::assign( const DensOTF& src)
+{
+     MetOnTheFly::assign( src );
+     dens_name = src.dens_name;
+     press_name = src.press_name;
+     temp_name = src.temp_name;
+     theta_name = src.theta_name;
+}
+
 GridField3D* DensOTF::calc( const GridField3D& input, int flags) const
 {
     // the output density field

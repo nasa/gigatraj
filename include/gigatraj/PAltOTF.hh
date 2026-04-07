@@ -80,6 +80,30 @@ class PAltOTF : public MetOnTheFly {
          /*! This is the class destructor
          */
          ~PAltOTF();
+      
+         /// copy constructor
+         /*!
+            This is the copy contructor method for the PAltOTF class.
+            
+            \param src the source PAltOTF object to copy from
+         */
+         PAltOTF(const PAltOTF& src);
+
+         /// copy assignment
+         /*! 
+             This is the copy assignment operator for the PAltOTF class.
+         */
+         PAltOTF& operator=(const PAltOTF& src);
+
+         /// copies settings from a source object to this one
+         /*! 
+              This method copies settings from a source PAltOTF object
+              to this one.
+              
+              \param src the source PAltOTF object
+         */     
+         void assign( const PAltOTF& src);
+
 
          /// sets the name of the input quantity used for air pressure
          /*! This function sets the name used to identify an input field as 
@@ -94,17 +118,14 @@ class PAltOTF : public MetOnTheFly {
          }            
 
 
-         /// does the calculation to produce an air pressure field from a gridded 3D field
-         /*! This function computes air pressure from a single input 3D field.
+         /// does the calculation to produce a pressure altitude field from a gridded 3D field
+         /*! This function computes pressure altitude from a single input field.
              This covers two cases: any quantity on pressure surfaces (i.e., pressure
              is the vertical coordinate), or pressure on any surface.
 
-            \return a pointer to a new GridField3D object that holds the output pressure field.  
-                    When the input is on pressure surfaces, the output values 
-                    will have the same units as the vertical coordinate of the 
-                    input field.  Then the input is on isentropic surfaces,
-                    the output will have units of hectoPascals (hPa), which is
-                    the same as millibars (mb). The calling routine is responsible for
+            \return a pointer to a new GridField3D object that holds the output pressure altitude field.  
+                    The units are km.  
+                    The calling routine is responsible for
                     deleting the new object when it is no longer needed.
             \param input the input data field.
             \param flags OTF_* flags to to affect the calculation results
@@ -112,21 +133,45 @@ class PAltOTF : public MetOnTheFly {
          GridField3D* calc( const GridField3D& input, int flags=0) const;
 
 
-         /// does the calculation to produce an air pressure field from a gridded 2D field
-         /*! This function computes air pressure from a single input 2D pressure field.
+         /// does the calculation to produce a pressure altitude field from a gridded 2D field
+         /*! This function computes pressure altitude from a single input 2D pressure field.
 
-            \return a pointer to a new GridField3D object that holds the output pressure field.  
-                    When the input is on pressure surfaces, the output values 
-                    will have the same units as the vertical coordinate of the 
-                    input field.  Then the input is on isentropic surfaces,
-                    the output will have units of hectoPascals (hPa), which is
-                    the same as millibars (mb). The calling routine is responsible for
+            \return a pointer to a new GridField3D object that holds the output pressure altitude field.
+                    The units are km.  
+                    The calling routine is responsible for
                     deleting the new object when it is no longer needed.
             \param input the input data field.
             \param flags OTF_* flags to to affect the calculation results
          */
          GridFieldSfc* calc( const GridFieldSfc& input, int flags=0) const;
 
+
+         /// does the calculation to produce an air pressure field from a gridded 3D field of pressure altitude
+         /*! This function computes air pressure from a single input 3D field of pressure altitudes.
+             This covers two cases: any quantity on pressure altitude surfaces (i.e., pressure altitude
+             is the vertical coordinate), or pressure altitude on any surface.
+
+            \return a pointer to a new GridField3D object that holds the output pressure field. 
+                    The input will be in hPa. 
+                    The calling routine is responsible for
+                    deleting the new object when it is no longer needed.
+            \param input the input data field.
+            \param flags OTF_* flags to to affect the calculation results
+         */
+         GridField3D* clac( const GridField3D& input, int flags=0) const;
+
+
+         /// does the calculation to produce an air pressure field from a gridded 2D field of pressure altitude
+         /*! This function computes air pressure from a single input 2D pressure field of pressure altitude.
+
+            \return a pointer to a new GridField3D object that holds the output pressure field.  
+                    The input will be in hPa. 
+                    The calling routine is responsible for
+                    deleting the new object when it is no longer needed.
+            \param input the input data field.
+            \param flags OTF_* flags to to affect the calculation results
+         */
+         GridFieldSfc* clac( const GridFieldSfc& input, int flags=0) const;
          
          /// calculates pressure altitude from a pressure value
          /*! This method does the work of converting a pressure

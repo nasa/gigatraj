@@ -53,6 +53,7 @@ const real *PAltDotOTF::stdLogDzDp = stdlogDzDpdata;
 PAltDotOTF::PAltDotOTF() 
 {
     quant = "tendency_of_pressure_altitude";
+    uu = "Pa/s";
     omega_name = "lagrangian_tendency_of_air_pressure";
     press_name = "air_pressure";
     palt_name = "pressure_altitude";
@@ -70,6 +71,28 @@ PAltDotOTF::PAltDotOTF(const std::string& w, const std::string& omega, const std
 
 PAltDotOTF::~PAltDotOTF() 
 {
+}
+
+PAltDotOTF::PAltDotOTF(const PAltDotOTF& src) : MetOnTheFly(src)
+{
+     omega_name = src.omega_name;
+     press_name = src.press_name;
+     palt_name = src.palt_name;
+}
+
+PAltDotOTF& PAltDotOTF::operator=(const PAltDotOTF& src)
+{
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PAltDotOTF::assign( const PAltDotOTF& src)
+{
+     MetOnTheFly::assign( src );
+     omega_name = src.omega_name;
+     press_name = src.press_name;
+     palt_name = src.palt_name;
 }
 
 real PAltDotOTF::get_dzdp( real alt ) const

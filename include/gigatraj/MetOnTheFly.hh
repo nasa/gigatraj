@@ -142,6 +142,39 @@ class MetOnTheFly {
       
       /// Error: bad input quantity units
       class badinputunits {};
+
+      
+      /// Default constructor
+      /*!
+         This is the default contructor for the MetOnTheFly class.
+      */
+      MetOnTheFly();
+      
+      /// Default destructor
+      /*!
+         This is the default destructor for the MetOnTheFly class.
+      */
+      virtual ~MetOnTheFly();
+      
+      /// copy constructor
+      /*!
+         This is the copy contructor method for the MetOnTheFly class.
+         
+         \param src the source MetOnTheFly object to copy from
+      */
+      MetOnTheFly(const MetOnTheFly& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source MetOnTheFly object
+           to this one.
+           
+           \param src the source MetOnTheFly object
+      */     
+      virtual void assign( const MetOnTheFly& src);
+
+
       
       /// returns the name of the physical quantity being calculated on the fly
       std::string quantity();

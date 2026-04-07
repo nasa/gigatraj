@@ -77,6 +77,29 @@ class DensOTF : public MetOnTheFly {
          /*! This is the class destructor
          */
          ~DensOTF();
+      
+         /// copy constructor
+         /*!
+            This is the copy contructor method for the DensOTF class.
+            
+            \param src the source DensOTF object to copy from
+         */
+         DensOTF(const DensOTF& src);
+
+         /// copy assignment
+         /*! 
+             This is the copy assignment operator for the DensOTF class.
+         */
+         DensOTF& operator=(const DensOTF& src);
+
+         /// copies settings from a source object to this one
+         /*! 
+              This method copies settings from a source DensOTF object
+              to this one.
+              
+              \param src the source DensOTF object
+         */     
+         void assign( const DensOTF& src);
 
          /// sets the name of the input quantity used for air temperature
          /*! This sets the name used to identify an input field as 

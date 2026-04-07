@@ -45,6 +45,26 @@ MPVOTF::~MPVOTF()
 {
 }
 
+MPVOTF::MPVOTF(const MPVOTF& src) : MetOnTheFly(src)
+{
+   ename = src.ename;
+   hname = src.hname;
+}
+
+MPVOTF& MPVOTF::operator=(const MPVOTF& src)
+{
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void MPVOTF::assign( const MPVOTF& src)
+{
+     MetOnTheFly::assign( src );
+     ename = src.ename;
+     hname = src.hname;
+}
+
 GridField3D* MPVOTF::calc( const GridField3D& epv, const GridField3D& theta, int flags) const
 {
 

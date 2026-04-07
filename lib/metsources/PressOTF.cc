@@ -50,6 +50,7 @@ const real *PressOTF::stdLogP = stdLogPdata;
 PressOTF::PressOTF() 
 {
     quant = "air_pressure";
+    uu = "hPa";
     temp_name = "air_temperature";
     theta_name = "air_potential_temperature";
     thick_name = "air_layer_pressure_thickness";
@@ -60,6 +61,7 @@ PressOTF::PressOTF()
 PressOTF::PressOTF(const std::string& press, const std::string& temp, const std::string& theta, const std::string& thick, const std::string& dens, const std::string& alt)
 {
      quant = press;
+     uu = "hPa";
      temp_name = temp;
      theta_name = theta;
      thick_name = thick;
@@ -69,6 +71,33 @@ PressOTF::PressOTF(const std::string& press, const std::string& temp, const std:
 
 PressOTF::~PressOTF() 
 {
+}
+
+PressOTF::PressOTF(const PressOTF& src) : MetOnTheFly(src)
+{
+     temp_name = src.temp_name;
+     theta_name = src.theta_name;
+     thick_name = src.thick_name;
+     dens_name = src.dens_name;
+     alt_name = src.alt_name;
+}
+
+PressOTF& PressOTF::operator=(const PressOTF& src)
+{
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PressOTF::assign( const PressOTF& src)
+{
+     MetOnTheFly::assign( src );
+
+     temp_name = src.temp_name;
+     theta_name = src.theta_name;
+     thick_name = src.thick_name;
+     dens_name = src.dens_name;
+     alt_name = src.alt_name;
 }
 
 real PressOTF::calp( real alt ) const

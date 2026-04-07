@@ -82,6 +82,29 @@ class PressOTF : public MetOnTheFly {
          /*! This is the class destructor
          */
          ~PressOTF();
+      
+         /// copy constructor
+         /*!
+            This is the copy contructor method for the PressOTF class.
+            
+            \param src the source PressOTF object to copy from
+         */
+         PressOTF(const PressOTF& src);
+
+         /// copy assignment
+         /*! 
+             This is the copy assignment operator for the PressOTF class.
+         */
+         PressOTF& operator=(const PressOTF& src);
+
+         /// copies settings from a source object to this one
+         /*! 
+              This method copies settings from a source PressOTF object
+              to this one.
+              
+              \param src the source PressOTF object
+         */     
+         void assign( const PressOTF& src);
 
          /// sets the name of the input quantity used for air temperature
          /*! This function sets the name used to identify an input field as 

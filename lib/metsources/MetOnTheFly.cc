@@ -21,3 +21,22 @@
 
 using namespace gigatraj;
 
+MetOnTheFly::MetOnTheFly()
+{
+}
+
+MetOnTheFly::~MetOnTheFly()
+{
+}
+
+MetOnTheFly::MetOnTheFly(const MetOnTheFly& src)
+{
+    quant = src.quant;
+    uu = src.uu;
+}
+
+void MetOnTheFly::assign( const MetOnTheFly& src)
+{
+    quant = src.quant;
+    uu = src.uu;
+}

@@ -30,6 +30,7 @@ BalanceThetaDot1OTF::BalanceThetaDot1OTF()
        quantities to their default (UCAR CF conventions, where they exist)
     */
     quant = "tendency_of_air_potential_temperature";
+    uu = "K/s";
     press_name = "air_pressure";
     temp_name = "air_temperature";
     theta_name = "air_potential_temperature";
@@ -52,6 +53,30 @@ BalanceThetaDot1OTF::BalanceThetaDot1OTF(const std::string& dthdt, const std::st
 BalanceThetaDot1OTF::~BalanceThetaDot1OTF() 
 {
    // nothing to do here
+}
+
+BalanceThetaDot1OTF::BalanceThetaDot1OTF(const BalanceThetaDot1OTF& src) : MetOnTheFly(src)
+{
+     temp_name = src.temp_name;
+     press_name = src.press_name;
+     theta_name = src.theta_name;
+     dens_name = src.dens_name;
+}
+
+BalanceThetaDot1OTF& BalanceThetaDot1OTF::operator=(const BalanceThetaDot1OTF& src)
+{
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void BalanceThetaDot1OTF::assign( const BalanceThetaDot1OTF& src)
+{
+     MetOnTheFly::assign( src );
+     temp_name = src.temp_name;
+     press_name = src.press_name;
+     theta_name = src.theta_name;
+     dens_name = src.dens_name;
 }
 
 GridField3D* BalanceThetaDot1OTF::calc( const GridField3D& thetadot, const GridField3D& input2, int flags) const

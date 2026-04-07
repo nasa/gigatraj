@@ -81,6 +81,29 @@ class ThetaDotOTF : public MetOnTheFly {
          /*! This is the class destructor
          */
          ~ThetaDotOTF();
+      
+        /// copy constructor
+        /*!
+           This is the copy contructor method for the ThetaDotOTF class.
+           
+           \param src the source ThetaDotOTF object to copy from
+        */
+        ThetaDotOTF(const ThetaDotOTF& src);
+
+        /// copy assignment
+        /*! 
+            This is the copy assignment operator for the ThetaDotOTF class.
+        */
+        ThetaDotOTF& operator=(const ThetaDotOTF& src);
+
+        /// copies settings from a source object to this one
+        /*! 
+             This method copies settings from a source ThetaDotOTF object
+             to this one.
+             
+             \param src the source ThetaDotOTF object
+        */     
+        void assign( const ThetaDotOTF& src);
 
 
          /// sets the name of the temperature tendency quantity

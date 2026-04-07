@@ -32,6 +32,22 @@ SZAOTF::~SZAOTF()
 
 }
 
+SZAOTF::SZAOTF(const SZAOTF& src) : MetOnTheFly(src)
+{
+}
+
+SZAOTF& SZAOTF::operator=(const SZAOTF& src)
+{
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void SZAOTF::assign( const SZAOTF& src)
+{
+     MetOnTheFly::assign( src );
+}
+
 real SZAOTF::calc( real lon, real lat, std::string& time ) const
 {
      real result;

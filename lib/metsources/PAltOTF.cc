@@ -43,9 +43,10 @@ const int PAltOTF::stdN = 70;
 const real *PAltOTF::stdZ = stdZdata; 
 const real *PAltOTF::stdLogP = stdLogPdata; 
 
-PAltOTF::PAltOTF() 
+PAltOTF::PAltOTF()
 {
     quant = "pressure_altitude";
+    uu = "km";
     press_name = "air_pressure";
      
 }
@@ -53,12 +54,32 @@ PAltOTF::PAltOTF()
 PAltOTF::PAltOTF(const std::string& palt, const std::string& press)
 {
      quant = palt;
+     uu = "km";
      press_name = press;
      
 }
 
 PAltOTF::~PAltOTF() 
 {
+}
+
+PAltOTF::PAltOTF(const PAltOTF& src) : MetOnTheFly(src)
+{
+    press_name = src.press_name;
+}
+
+PAltOTF& PAltOTF::operator=(const PAltOTF& src)
+{
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PAltOTF::assign( const PAltOTF& src)
+{
+    MetOnTheFly::assign( src );
+    
+    press_name = src.press_name;
 }
 
 real PAltOTF::calc( real p ) const
@@ -212,6 +233,7 @@ GridField3D* PAltOTF::calc( const GridField3D& input, int flags) const
                     }                 
                     // transform to MKS units
                     value = value * input.mksScale + input.mksOffset;
+                    // convert Pa to km
                     (*profile)[k] = calc( value );
                  }
              }
@@ -282,6 +304,190 @@ GridFieldSfc* PAltOTF::calc( const GridFieldSfc& input, int flags) const
                     
              }
              *outPnt = calc( value );
+
+       }      
+       
+    } else {
+       // unusable input quantity
+       throw (badinputquant());
+    }
+
+    if ( flags & OTF_MKS ) {
+       result->transform("m");
+    }    
+    
+    return result;   
+
+}
+
+GridField3D* PAltOTF::clac( const GridField3D& input, int flags) const
+{
+    // the output P field
+    GridField3D *result;
+    // bad-or-missing-data fill value
+    real badval;
+    // temporary variable for holding results
+    real value;
+    // vertical coordinate value
+    real zval;
+    // iterator over input gridpoint profiles
+    GridField3D::const_profileIterator inProf;
+    // iterator over output gridpoint profiles
+    GridField3D::profileIterator outProf;
+    // a vector of vertical profile data extracted from the input grid
+    std::vector<real> *profile;
+    // a vector of vertical coordinate values from the input grid
+    std::vector<real> vert;
+   
+    if ( input.quantity() == press_name ) {
+       // input quantity is pressure 
+       
+       // duplicate the input field, to create the needed output object
+       // (Note that this also takes care of any metadata settings.)
+       result = input.duplicate();
+       
+    } else if ( input.vertical() == press_name ) {
+       // input quantity's vertical coordinate is pressure 
+       
+       // duplicate the input field, to create the needed output object
+       // Use the vertical coordinate values as data values.
+       // (Note that this also takes care of any metadata settings.)
+       result = input.generateVertical();
+       
+    } else if ( input.vertical() == quant ) {
+       // input quantity is on pressure altitude aurfaces
+       
+       
+       // duplicate the input field, to create the needed output object
+       result = input.duplicate();
+       // and set the metadata
+       result->set_quantity(press_name);
+       result->set_units("hPa", 100.0);  // the 100 takes us from hPa to Pa
+       badval = input.fillval();
+
+       // get the vertical (pressure altitude) coordinates
+       vert = input.levels();
+       for ( int k=0; k<vert.size(); k++ ) {
+           // and transform pressure altitude to MKS units, then km, 
+           // then convert to pressure in hPa 
+           if ( vert[k] != badval ) {
+              vert[k] = calc( (vert[k] * input.mksVScale + input.mksVOffset)/1000.0 )/100.0;
+           }
+       }
+       
+       // iterate over each profile on the horizontal grid
+       for ( inProf = input.profileBegin(), outProf = result->profileBegin();
+             inProf != input.profileEnd();
+             inProf++, outProf++ ) {
+       
+             // get the data profile
+             profile = *inProf;
+             
+             // load the altitude values for this profile
+             for ( int k=0; k<profile->size(); k++ ) {                    
+                 (*profile)[k] = vert[k];
+             }
+             outProf.assign(*profile); 
+
+             delete profile;
+ 
+       }      
+    
+    } else if ( input.quantity() == quant ) {
+       // input quantity is pressure altitude on who-cares surfaces
+       
+       // duplicate the input field, to create the needed output object
+       result = input.duplicate();
+       // and set the metadata
+       result->set_quantity(quant);
+       result->set_units("hPa", 100.0);  // the 100 takes us from hPa to Pa(MKS)
+       badval = input.fillval();
+
+       // iterate over each profile on the horizontal grid
+       int ij = 0;
+       for ( inProf = input.profileBegin(), outProf = result->profileBegin();
+             inProf != input.profileEnd();
+             inProf++, outProf++ ) {
+       
+             // get the data profile
+             profile = *inProf;
+             
+             // calculate the pressure values for this profile
+             for ( int k=0; k<profile->size(); k++ ) {
+                 value = (*profile)[k];
+                 if ( value != badval ) {
+                    // transform to MKS units, then to km
+                    value = (value * input.mksScale + input.mksOffset)/1000.0;
+                    // convert km to Pa, then to hPa
+                    (*profile)[k] = calc( value )/100.0;
+                 }
+             }
+             outProf.assign(*profile); 
+
+             delete profile;
+
+             ij++;
+       }      
+       
+    } else {
+       // unusable input quantity
+       throw (badinputquant());
+    }
+    
+    if ( flags & OTF_MKS ) {
+       result->transform("Pa");
+    }
+    
+    return result;   
+
+}
+
+GridFieldSfc* PAltOTF::clac( const GridFieldSfc& input, int flags) const
+{
+    // the output P field
+    GridFieldSfc *result;
+    // bad-or-missing-data fill value
+    real badval;
+    // temporary variable for holding results
+    real value;
+    // vertical coordinate value
+    real zval;
+    // iterator over input gridpoints
+    GridFieldSfc::const_iterator inPnt;
+    // iterator over output gridpoints
+    GridFieldSfc::iterator outPnt;
+
+   
+    if ( input.quantity() == press_name ) {
+       // input quantity is pressure 
+       
+       // duplicate the input field, to create the needed output object
+       // (Note tha this also takes care of any metadata settings.)
+       result = input.duplicate();
+       
+    } else if ( input.quantity() == quant ) {
+       // input quantity is pressure altitude
+       
+       // duplicate the input field, to create the needed output object
+       result = input.duplicate();
+       // and set the metadata
+       result->set_quantity(quant);
+       result->set_units("hPa", 100.0);  // the 100 takes us from hPa to Pa(MKS)
+       badval = input.fillval();
+       
+       // iterate over each profile on the horizontal grid
+       for ( inPnt = input.begin(), outPnt = result->begin();
+             inPnt != input.end();
+             inPnt++, outPnt++ ) {
+       
+             value = *inPnt;
+             if ( value != badval ) {
+                // transform to MKS units, then to km
+                value = ( value * input.mksScale + input.mksOffset)/1000.0;
+                    
+             }
+             // convert to pressure in PA, then convert that to hPa
+             *outPnt = clac( value )/100;
 
        }      
        

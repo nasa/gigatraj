@@ -86,6 +86,29 @@ class BalanceThetaDot1OTF : public MetOnTheFly {
          /*! This is the class destructor
          */
          ~BalanceThetaDot1OTF();
+      
+         /// copy constructor
+         /*!
+            This is the copy contructor method for the BalanceThetaDot1OTF class.
+            
+            \param src the source BalanceThetaDot1OTF object to copy from
+         */
+         BalanceThetaDot1OTF(const BalanceThetaDot1OTF& src);
+
+         /// copy assignment
+         /*! 
+             This is the copy assignment operator for the BalanceThetaDot1OTF class.
+         */
+         BalanceThetaDot1OTF& operator=(const BalanceThetaDot1OTF& src);
+
+         /// copies settings from a source object to this one
+         /*! 
+              This method copies settings from a source BalanceThetaDot1OTF object
+              to this one.
+              
+              \param src the source BalanceThetaDot1OTF object
+         */     
+         void assign( const BalanceThetaDot1OTF& src);
 
 
          /// sets the name of the input quantity used for air density

@@ -8,6 +8,7 @@
 #include "gigatraj/MetOnTheFly.hh"
 #include "gigatraj/GridField3D.hh"
 #include "gigatraj/GridFieldSfc.hh"
+#include "gigatraj/PAltOTF.hh"
 
 
 namespace gigatraj {
@@ -99,6 +100,27 @@ class TropOTF : public MetOnTheFly {
          */
          ~TropOTF();
          
+         /// copy constructor
+         /*!
+            This is the copy contructor method for the TropOTF class.
+         */
+         TropOTF(const TropOTF& src);
+
+         /// copy assignment
+         /*! 
+             This is the copy assignment operator for the TropOTF class.
+         */
+         TropOTF& operator=(const TropOTF& src);
+      
+         /// copies settings from a source object to this one
+         /*! 
+              This method copies settings from a source TropOTF object
+              to this one.
+              
+              \param src the source TropOTF object
+         */     
+         void assign( const TropOTF& src);
+
          /// sets the name of the temperature quantity, according to local 
          /*! This function sets the name of the temperature quantity, according to local 
                  naming conventions.  The default is to use the UCAR CF conventions.
@@ -117,6 +139,7 @@ class TropOTF : public MetOnTheFly {
          */
          inline void setPressureName(const std::string quantity ) {
             pname = quantity;
+            palt.setPressureName(pname);
          }            
 
          /// sets the name of the altitude quantity
@@ -127,6 +150,7 @@ class TropOTF : public MetOnTheFly {
          */
          inline void setAltitudeName(const std::string quantity ) {
             aname = quantity;
+            palt.set_quantity(aname);
          }            
 
          /// sets the name of the potential temperature quantity, according to local 
@@ -224,6 +248,9 @@ class TropOTF : public MetOnTheFly {
         std::string hname;
         /// the name of the density quantity
         std::string dname;
+        /// OTF object for converting pressure to altitude and vice versa
+        PAltOTF palt;
+        
         
         /*! linear vertical profile interpolator.
             returns the interpolate dvalue (0 if extrapolation is attempted)

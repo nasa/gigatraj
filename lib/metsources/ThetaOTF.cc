@@ -44,6 +44,26 @@ ThetaOTF::~ThetaOTF()
 {
 }
 
+ThetaOTF::ThetaOTF(const ThetaOTF& src) : MetOnTheFly(src)
+{
+    pname = src.pname;
+    tname = src.tname;
+}
+
+ThetaOTF& ThetaOTF::operator=(const ThetaOTF& src)
+{
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void ThetaOTF::assign( const ThetaOTF& src)
+{
+    MetOnTheFly::assign( src );
+    pname = src.pname;
+    tname = src.tname;
+}
+
 real ThetaOTF::calc( real t, real p) const
 {
    real val;

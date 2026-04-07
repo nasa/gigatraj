@@ -85,6 +85,29 @@ class PAltDotOTF : public MetOnTheFly {
          /*! This is the class destructor
          */
          ~PAltDotOTF();
+      
+         /// copy constructor
+         /*!
+            This is the copy contructor method for the PAltDotOTF class.
+            
+            \param src the source PAltDotOTF object to copy from
+         */
+         PAltDotOTF(const PAltDotOTF& src);
+
+         /// copy assignment
+         /*! 
+             This is the copy assignment operator for the PAltDotOTF class.
+         */
+         PAltDotOTF& operator=(const PAltDotOTF& src);
+
+         /// copies settings from a source object to this one
+         /*! 
+              This method copies settings from a source PAltDotOTF object
+              to this one.
+              
+              \param src the source PAltDotOTF object
+         */     
+         void assign( const PAltDotOTF& src);
 
 
          /// sets the name of the pressure altitude tendency quantity
