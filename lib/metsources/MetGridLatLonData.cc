@@ -1845,7 +1845,8 @@ GridFieldSfc* MetGridLatLonData::readCacheSfc( const std::string quantity, const
        } else {
           //todo:  put in switch block here
           quantname = quantity;
-          sfcname = "sfc";
+          //sfcname = "sfc";
+          sfcname = quantity;
        }
     
        // create a grid and set up quantities that
