@@ -22,6 +22,7 @@
 #include "gigatraj/PAltOTF.hh"
 #include "gigatraj/PAltDotOTF.hh"
 #include "gigatraj/SZAOTF.hh"
+#include "gigatraj/TropOTF.hh"
 
 namespace gigatraj {
 
@@ -482,6 +483,32 @@ class MetMyGEOS : public MetGridLatLonData {
       virtual MetGridData* MetGridCopy();
 
 
+      /// calculate an on-the-fly 3D quantity
+      /*! This method reads meteorological data and calculates an on-the-fly product from it
+          as a GridField3D object.
+      
+           \param quantity the (internal or cf-convention) name of the quantity desired
+           \param time the valid-at datestamp string for which data is desired
+           \param components a vector of strings, each element of which is the name of an ingredient
+                             used to calculate the on-the-fly product.
+           \param gridsfc a pointer to a GridField3D object that holds the data. 
+
+      */
+      void get_OTF( const std::string quantity, const std::string time, const std::vector<std::string> OTFquants, GridLatLonField3D* grid3d );      
+      
+      /// calculate an on-the-fly 2D quantity
+      /*! This method reads meteorological data and calculates an on-the-fly product from it
+          as a GridFieldSfc object.
+      
+           \param quantity the (internal or cf-convention) name of the quantity desired
+           \param time the valid-at datestamp string for which data is desired
+           \param components a vector of strings, each element of which is the name of an ingredient
+                             used to calculate the on-the-fly product.
+
+           \param a pointer to a GridFieldSfc object that holds the data.
+      */
+      void get_OTF( const std::string quantity, const std::string time, const std::vector<std::string> OTFquants, GridLatLonFieldSfc* gridsfc );      
+
       /// get a 3D data field valid at a certain time, using basic access
       /*! This method reads meteorological data from some source and returns
           it in a GridField3D object. 
@@ -735,6 +762,22 @@ class MetMyGEOS : public MetGridLatLonData {
       
           
    protected:
+
+      /// sets quantity names in any OTF members from current quantity name values
+      /*!
+           This class (and potentially its subclasses) contain some MetOnTheFly (OTF)
+           objects as members. These often contain the names of various physical quantities
+           used in their calculations, in order to recognize from their methods' aprameters
+           which calculations they need to do.
+           
+           However, when those quantity names are altered form their defaults in this class (as for example
+           when they are read in from a Catalog), those quantity names must be
+           set in the OTF member objects as well.
+           
+           This method does that.
+           
+      */
+      virtual void updateOTF();
 
        
        /// the type of object this is
@@ -1070,6 +1113,8 @@ class MetMyGEOS : public MetGridLatLonData {
       std::string modeledge_name;
       /// the name of the solar zenith angle
       std::string sza_name;
+      /// the name of the WMO tropopause
+      std::string trop_name;
 
       /// describes vertical wind quantities that are available for the different vertical coordinates
       std::map<std::string, Catalog::DataSource> verticalWinds;
@@ -1087,11 +1132,13 @@ class MetMyGEOS : public MetGridLatLonData {
       /// on-the-fly calculator for pressure
       PressOTF getpress; 
       /// on-the-fly calculator for pressure altitude
-      PAltOTF getpalt;
+//      PAltOTF getpalt;
       /// on-the-fly calculator for time rate of change of pressure altitude
-      PAltDotOTF getpaltdot;
+//      PAltDotOTF getpaltdot;
       /// on-the-fly calculator for the solar zenith angle
       SZAOTF getsza;
+      /// on-the-fly calculator for the WMO tropopause
+      TropOTF gettrop;
       
       /// true if a netcdf file is currently open
       bool is_open;
