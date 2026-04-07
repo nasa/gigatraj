@@ -35,6 +35,7 @@ name_of_solar_zenith_angle/S = "SZA"
 name_of_time/S = "time"
 name_of_uwind/S = "U"
 name_of_vwind/S = "V"
+name_of_tropopause/S = "TROPP"
 #
 BASEURL0/S = "https://goldsmr4.gesdisc.eosdis.nasa.gov/opendap/MERRA2/"
 BASEURL1/S = "https://goldsmr5.gesdisc.eosdis.nasa.gov/opendap/MERRA2/"
@@ -94,6 +95,7 @@ OTFtarget3:= [${START}T01:30];;3;0;LONFP;LATFP;PRSMR;OTF://ThetaDotOTF/DTDTTOT/T
 OTFtarget4:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://PAltOTF/P
 OTFtarget5:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://PAltDotOTF/OMEGA/P
 OTFtarget6:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://SZAOTF/SLP
+OTFtarget7:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://TropOTF/T/P
 
 
 # Quantities
@@ -109,6 +111,7 @@ air_potential_temperature: air_potential_temperature:  3: OTFtarget2
 ThetaDot: air_potential_temperature_time_derivative:  3: OTFtarget3
 net_heating_rate: air_potential_temperature_time_derivative:  3: OTFtarget3
 SZA: solar_zenith_angle:  2: OTFtarget6
+TROPP: Tropopause pressure: 2 : OTFtarget7
 # (Actual MERRA2 quantities)
 AIRDENS: air_density: 3: target27|target37|target13
 ALBEDO: surface_albedo: 2: target4
