@@ -489,9 +489,9 @@ class MetMyGEOS : public MetGridLatLonData {
       
            \param quantity the (internal or cf-convention) name of the quantity desired
            \param time the valid-at datestamp string for which data is desired
-           \param components a vector of strings, each element of which is the name of an ingredient
+           \param OTFquants a vector of strings, each element of which is the name of an ingredient
                              used to calculate the on-the-fly product.
-           \param gridsfc a pointer to a GridField3D object that holds the data. 
+           \param grid3d a pointer to a GridField3D object that holds the data. 
 
       */
       void get_OTF( const std::string quantity, const std::string time, const std::vector<std::string> OTFquants, GridLatLonField3D* grid3d );      
@@ -502,10 +502,10 @@ class MetMyGEOS : public MetGridLatLonData {
       
            \param quantity the (internal or cf-convention) name of the quantity desired
            \param time the valid-at datestamp string for which data is desired
-           \param components a vector of strings, each element of which is the name of an ingredient
+           \param OTFquants a vector of strings, each element of which is the name of an ingredient
                              used to calculate the on-the-fly product.
 
-           \param a pointer to a GridFieldSfc object that holds the data.
+           \param gridsfc a pointer to a GridFieldSfc object that holds the data.
       */
       void get_OTF( const std::string quantity, const std::string time, const std::vector<std::string> OTFquants, GridLatLonFieldSfc* gridsfc );      
 
