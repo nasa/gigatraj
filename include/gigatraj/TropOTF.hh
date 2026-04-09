@@ -225,7 +225,7 @@ class TropOTF : public MetOnTheFly {
 
 
             \param t a GridField3D field of air temperatures
-            \param alt a GridField3D field of an altitude quantity.
+            \param alt a GridField3D field of an altitude quantity (pressure altitude, pressure, or potential temperature).
             \param flags OTF_* flags to to affect the calculation results
          */   
          GridFieldSfc* wmo( const GridField3D& t, const GridField3D& alt, int flags=0) const;

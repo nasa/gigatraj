@@ -230,8 +230,13 @@ real TropOTF::wmo( const std::vector<real>&t, const std::vector<real>&alt, int f
      if ( debug ) {
         std::cerr << "debug message here" << std::endl;
      }
+
      
-     if ( picked && (pick > 0 || alt[pick] > 17210.4 ) ) {
+     real alt_low = 4863.74; // 550 mb
+     real alt_high = 20576.7; // 50 mb
+     real alt_nominal = 17210.4; // 80 mb
+     //if ( picked && (pick > 0 || alt[pick] > 17210.4 ) ) {
+     if ( picked && (pick > 0) && (alt[pick] >= alt_low) && (alt[pick] <= alt_high) ) {
         // found a point.
         // find the altitude of the trop
         trop_alt = ( target_lapse - lapse_rate[pick-1] )
@@ -241,7 +246,7 @@ real TropOTF::wmo( const std::vector<real>&t, const std::vector<real>&alt, int f
            std::cerr << "found our trop alt: " << trop_alt << std::endl;
         }
      } else {
-        trop_alt = 17210.4;
+        trop_alt = NAN;
      }
      
      // note: we ignore any OTF_MKS flag at this point.
@@ -421,6 +426,9 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, int flags ) const
 
         // find the altitude of the tropopause
         value = wmo( dat, alts, debug ); 
+        if ( ! FINITE(value) ) {
+           value = tbad;
+        }
 
         if ( tropkind == 0 ) {
            // convert this trop alt back to the original vertical coordinates
@@ -517,11 +525,15 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
     std::vector<real> dat;
     // vertical profile of altitude-like quantity, w/o bad points
     std::vector<real> alts;
+    // vector of vertical coordinates for usable points from the profile
+    std::vector<real> vrt;
     // temporary variable
     real value;
     // temperature at a given vertical level
     real tval;
     // altitude-like value at a given vertical level
+    real vval;
+    // altitude value at a given vertical level
     real aval;
     // bad-or-missing fill value
     real tbad;
@@ -533,18 +545,33 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
     int debug = 0;
     // MKS vertical units
     std::string vu;
+    // vertical coordinate of the input quantity
+    std::string vcoordname;
+    // profile index
+    int j;
+    
 
     if ( flags & OTF_DEBUG ) {
        debug = 1;
     }
 
-    alts_arg_is = -1; 
-    if ( alt.quantity() == aname ) {
-       alts_arg_is = 0; // it's altitude
-    } else if ( alt.quantity() == pname ) {
-       alts_arg_is = 1; // it's pressure
-   
-    }   
+    vcoordname = alt.quantity();
+    // we can calculate the trop only for these vertical coords
+    if ( vcoordname == aname ) {
+       // altitude
+       vcoord = 0;
+    } else if ( vcoordname == pname ) {
+       // pressure
+       vcoord = 1;
+    } else if ( vcoordname == hname ) {
+       // potential temperature
+       vcoord = 2;
+    } else if ( vcoordname == dname ) {
+       // density
+       vcoord = 3;
+    } else {
+        throw (badprofile());
+    } 
 
     // the input quantities must be correct
     if ( t.quantity() != tname || alts_arg_is == -1 ) {
@@ -555,11 +582,6 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
        throw (badprofile());
     }  
     
-    if ( alts_arg_is == 0 ) {
-       alts3d = &alt;
-    } else {
-       alts3d = palt.calc( alt );
-    }   
 
     // Extract a surface from the input field.
     // This ensures that the output has the same horizontal grid as the input.
@@ -574,6 +596,8 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
     tbad = t.fillval(); 
     abad = alt.fillval();
 
+int cnt;
+cnt = 0;
     // for each horizontal gridpoint...
     for (prof=t.profileBegin(), aprof=alt.profileBegin(), pnt=tropsfc->begin(); 
          prof!=t.profileEnd(); 
@@ -589,28 +613,126 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
         alts.reserve(n);
         dat.clear();
         dat.reserve(n);
-
+        vrt.clear();
+        vrt.reserve(n);
+        j = 0;
+        
         // convert t to SI units, assembling vectors of t and alt with no bad points
+if ( cnt == 51840 ){
+   value = 0.0;
+}   
+        
         for ( int i=0; i<n; i++ ) {
+            // current values at this level
             tval = (*tp)[i];
-            aval = (*ap)[i];
-            if ( tval != tbad  && aval != abad ) {
+            vval = (*ap)[i];
+            
+            // is it a good data point?
+            if ( tval != tbad  && vval != abad ) {
+            
+               // transform it to MKS values
                tval = (tval*t.mksScale+t.mksOffset); 
-               aval = (aval*alt.mksScale+alt.mksOffset); 
+               vval = (vval*alt.mksScale+alt.mksOffset); 
+               
+               switch (vcoord) {
+               case 0: // altitude - no conversion needed
+                  aval = vval; 
+                  break;
+               case 1: // pressure
+                  // we integrate the temperature and pressure to get geopotential height
+                  if ( j > 0 ) {   
+                     real dlogp = LOG(vval) - LOG(vrt[j - 1]);
+                     real tavg = (tval + dat[ j - 1])/2.0;
+                     aval = alts[j - 1] - 287.04/9.81*tavg*dlogp;
+                  } else {
+                     aval = 0.0;
+                  }
+                  break;
+               case 2: // theta   
+                  // we integrate the temperature and theta to get geopotential height
+                  if ( j > 0 ) {   
+                     real dlogtheta = LOG(vval) - LOG(vrt[j - 1]);
+                     real dlogt = LOG(tval) - LOG(dat[j - 1]);
+                     real tavg = (tval + dat[ j - 1])/2.0;
+                     aval = alts[j - 1] - 287.04/9.81/(2./7.)*tavg*(dlogt - dlogtheta);
+                  } else {
+                     aval = 0.0;
+                  }
+                  break;
+               case 3: // density   
+                  // we integrate the density to get geopotential height
+                  if ( j > 0 ) {   
+                     real dlogrho = LOG(vval) - LOG(vrt[j - 1]);
+                     real dlogt = LOG(dat[j]) - LOG(dat[j - 1]);
+                     real tavg = (tval + dat[ j - 1])/2.0;
+                     aval = alts[j - 1] - 287.04/9.81*tavg*(dlogrho + dlogt);
+                  } else {
+                     aval = 0.0;
+                  }
+                  break;
+               } 
                
                dat.push_back( tval );
+               vrt.push_back( vval );
                alts.push_back( aval );
+               j++;
             }    
         }
 
         // find the trop
+if ( cnt == 51840 ){
+   value = 0.0;
+}   
         value = wmo( dat, alts, debug ); 
         
-        // convert back to caller's units, before storing it
-        *pnt =  ( value - tropsfc->mksOffset )/tropsfc->mksScale;
+        if ( FINITE(value) ) {
+           // convert back to caller's units, before storing it
+           if ( tropkind == 0 ) {
+              // convert this trop alt back to the original vertical coordinates
+              // but note that altitude is in m right now, so we may
+              // want to convert it
+              if ( vcoord != 0 ) {
+                 // not an altitude
+                 
+                 // find the input altitudes that straddle the tropopause
+                 real vc = NAN;
+                 for ( int i=1; i < vrt.size(); i++ ) {
+                     if ( ((alts[i-1] <= value) && (alts[i]   >= value) )
+                       || ((alts[i]   <= value) && (alts[i-1] >= value)) ) {
+                        // got it
+                        // now interpolate in log coordinates
+                        vc = ( value - alts[i-1] )/(alts[i] - alts[i-1])*( LOG(vrt[i]) - LOG(vrt[i-1]) ) + LOG(vrt[i-1]);
+                        break;
+                     }
+                 }
+                 if ( FINITE(vc) ) {
+                    value = EXP(vc);
+                 } else {
+                    value = vc;
+                 }   
+              }              
+              
+              if ( FINITE(value) ) {
+                 // convert back to caller's units, before storing it
+                 value =  ( value - tropsfc->mksOffset )/tropsfc->mksScale;
+                 *pnt = value;
+              } else {
+                 // cannot do this conversion, even though we found an altitude tropopause
+                 *pnt = tbad;
+              }
+           } else {
+              // keep it in m
+              *pnt = value;
+           }
+        } else {
+          // value returned from wmo() is NaN
+          *pnt = tbad;
+        }
+        //*pnt =  ( value - tropsfc->mksOffset )/tropsfc->mksScale;
         
         delete tp;
         delete ap;
+cnt++;
 
     }
     if ( alts_arg_is == 1 ) {
