@@ -1097,7 +1097,7 @@ GridFieldSfc* MetGridData::new_mgmtGridSfc( const std::string& quantity, const s
           }
 
           // either through reading from the data source or from disk cache
-          if ( grid == NULLPTR ) {
+          if ( grid != NULLPTR ) {
              // add it to the in-memory cache
              if ( dbug > 1 ) {
                std::cerr << "MetGridData::new_mgmtGridSfc:  adding data to memory cache" << std::endl;
@@ -1129,7 +1129,7 @@ GridFieldSfc* MetGridData::new_mgmtGridSfc( const std::string& quantity, const s
                std::cerr << "MetGridData::new_mgmtGridSfc:  adding client grid to memory cache" << std::endl;
              }
              cache->add(grid);
-          }   
+          }  
        
        }
     } else {
