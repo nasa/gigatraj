@@ -22,6 +22,35 @@ ChangeVertical :: ~ChangeVertical()
 }
 
 
+ChangeVertical::ChangeVertical(const ChangeVertical& src) : ParcelFilter(src)
+{
+    fromQuantity = src.fromQuantity;
+    toQuantity = src.toQuantity;
+    setMet( src.metsrc );
+}
+
+ChangeVertical& ChangeVertical::operator=(const ChangeVertical& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void ChangeVertical::assign( const ChangeVertical& src)
+{
+     ParcelFilter::assign( src );
+
+     fromQuantity = src.fromQuantity;
+     toQuantity = src.toQuantity;
+     setMet( src.metsrc );
+
+}
+
 void ChangeVertical :: setMet( MetData* met ) 
 {
      std::string metQ;

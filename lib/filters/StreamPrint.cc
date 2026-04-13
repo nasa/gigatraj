@@ -8,7 +8,7 @@
 using namespace gigatraj;
 
 // default constructor
-StreamPrint :: StreamPrint( const std::string fmtstr )
+StreamPrint::StreamPrint( const std::string fmtstr )
 {
     std::string fs;
     
@@ -30,7 +30,7 @@ StreamPrint :: StreamPrint( const std::string fmtstr )
 };
 
 // alternate constructor
-StreamPrint :: StreamPrint( std::ostream& output, const std::string fmtstr ) 
+StreamPrint::StreamPrint( std::ostream& output, const std::string fmtstr ) 
 {
     std::string fs;
 
@@ -50,17 +50,105 @@ StreamPrint :: StreamPrint( std::ostream& output, const std::string fmtstr )
     format( fs );
 };
 
+StreamPrint::StreamPrint(const StreamPrint& src) : ParcelReporter(src)
+{
+    FmtSpec* fnew;
+
+    os = src.os;
+    nf = src.nf;
+    metsrc = src.metsrc;
+    nobad = src.nobad;
+    
+     fmt.clear();
+     for (int i=0; i < fmt.size(); i++ ) {
+        fnew = new FmtSpec;
+        *fnew = *(src.fmt[i]);
+        fmt.push_back( fnew );
+     }
+}
+
+StreamPrint& StreamPrint::operator=(const StreamPrint& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
+    this->assign( src ) ;
+
+    return *this;
+}
+
+void StreamPrint::assign( const StreamPrint& src)
+{
+     FmtSpec* fnew;
+
+     ParcelReporter::assign( src );
+
+     os = src.os;
+     nf = src.nf;
+     metsrc = src.metsrc;
+     nobad = src.nobad;
+    
+     fmt.clear();
+     for (int i=0; i < fmt.size(); i++ ) {
+        fnew = new FmtSpec;
+        *fnew = *(src.fmt[i]);
+        fmt.push_back( fnew );
+     }
+}
+
 
 // FmtSpec constructor
-StreamPrint :: FmtSpec :: FmtSpec(const std::string type0, int start0, int len0, int fract0, std::string str0, int align0)
+StreamPrint::FmtSpec::FmtSpec(const std::string type0, int start0, int len0, int fract0, std::string str0, int align0)
 {
     align = 0;
     defaults( type0, start0, len0, fract0, str0, align0 );
 
 }
 
+
+StreamPrint::FmtSpec::~FmtSpec() 
+{
+}
+
+StreamPrint::FmtSpec::FmtSpec(const StreamPrint::FmtSpec& src)
+{
+      type = src.type;
+      start = src.start;
+      len = src.len;
+      fract = src.fract;
+      align = src.align;
+      str = src.str;
+      field = src.field;    
+}
+
+StreamPrint::FmtSpec& StreamPrint::FmtSpec::operator=(const StreamPrint::FmtSpec& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void StreamPrint::FmtSpec::assign( const StreamPrint::FmtSpec& src)
+{
+      type = src.type;
+      start = src.start;
+      len = src.len;
+      fract = src.fract;
+      align = src.align;
+      str = src.str;
+      field = src.field;    
+}
+
+
 // settle the defaults of a FmtSpec
-void StreamPrint :: FmtSpec :: defaults( std::string type0, int start0, int len0, int fract0, std::string str0, int align0)
+void StreamPrint::FmtSpec::defaults( std::string type0, int start0, int len0, int fract0, std::string str0, int align0)
 {
     if ( type0 == "" ) {
        type0 = "L";
@@ -182,12 +270,12 @@ void StreamPrint :: FmtSpec :: defaults( std::string type0, int start0, int len0
 
 
 
-StreamPrint :: ~StreamPrint()
+StreamPrint::~StreamPrint()
 {
     clearFormat();
 }      
 
-void StreamPrint :: clearFormat()
+void StreamPrint::clearFormat()
 {
     int i;
     
@@ -214,7 +302,7 @@ int StreamPrint::nonTraced()
     return nobad;  
 }
 
-int StreamPrint :: s2i( const std::string str ) 
+int StreamPrint::s2i( const std::string str ) 
 {
     int n;
     
@@ -229,7 +317,7 @@ int StreamPrint :: s2i( const std::string str )
     return n;
 }
 
-void StreamPrint :: format( const std::string fmtstr )
+void StreamPrint::format( const std::string fmtstr )
 {
    std::string tmpstr;
    int i;
@@ -513,7 +601,7 @@ void StreamPrint :: format( const std::string fmtstr )
 
 }
 
-std::string StreamPrint :: print( const Parcel& p, MetData *metsrc, int index )
+std::string StreamPrint::print( const Parcel& p, MetData *metsrc, int index )
 {
     std::string date;
     double time;
@@ -684,19 +772,19 @@ std::string StreamPrint :: print( const Parcel& p, MetData *metsrc, int index )
 }
 
 
-void StreamPrint :: setMet( MetData* met ) {
+void StreamPrint::setMet( MetData* met ) {
 
      metsrc = met;
 
 }
       
-MetData* StreamPrint :: getMet() {
+MetData* StreamPrint::getMet() {
 
      return metsrc;
      
 }   
 
-bool StreamPrint :: printThis( const Parcel& p ) const
+bool StreamPrint::printThis( const Parcel& p ) const
 {
      if ( ( nobad == 0 ) || ( ! p.queryNoTrace() ) ) {
         return true;
@@ -705,7 +793,7 @@ bool StreamPrint :: printThis( const Parcel& p ) const
      }   
 }
 
-bool StreamPrint :: printThis( const Parcel* p ) const
+bool StreamPrint::printThis( const Parcel* p ) const
 {
      if ( ( nobad == 0 ) || ( ! p->queryNoTrace() ) ) {
         return true;
@@ -715,7 +803,7 @@ bool StreamPrint :: printThis( const Parcel* p ) const
 }
 
 // prints a single Parcel
-void StreamPrint :: apply( Parcel& p )
+void StreamPrint::apply( Parcel& p )
 {
     std::string output;
     MetData *metsrc;
@@ -733,7 +821,7 @@ void StreamPrint :: apply( Parcel& p )
 };
 
 // prints an array of Parcels
-void StreamPrint :: apply( Parcel * const p, const int n )
+void StreamPrint::apply( Parcel * const p, const int n )
 {
     std::string output;
     MetData *metsrc;
@@ -763,7 +851,7 @@ void StreamPrint :: apply( Parcel * const p, const int n )
 
 
 // print a vector of Parcels
-void StreamPrint :: apply( std::vector<Parcel>& p )
+void StreamPrint::apply( std::vector<Parcel>& p )
 {
     std::string output;
     MetData *metsrc;
@@ -796,7 +884,7 @@ void StreamPrint :: apply( std::vector<Parcel>& p )
 
 
 // print a list of Parcels
-void StreamPrint :: apply( std::list<Parcel>& p )
+void StreamPrint::apply( std::list<Parcel>& p )
 {
     std::string output;
     MetData *metsrc;
@@ -830,7 +918,7 @@ void StreamPrint :: apply( std::list<Parcel>& p )
 };
 
 // print a deque of Parcels
-void StreamPrint :: apply( std::deque<Parcel>& p )
+void StreamPrint::apply( std::deque<Parcel>& p )
 {
     std::string output;
     MetData *metsrc;
@@ -864,7 +952,7 @@ void StreamPrint :: apply( std::deque<Parcel>& p )
 
 
 // print a Flock of Parcels
-void StreamPrint :: apply( Flock& p )
+void StreamPrint::apply( Flock& p )
 {
     std::string output;
     MetData *metsrc;
@@ -933,7 +1021,7 @@ void StreamPrint :: apply( Flock& p )
 
 
 // print a Swarm of Parcels
-void StreamPrint :: apply( Swarm& p )
+void StreamPrint::apply( Swarm& p )
 {
     std::string output;
     MetData *metsrc;

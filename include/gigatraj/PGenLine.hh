@@ -34,51 +34,45 @@ coordinates.
 
 class PGenLine : public ParcelGenerator {
 
-   private:
-      
-      /// calculate the number of gridpoints needed
-      /*! This method calculates the number of gridpoints needed.
-      
-         \param beglon the beginning longitude value
-         \param beglat the beginning latitude value
-         \param endlon the ending longitude value
-         \param endlat  the ending latitude value
-         \param deltah the along-line horizontal increment
-         \param begz the beginning vertical coordinate value
-         \param endz the ending vertical coordinate value
-         \param deltaz the vertical coordinate increment
-         
-         \return the number of gridpoints
-      */
-      int count_gridpoints( const Parcel& p, real beglon, real beglat
-                           , real endlon, real endlat, real datah
-                           , real begz, real endz, real deltaz 
-                           );
-      
-
-      /*! initialize the gridpoints in a sequence container
-      
-         \param seq the sequence container that holds our parcels
-         \param p the input parcel whose settings we are to copy
-         \param beglon the beginning longitude value
-         \param beglat the beginning latitude value
-         \param endlon the ending longitude value
-         \param endlat  the ending latitude value
-         \param deltah the along-line horizontal increment
-         \param begz the beginning vertical coordinate value
-         \param endz the ending vertical coordinate value
-         \param deltaz the vertical coordinate increment
-      */
-      template< template<class U, class = std::allocator<U> > class Seq>
-      void initgrid( Seq<Parcel>* seq, const Parcel& p
-                         , real beglon, real beglat
-                         , real endlon, real endlat, real deltah
-                         , real begz, real endz, real deltaz  
-                         );
-
-
    public:
       
+      /// \brief default constructor
+      /*! 
+            This is the basic constructor for the PGenLine class.
+      */
+      PGenLine();
+
+      /// \brief destructor
+      /*! 
+         This is the destructor method for the PGenLine class.
+      */
+      ~PGenLine(); 
+
+      /// \brief Copy-constructor
+      /*!
+         This is the copy contructor method for the Filter_Null class.
+         
+         \param src the source Filter_Null object to copy from
+      */
+      PGenLine(const PGenLine& src);
+
+      /// \brief copy assignment
+      /*!
+          This is the copy assignment operator for the PGenLine class.
+      */
+      PGenLine& operator=(const PGenLine& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source PGenLine object
+           to this one.
+           
+           \param src the source PGenLine object
+      */     
+      void assign( const PGenLine& src);
+      
+
       /// Create an array of Parcels on a grid
       /*! This method creates an array of Parcels on a grid, in row-major order.
       
@@ -220,6 +214,49 @@ class PGenLine : public ParcelGenerator {
                            );
 
    
+
+   private:
+      
+      /// calculate the number of gridpoints needed
+      /*! This method calculates the number of gridpoints needed.
+      
+         \param beglon the beginning longitude value
+         \param beglat the beginning latitude value
+         \param endlon the ending longitude value
+         \param endlat  the ending latitude value
+         \param deltah the along-line horizontal increment
+         \param begz the beginning vertical coordinate value
+         \param endz the ending vertical coordinate value
+         \param deltaz the vertical coordinate increment
+         
+         \return the number of gridpoints
+      */
+      int count_gridpoints( const Parcel& p, real beglon, real beglat
+                           , real endlon, real endlat, real datah
+                           , real begz, real endz, real deltaz 
+                           );
+      
+
+      /*! initialize the gridpoints in a sequence container
+      
+         \param seq the sequence container that holds our parcels
+         \param p the input parcel whose settings we are to copy
+         \param beglon the beginning longitude value
+         \param beglat the beginning latitude value
+         \param endlon the ending longitude value
+         \param endlat  the ending latitude value
+         \param deltah the along-line horizontal increment
+         \param begz the beginning vertical coordinate value
+         \param endz the ending vertical coordinate value
+         \param deltaz the vertical coordinate increment
+      */
+      template< template<class U, class = std::allocator<U> > class Seq>
+      void initgrid( Seq<Parcel>* seq, const Parcel& p
+                         , real beglon, real beglat
+                         , real endlon, real endlat, real deltah
+                         , real begz, real endz, real deltaz  
+                         );
+
 
 };
 }

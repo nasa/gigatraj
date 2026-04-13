@@ -50,6 +50,56 @@ PGenDisc::PGenDisc( const real lon, const real lat, const real level, const real
    abs_min_sep = 1.0;
 }
 
+// destructor
+PGenDisc::~PGenDisc()
+{
+
+}
+
+// copy constructor
+PGenDisc::PGenDisc(const PGenDisc& src) : ParcelGenerator(src)
+{
+   n_in_circ = src.n_in_circ;    
+   cumul_n_in_circ = src.cumul_n_in_circ;   
+   lon0 = src.lon0;
+   lat0 = src.lat0;
+   z0 = src.z0;
+   rad = src.rad;
+   thk = src.thk;
+   min_sep = src.min_sep;
+   abs_min_sep = src.abs_min_sep;
+
+}
+
+PGenDisc& PGenDisc::operator=(const PGenDisc& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PGenDisc::assign( const PGenDisc& src)
+{
+
+    ParcelGenerator::assign(src);
+    
+    n_in_circ = src.n_in_circ;    
+    cumul_n_in_circ = src.cumul_n_in_circ;   
+    lon0 = src.lon0;
+    lat0 = src.lat0;
+    z0 = src.z0;
+    rad = src.rad;
+    thk = src.thk;
+    min_sep = src.min_sep;
+    abs_min_sep = src.abs_min_sep;
+}
+
+
 const void PGenDisc::center( real &lon, real &lat, real &level )   
 {
    lon = lon0;

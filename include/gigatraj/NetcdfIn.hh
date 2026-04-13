@@ -90,6 +90,47 @@ class NetcdfIn : public ParcelInitializer {
    */
    ~NetcdfIn();
 
+   /// \brief Copy-constructor                                        
+   /*!                                                                
+      This is the copy contructor method for the Filter_Null class.   
+
+           Note that no open netcdf files carry over to the copy.
+                                                                      
+      \param src the source Filter_Null object to copy from           
+   */                                                                 
+   NetcdfIn(const NetcdfIn& src);                                                 
+
+   /// \brief copy assignment                                         
+   /*!                                                                
+       This is the copy assignment operator for the NetcdfIn class.         
+
+           Note that no open netcdf files carry over to the copy.
+   */                                                                 
+   NetcdfIn& operator=(const NetcdfIn& src);                                      
+
+
+   /// copies settings from a source object to this one               
+   /*!                                                                
+        This method copies settings from a source NetcdfIn object           
+        to this one.                                                  
+
+           Note that no open netcdf files carry over to the copy.
+                                                                      
+        \param src the source NetcdfIn object                               
+   */                                                                 
+   void assign( const NetcdfIn& src);                                       
+    
+
+   /// clears the object's specifications
+   /*! this method clears all of the flags for writing extra variables, as well as the list of extra meteorological variables.
+   */
+   void clear();
+   
+   /// resets the object 
+   /*! This method resets all of the object's settings to those of a newly-create object,
+       just after closing any open file.
+   */
+   void reset_all();     
 
 
    /// sets the netcdf file name

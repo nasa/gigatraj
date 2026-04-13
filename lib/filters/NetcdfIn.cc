@@ -6,41 +6,8 @@ using namespace gigatraj;
 
 NetcdfIn :: NetcdfIn()
 {
-    fname = "";
-    vcoord = "";
-    vunits = "";
-    vfactor = 1.0;
     is_open = false;
-    
-    time0 = "";
-    t0 = 0.0;
-    end = false;
-    
-    do_flags = -1;
-    do_status = -1;
-    do_tag = -1;
-    
-    dbug = 0;
-    
-    np = 0;
-    ip = -1;
-    
-    to = 0.0;
-    ts = 1.0;
-    
-    vid_lon = -1;
-    vid_lat = -1;
-    vid_z = -1;
-    vid_status = -1;
-    vid_flags = -1;
-    vid_tag = -1;
-    vtyp_lon = NC_NAT;
-    vtyp_lat = NC_NAT;
-    vtyp_z = NC_NAT;
-    vtyp_status = NC_NAT;
-    vtyp_flags = NC_NAT;
-    vtyp_tag = NC_NAT;
-
+    reset_all();
 }
 
 NetcdfIn::~NetcdfIn() {
@@ -48,6 +15,82 @@ NetcdfIn::~NetcdfIn() {
     if ( is_open ) {
        close();
     }
+
+}
+
+// copy constructor
+NetcdfIn::NetcdfIn(const NetcdfIn& src) : ParcelInitializer(src)
+{
+    reset_all();
+
+    fname = src.fname;
+    vcoord = src.vcoord;
+    vunits = src.vunits;
+    vfactor = src.vfactor;
+    
+    time0 = src.time0;
+    t0 = src.t0;
+    end = src.end;
+    
+    dbug = src.dbug;
+    
+    np = src.np;
+    ip = src.ip;
+    
+    to = src.to;
+    ts = src.ts;
+    
+    vtyp_lon = src.vtyp_lon;
+    vtyp_lat = src.vtyp_lat;
+    vtyp_z = src.vtyp_z;
+    vtyp_status = src.vtyp_status;
+    vtyp_flags = src.vtyp_flags;
+    vtyp_tag = src.vtyp_tag;
+
+}
+
+NetcdfIn& NetcdfIn::operator=(const NetcdfIn& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    reset_all();
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void NetcdfIn::assign( const NetcdfIn& src)
+{
+    reset_all();
+    
+    ParcelInitializer::assign(src);
+    
+    fname = src.fname;
+    vcoord = src.vcoord;
+    vunits = src.vunits;
+    vfactor = src.vfactor;
+    
+    time0 = src.time0;
+    t0 = src.t0;
+    end = src.end;
+    
+    dbug = src.dbug;
+    
+    np = src.np;
+    ip = src.ip;
+    
+    to = src.to;
+    ts = src.ts;
+    
+    vtyp_lon = src.vtyp_lon;
+    vtyp_lat = src.vtyp_lat;
+    vtyp_z = src.vtyp_z;
+    vtyp_status = src.vtyp_status;
+    vtyp_flags = src.vtyp_flags;
+    vtyp_tag = src.vtyp_tag;
 
 }
 
@@ -66,6 +109,61 @@ void NetcdfIn::filename( const std::string file )
        at_end(true);
     }
 }
+
+
+void NetcdfIn::clear()
+{
+    if ( ! is_open ) {
+      do_flags = -1;
+      do_status = -1;
+      do_tag = -1;
+      vid_lon = -1;
+      vid_lat = -1;
+      vid_z = -1;
+      vid_status = -1;
+      vid_flags = -1;
+      vid_tag = -1;
+    } else {
+       throw new badNetcdfTooLate();
+    }
+}
+
+void NetcdfIn::reset_all()
+{
+    const char *nanstr = "";
+
+    if ( is_open ) {
+        close();
+    }
+    clear();
+
+    fname = "";
+    vcoord = "";
+    vunits = "";
+    vfactor = 1.0;
+    
+    time0 = "";
+    t0 = 0.0;
+    end = false;
+    
+    dbug = 0;
+    
+    np = 0;
+    ip = -1;
+    
+    to = 0.0;
+    ts = 1.0;
+    
+    vtyp_lon = NC_NAT;
+    vtyp_lat = NC_NAT;
+    vtyp_z = NC_NAT;
+    vtyp_status = NC_NAT;
+    vtyp_flags = NC_NAT;
+    vtyp_tag = NC_NAT;
+
+}
+
+
 
 std::string& NetcdfIn::filename()
 {

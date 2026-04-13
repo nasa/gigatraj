@@ -54,43 +54,6 @@ with no comments or blank lines.
 
 class PGenFile : public ParcelGenerator {
 
-   private:
-   
-      /// read the next parcel location from a file
-      /*! This method reads precisely one parcel location from an open istream.
-      
-         
-         \param stream a pointer to the istream from which the parcel is to be read
-         \param p a pointer to a Parcel to receive the input information
-         
-         \return  a status code:
-            *   0 = a parcel was read
-            *   1 = a blank or comment line was read
-            *  -1 = the end of the file was encountered
-            *  -2 = a formatting or other input error was encountered
-      */
-       int readparcel( std::istream* input, Parcel *p );
-
-
-      /// read locations from a file into a sequence container of Parcels
-      /*! This method reads locations from an open istream into Parcels
-          which are stored in some kind of sequence container object.
-      
-         \param seq the sequence container that holds the parcels
-         \param p the input parcel whose settings we are to copy
-         \param np the number of parcels read is returned in this variable
-         \param input the input stream from which we are to read
-      */
-      template< template<class U, class = std::allocator<U> > class Seq>
-      void initbunch( Seq<Parcel>* seq, const Parcel& p, int *np, std::istream* input
-                    );                        
-
-      // a StreamRead object used for formatted input
-      StreamRead *interpretor;
-
-      // a string input stream, for use with the StreamRead interpretor
-      std::istringstream instring;
-      
    public:
    
       /// the constrcutor
@@ -106,6 +69,36 @@ class PGenFile : public ParcelGenerator {
       /*! This is the destructor for the PGenFile class
       */
       ~PGenFile();
+
+      /// \brief Copy-constructor
+      /*!
+         This is the copy contructor method for the Filter_Null class.
+         
+         Note that the source's input stream is not copied.
+         
+         \param src the source Filter_Null object to copy from
+      */
+      PGenFile(const PGenFile& src);
+
+      /// \brief copy assignment
+      /*!
+          This is the copy assignment operator for the PGenFile class.
+         
+         Note that the source's input stream is not copied.
+      */
+      PGenFile& operator=(const PGenFile& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source PGenFile object
+           to this one.
+         
+         Note that the source's input stream is not copied.
+           
+           \param src the source PGenFile object
+      */     
+      void assign( const PGenFile& src);
    
       /// read locations from a file into an array of Parcels
       /*! This method creates an array of Parcels and initializes their locations from a file.
@@ -321,6 +314,45 @@ class PGenFile : public ParcelGenerator {
           \return a string containing the current format.
       */
       std::string format() const;
+
+
+   private:
+   
+      /// read the next parcel location from a file
+      /*! This method reads precisely one parcel location from an open istream.
+      
+         
+         \param stream a pointer to the istream from which the parcel is to be read
+         \param p a pointer to a Parcel to receive the input information
+         
+         \return  a status code:
+            *   0 = a parcel was read
+            *   1 = a blank or comment line was read
+            *  -1 = the end of the file was encountered
+            *  -2 = a formatting or other input error was encountered
+      */
+       int readparcel( std::istream* input, Parcel *p );
+
+
+      /// read locations from a file into a sequence container of Parcels
+      /*! This method reads locations from an open istream into Parcels
+          which are stored in some kind of sequence container object.
+      
+         \param seq the sequence container that holds the parcels
+         \param p the input parcel whose settings we are to copy
+         \param np the number of parcels read is returned in this variable
+         \param input the input stream from which we are to read
+      */
+      template< template<class U, class = std::allocator<U> > class Seq>
+      void initbunch( Seq<Parcel>* seq, const Parcel& p, int *np, std::istream* input
+                    );                        
+
+      // a StreamRead object used for formatted input
+      StreamRead *interpretor;
+
+      // a string input stream, for use with the StreamRead interpretor
+      std::istringstream instring;
+      
 
 };
 }

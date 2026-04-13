@@ -31,85 +31,45 @@ coordinates.
 
 class PGenGrid : public ParcelGenerator {
 
-   private:
-
-      /// calculate the number of longitude gridpoints needed
-      /*! This method calculates the number of longitudinal gridpoints needed.
-         \param beglon the beginning longitude value
-         \param endlon the ending longitude value
-         \param deltalon the longitude increment
-         
-         \return the number of longitudes
-      */
-      int count_gridlons( real beglon, real endlon, real deltalon) const;
-   
-      /// calculate the number of latitude gridpoints needed
-      /*! This method calculates the number of latitudinal gridpoints needed.
-         
-         \param beglat the beginning latitude value
-         \param endlat  the ending latitude value
-         \param deltalat the latitude increment
-
-         \return the number of latitudes
-      */
-      int count_gridlats( real beglat, real endlat, real deltalat) const;
-   
-      /// calculate the number of vertical gridpoints needed
-      /*! This method calculates the number of vertical gridpoints needed.
-         \param begz the beginning vertical coordinate value
-         \param endz the ending vertical coordinate value
-         \param deltaz the vertical coordinate increment
-         
-         \return the number of vertical values
-      */
-      int count_gridzs( real begz, real endz, real deltaz) const;
-   
-      /// calculate the number of gridpoints needed
-      /*! This method calculates the number of gridpoints needed.
-      
-         \param beglon the beginning longitude value
-         \param endlon the ending longitude value
-         \param deltalon the longitude increment
-         \param beglat the beginning latitude value
-         \param endlat  the ending latitude value
-         \param deltalat the latitude increment
-         \param begz the beginning vertical coordinate value
-         \param endz the ending vertical coordinate value
-         \param deltaz the vertical coordinate increment
-         
-         \return the number of gridpoints
-      */
-      int count_gridpoints( real beglon, real endlon, real deltalon
-                           , real beglat, real endlat, real deltalat
-                           , real begz, real endz, real deltaz 
-                           , int* nlon=NULLPTR, int* nlat=NULLPTR, int* nz=NULLPTR
-                           ) const;
-      
-
-      /*! initialize the gridpoints in a sequence container
-      
-         \param seq the sequence container that holds our parcels
-         \param p the input parcel whose settings we are to copy
-         \param beglon the beginning longitude value
-         \param endlon the ending longitude value
-         \param deltalon the longitude increment
-         \param beglat the beginning latitude value
-         \param endlat  the ending latitude value
-         \param deltalat the latitude increment
-         \param begz the beginning vertical coordinate value
-         \param endz the ending vertical coordinate value
-         \param deltaz the vertical coordinate increment
-      */
-      template< template<class U, class = std::allocator<U> > class Seq>
-      void initgrid( Seq<Parcel>* seq, const Parcel& p
-                         , real beglon, real endlon, real deltalon
-                         , real beglat, real endlat, real deltalat
-                         , real begz, real endz, real deltaz  
-                         );
-
-
    public:
    
+      /// \brief default constructor
+      /*! 
+            This is the basic constructor for the PGenGrid class.
+      */
+      PGenGrid();
+
+      /// \brief destructor
+      /*! 
+         This is the destructor method for the PGenGrid class.
+      */
+      ~PGenGrid(); 
+
+      /// \brief Copy-constructor
+      /*!
+         This is the copy contructor method for the Filter_Null class.
+         
+         \param src the source Filter_Null object to copy from
+      */
+      PGenGrid(const PGenGrid& src);
+
+      /// \brief copy assignment
+      /*!
+          This is the copy assignment operator for the PGenGrid class.
+      */
+      PGenGrid& operator=(const PGenGrid& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source PGenGrid object
+           to this one.
+           
+           \param src the source PGenGrid object
+      */     
+      void assign( const PGenGrid& src);
+      
+
       /// Create an array of Parcels on a grid
       /*! This method creates an array of Parcels on a grid, in row-major order.
       
@@ -255,6 +215,84 @@ class PGenGrid : public ParcelGenerator {
                            , real begz, real endz, real deltaz 
                            , ProcessGrp* pgrp=NULLPTR, int r=0
                            );
+
+   private:
+
+      /// calculate the number of longitude gridpoints needed
+      /*! This method calculates the number of longitudinal gridpoints needed.
+         \param beglon the beginning longitude value
+         \param endlon the ending longitude value
+         \param deltalon the longitude increment
+         
+         \return the number of longitudes
+      */
+      int count_gridlons( real beglon, real endlon, real deltalon) const;
+   
+      /// calculate the number of latitude gridpoints needed
+      /*! This method calculates the number of latitudinal gridpoints needed.
+         
+         \param beglat the beginning latitude value
+         \param endlat  the ending latitude value
+         \param deltalat the latitude increment
+
+         \return the number of latitudes
+      */
+      int count_gridlats( real beglat, real endlat, real deltalat) const;
+   
+      /// calculate the number of vertical gridpoints needed
+      /*! This method calculates the number of vertical gridpoints needed.
+         \param begz the beginning vertical coordinate value
+         \param endz the ending vertical coordinate value
+         \param deltaz the vertical coordinate increment
+         
+         \return the number of vertical values
+      */
+      int count_gridzs( real begz, real endz, real deltaz) const;
+   
+      /// calculate the number of gridpoints needed
+      /*! This method calculates the number of gridpoints needed.
+      
+         \param beglon the beginning longitude value
+         \param endlon the ending longitude value
+         \param deltalon the longitude increment
+         \param beglat the beginning latitude value
+         \param endlat  the ending latitude value
+         \param deltalat the latitude increment
+         \param begz the beginning vertical coordinate value
+         \param endz the ending vertical coordinate value
+         \param deltaz the vertical coordinate increment
+         
+         \return the number of gridpoints
+      */
+      int count_gridpoints( real beglon, real endlon, real deltalon
+                           , real beglat, real endlat, real deltalat
+                           , real begz, real endz, real deltaz 
+                           , int* nlon=NULLPTR, int* nlat=NULLPTR, int* nz=NULLPTR
+                           ) const;
+      
+
+      /*! initialize the gridpoints in a sequence container
+      
+         \param seq the sequence container that holds our parcels
+         \param p the input parcel whose settings we are to copy
+         \param beglon the beginning longitude value
+         \param endlon the ending longitude value
+         \param deltalon the longitude increment
+         \param beglat the beginning latitude value
+         \param endlat  the ending latitude value
+         \param deltalat the latitude increment
+         \param begz the beginning vertical coordinate value
+         \param endz the ending vertical coordinate value
+         \param deltaz the vertical coordinate increment
+      */
+      template< template<class U, class = std::allocator<U> > class Seq>
+      void initgrid( Seq<Parcel>* seq, const Parcel& p
+                         , real beglon, real endlon, real deltalon
+                         , real beglat, real endlat, real deltalat
+                         , real begz, real endz, real deltaz  
+                         );
+
+
 
 };
 }

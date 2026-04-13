@@ -33,6 +33,32 @@ StreamLoad :: ~StreamLoad()
 {
 }
 
+StreamLoad::StreamLoad(const StreamLoad& src) : ParcelInitializer(src)
+{
+    is = src.is;
+    mode = src.mode;
+}
+
+StreamLoad& StreamLoad::operator=(const StreamLoad& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void StreamLoad::assign( const StreamLoad& src)
+{
+     ParcelInitializer::assign( src );
+     is = src.is;
+     mode = src.mode;
+}
+
+
 int StreamLoad :: format( int fmt ) {
    
     if ( fmt >= 0 ) {

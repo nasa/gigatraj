@@ -69,6 +69,32 @@ class StreamLoad : public ParcelInitializer {
           This is the destructor for the StreamLoad class
       */
       ~StreamLoad();
+      
+      /// copy constructor
+      /*!
+         This is the copy contructor method for the StreamLoad class.
+         
+         \param src the source StreamLoad object to copy from
+      */
+      StreamLoad(const StreamLoad& src);
+
+      /// copy assignment
+      /*! 
+          This is the copy assignment operator for the StreamLoad class.
+      */
+      StreamLoad& operator=(const StreamLoad& src);
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source StreamLoad object
+           to this one.
+           
+           \param src the source StreamLoad object
+      */     
+      void assign( const StreamLoad& src);
+
+
+
 
       /// Returns/set the load format
       /*! This method returns (and optionally sets) the format of the load from either text

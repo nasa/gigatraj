@@ -43,12 +43,35 @@ class ChangeVertical : public ParcelFilter {
                       the "from" or the "to" coordinate.  If NULL, th 
       */
       ChangeVertical( const std::string to="", const std::string from="", MetData* met=NULL );
-      
-      
+           
       /// destructor
       /*! This is the destructor method for the ChangeVertical object
       */
       ~ChangeVertical();
+
+      /// copy constructor
+      /*!
+         This is the copy contructor method for the ChangeVertical class.
+         
+         \param src the source ChangeVertical object to copy from
+      */
+      ChangeVertical(const ChangeVertical& src);
+
+      /// copy assignment
+      /*! 
+          This is the copy assignment operator for the ChangeVertical class.
+      */
+      ChangeVertical& operator=(const ChangeVertical& src);
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source ChangeVertical object
+           to this one.
+           
+           \param src the source ChangeVertical object
+      */     
+      void assign( const ChangeVertical& src);
+
       
       /// returns the "from" vertical coordinate quantity
       /*! This method returns the name of the "from" coordinate   

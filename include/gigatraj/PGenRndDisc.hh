@@ -56,6 +56,38 @@ class PGenRndDisc : public ParcelGenerator {
       */
       PGenRndDisc( const real lon, const real lat, const real level, const real r=50.0, const real thickness=1e-10 );
 
+
+      /// \brief destructor
+      /*! 
+         This is the destructor method for the PGenRndDisc class.
+      */
+      ~PGenRndDisc(); 
+
+      /// \brief Copy-constructor
+      /*!
+         This is the copy contructor method for the Filter_Null class.
+         
+         \param src the source Filter_Null object to copy from
+      */
+      PGenRndDisc(const PGenRndDisc& src);
+
+      /// \brief copy assignment
+      /*!
+          This is the copy assignment operator for the PGenRndDisc class.
+      */
+      PGenRndDisc& operator=(const PGenRndDisc& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source PGenRndDisc object
+           to this one.
+           
+           \param src the source PGenRndDisc object
+      */     
+      void assign( const PGenRndDisc& src);
+
+
       /// returns the central location of the disc
       /*! This method returns the central location of the disc.
       

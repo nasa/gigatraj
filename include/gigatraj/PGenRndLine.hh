@@ -35,37 +35,43 @@ coordinates.
 
 class PGenRndLine : public ParcelGenerator {
 
-   private:
-      
-       // source of random numbers
-       RandomSrc rnd; 
-
-      /*! initialize the gridpoints in a sequence container
-      
-         \param seq the sequence container that holds our parcels
-         \param p the input parcel whose settings we are to copy
-         \param beglon the beginning longitude value
-         \param beglat the beginning latitude value
-         \param endlon the ending longitude value
-         \param endlat  the ending latitude value
-         \param begz the beginning vertical coordinate value
-         \param endz the ending vertical coordinate value
-      */
-      template< template<class U, class = std::allocator<U> > class Seq>
-      void init( Seq<Parcel>* seq, const Parcel& p
-                           , real beglon, real beglat
-                           , real endlon, real endlat
-                           , real begz, real endz
-                         );
-
-
    public:
-      
-      /// constructor
-      /*! This is the consturctor for the PGenRndLine class.
-      
+
+      /// \brief default constructor
+      /*! 
+            This is the basic constructor for the PGenRndLine class.
       */
       PGenRndLine();
+
+      /// \brief destructor
+      /*! 
+         This is the destructor method for the PGenRndLine class.
+      */
+      ~PGenRndLine(); 
+
+      /// \brief Copy-constructor
+      /*!
+         This is the copy contructor method for the Filter_Null class.
+         
+         \param src the source Filter_Null object to copy from
+      */
+      PGenRndLine(const PGenRndLine& src);
+
+      /// \brief copy assignment
+      /*!
+          This is the copy assignment operator for the PGenRndLine class.
+      */
+      PGenRndLine& operator=(const PGenRndLine& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source PGenRndLine object
+           to this one.
+           
+           \param src the source PGenRndLine object
+      */     
+      void assign( const PGenRndLine& src);
       
       /// Create an array of Parcels on a grid
       /*! This method creates an array of Parcels on a grid, in row-major order.
@@ -199,6 +205,30 @@ class PGenRndLine : public ParcelGenerator {
                            , real begz, real endz
                            , ProcessGrp* pgrp=NULLPTR, int r=0
                            );
+
+
+   private:
+      
+       // source of random numbers
+       RandomSrc rnd; 
+
+      /*! initialize the gridpoints in a sequence container
+      
+         \param seq the sequence container that holds our parcels
+         \param p the input parcel whose settings we are to copy
+         \param beglon the beginning longitude value
+         \param beglat the beginning latitude value
+         \param endlon the ending longitude value
+         \param endlat  the ending latitude value
+         \param begz the beginning vertical coordinate value
+         \param endz the ending vertical coordinate value
+      */
+      template< template<class U, class = std::allocator<U> > class Seq>
+      void init( Seq<Parcel>* seq, const Parcel& p
+                           , real beglon, real beglat
+                           , real endlon, real endlat
+                           , real begz, real endz
+                         );
 
 
 };

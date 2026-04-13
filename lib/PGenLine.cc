@@ -22,6 +22,45 @@
 using namespace gigatraj;
 
 
+// constructor
+PGenLine::PGenLine()
+{
+
+     
+}
+
+// destructor
+PGenLine::~PGenLine()
+{
+
+}
+
+// copy constructor
+PGenLine::PGenLine(const PGenLine& src) : ParcelGenerator(src)
+{
+
+}
+
+PGenLine& PGenLine::operator=(const PGenLine& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PGenLine::assign( const PGenLine& src)
+{
+
+    ParcelGenerator::assign(src);
+    
+}
+
+
 int PGenLine::count_gridpoints(const Parcel& p,  real beglon, real beglat
                     , real endlon, real endlat, real deltah
                     , real begz, real endz, real deltaz 

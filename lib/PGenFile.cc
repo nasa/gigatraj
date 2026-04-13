@@ -45,6 +45,33 @@ PGenFile :: ~PGenFile()
 }
 
 
+// copy constructor
+PGenFile::PGenFile(const PGenFile& src) : ParcelGenerator(src)
+{
+    interpretor = src.interpretor;
+}
+
+PGenFile& PGenFile::operator=(const PGenFile& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PGenFile::assign( const PGenFile& src)
+{
+    ParcelGenerator::assign(src);
+
+    interpretor = src.interpretor;
+}
+
+
+
 
 int PGenFile :: readparcel( std::istream* input, Parcel *p )
 {

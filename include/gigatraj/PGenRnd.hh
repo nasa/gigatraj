@@ -45,6 +45,38 @@ class PGenRnd : public ParcelGenerator {
       */
       PGenRnd( float LLlat=-90.0, float LLlon=0.0, float URlat=90.0, float URlon=359.999 ); 
 
+      /// \brief destructor
+      /*! 
+         This is the destructor method for the PGenRnd class.
+      */
+      ~PGenRnd(); 
+
+      /// \brief Copy-constructor
+      /*!
+         This is the copy contructor method for the Filter_Null class.
+         
+         \param src the source Filter_Null object to copy from
+      */
+      PGenRnd(const PGenRnd& src);
+
+      /// \brief copy assignment
+      /*!
+          This is the copy assignment operator for the PGenRnd class.
+      */
+      PGenRnd& operator=(const PGenRnd& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source PGenRnd object
+           to this one.
+           
+           \param src the source PGenRnd object
+      */     
+      void assign( const PGenRnd& src);
+      
+
+
       /// sets the longitude.latitude rectangular domain
       /*!
           This sets us a rectangle in lat-lon space in which the parcels will be distirbuted.
@@ -165,7 +197,7 @@ class PGenRnd : public ParcelGenerator {
        int use_z;
        /// lower vertical boundary
        float z0;
-       /// upper verticla boundary
+       /// upper vertical boundary
        float z1;
        
 

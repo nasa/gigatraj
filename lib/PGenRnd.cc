@@ -31,6 +31,54 @@ PGenRnd::PGenRnd( float LLlat, float LLlon, float URlat, float URlon )
      
 }
 
+// destructor
+PGenRnd::~PGenRnd()
+{
+
+}
+
+// copy constructor
+PGenRnd::PGenRnd(const PGenRnd& src) : ParcelGenerator(src)
+{
+   lon0 = src.lon0;
+   lon1 = src.lon1;
+   slat0 = src.slat0;
+   slat1 = src.slat1;
+   use_z= src.use_z;
+   z0 = src.z0;
+   z1 = src.z1;   
+}
+
+PGenRnd& PGenRnd::operator=(const PGenRnd& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PGenRnd::assign( const PGenRnd& src)
+{
+
+    ParcelGenerator::assign(src);
+
+    lon0 = src.lon0;
+    lon1 = src.lon1;
+    slat0 = src.slat0;
+    slat1 = src.slat1;
+    use_z= src.use_z;
+    z0 = src.z0;
+    z1 = src.z1;   
+    
+}
+
+
+
+
 void PGenRnd::setBox( float LLlat, float LLlon, float URlat, float URlon )
 {
      lon0 = LLlon;

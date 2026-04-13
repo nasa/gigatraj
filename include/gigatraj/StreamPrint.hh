@@ -60,6 +60,33 @@ class StreamPrint : public ParcelReporter {
       /*! This is the destructor method for the StreamPrint object
       */
       ~StreamPrint();         
+      
+      /// copy constructor
+      /*!
+         This is the copy contructor method for the StreamPrint class.
+         
+         \param src the source StreamPrint object to copy from
+      */
+      StreamPrint(const StreamPrint& src);
+
+      /// copy assignment
+      /*! 
+          This is the copy assignment operator for the StreamPrint class.
+      */
+      StreamPrint& operator=(const StreamPrint& src);
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source StreamPrint object
+           to this one.
+           
+           \param src the source StreamPrint object
+      */     
+      void assign( const StreamPrint& src);
+
+
+
+
    
       /// omitNonTraced
       /*! This method sets a flag that prevents parcels that are not being traced from being output.
@@ -381,6 +408,35 @@ class StreamPrint : public ParcelReporter {
           std::string field;
           
           FmtSpec(const std::string type0="L", int start0=0, int len0=-1, int fract0=-1, std::string str0="", int align0=1 );
+      
+          /// Default destructor
+          /*!
+             This is the default destructor for the FmtSpec class.
+          */
+          ~FmtSpec();
+      
+          /// copy constructor
+          /*!
+             This is the copy contructor method for the FmtSpec class.
+             
+             \param src the source FmtSpec object to copy from
+          */
+          FmtSpec(const FmtSpec& src);
+
+          /// copy assignment
+          /*! 
+              This is the copy assignment operator for the FmtSpec class.
+          */
+          FmtSpec& operator=(const FmtSpec& src);
+
+          /// copies settings from a source object to this one
+          /*! 
+               This method copies settings from a source FmtSpec object
+               to this one.
+               
+               \param src the source FmtSpec object
+          */     
+          void assign( const FmtSpec& src);
           
           void defaults(std::string type0="L", int start0=0, int len0=-1, int fract0=-1, std::string str0="", int align0=1 );
           

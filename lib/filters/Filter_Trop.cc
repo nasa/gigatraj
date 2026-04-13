@@ -50,6 +50,37 @@ Filter_Trop::~Filter_Trop()
 
 }
 
+Filter_Trop::Filter_Trop(const Filter_Trop& src) : ParcelFilter(src)
+{
+     neg = src.neg;
+     dir = src.dir;
+     tol = src.tol;
+     tkind = src.tkind;
+}
+
+Filter_Trop& Filter_Trop::operator=(const Filter_Trop& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
+    ParcelFilter::assign(src);
+
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void Filter_Trop::assign( const Filter_Trop& src)
+{
+     ParcelFilter::assign( src );
+     neg = src.neg;
+     dir = src.dir;
+     tol = src.tol;
+     tkind = src.tkind;
+}
+
 std::string Filter_Trop::quantity() const
 {
     return tquant;

@@ -39,6 +39,51 @@ PGenNetcdf::~PGenNetcdf()
 
 }
 
+// copy constructor
+PGenNetcdf::PGenNetcdf(const PGenNetcdf& src) : ParcelGenerator(src)
+{
+     dbug = src.dbug;
+     fname = src.fname;
+     vcoord = src.vcoord;
+     caltime = src.caltime;
+     time0 = src.time0;
+     atend = false;
+     n = src.n;
+     ncIn = src.ncIn;
+     pgen = src.pgen;
+}
+
+PGenNetcdf& PGenNetcdf::operator=(const PGenNetcdf& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PGenNetcdf::assign( const PGenNetcdf& src)
+{
+
+    ParcelGenerator::assign(src);
+
+     dbug = src.dbug;
+     fname = src.fname;
+     vcoord = src.vcoord;
+     caltime = src.caltime;
+     time0 = src.time0;
+     atend = false;
+     n = src.n;
+     ncIn = src.ncIn;
+     pgen = src.pgen;
+    
+}
+
+
+
 void PGenNetcdf::open( const std::string &file)
 {
      if ( ( file != fname ) && ncIn.isOpen() ) {

@@ -41,6 +41,48 @@ PGenRndDisc::PGenRndDisc( const real lon, const real lat, const real level, cons
    rnd.seed();
 }
 
+// destructor
+PGenRndDisc::~PGenRndDisc()
+{
+
+}
+
+// copy constructor
+PGenRndDisc::PGenRndDisc(const PGenRndDisc& src) : ParcelGenerator(src)
+{
+   lon0 = src.lon0;
+   lat0 = src.lat0;
+   rad = src.rad;
+   thk = src.thk;
+
+}
+
+PGenRndDisc& PGenRndDisc::operator=(const PGenRndDisc& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PGenRndDisc::assign( const PGenRndDisc& src)
+{
+
+    ParcelGenerator::assign(src);
+
+    lon0 = src.lon0;
+    lat0 = src.lat0;
+    rad = src.rad;
+    thk = src.thk;
+    
+}
+
+
+
 const void PGenRndDisc::center( real &lon, real &lat, real &level )   
 {
    lon = lon0;

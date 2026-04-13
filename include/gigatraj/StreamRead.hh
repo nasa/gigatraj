@@ -70,6 +70,36 @@ class StreamRead : public ParcelInitializer {
           std::string field;
           
           FmtSpec(const std::string type0="L", int start0=0, int len0=-1, int fract0=-1, std::string str0="", int align0=1 );
+
+          /// Default destructor
+          /*!
+             This is the default destructor for the FmtSpec class.
+          */
+          ~FmtSpec();
+      
+          /// copy constructor
+          /*!
+             This is the copy contructor method for the FmtSpec class.
+             
+             \param src the source FmtSpec object to copy from
+          */
+          FmtSpec(const FmtSpec& src);
+
+          /// copy assignment
+          /*! 
+              This is the copy assignment operator for the FmtSpec class.
+          */
+          FmtSpec& operator=(const FmtSpec& src);
+
+          /// copies settings from a source object to this one
+          /*! 
+               This method copies settings from a source FmtSpec object
+               to this one.
+               
+               \param src the source FmtSpec object
+          */     
+          void assign( const FmtSpec& src);
+          
           
           void defaults(std::string type0="L", int start0=0, int len0=-1, int fract0=-1, std::string str0="", int align0=1 );
           
@@ -78,6 +108,7 @@ class StreamRead : public ParcelInitializer {
 
       // specifies the format type of the output:
       std::vector<FmtSpec *> fmt;
+
       // number of format elements
       int nf;
 
@@ -138,6 +169,30 @@ class StreamRead : public ParcelInitializer {
           This is the destructor for the StreamRead class
       */
       ~StreamRead();
+      
+      /// copy constructor
+      /*!
+         This is the copy contructor method for the StreamRead class.
+         
+         \param src the source StreamRead object to copy from
+      */
+      StreamRead(const StreamRead& src);
+
+      /// copy assignment
+      /*! 
+          This is the copy assignment operator for the StreamRead class.
+      */
+      StreamRead& operator=(const StreamRead& src);
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source StreamRead object
+           to this one.
+           
+           \param src the source StreamRead object
+      */     
+      void assign( const StreamRead& src);
+
 
       /// Initialize a single Parcel
       /*! This method initializes a single Parcel object.

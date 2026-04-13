@@ -22,7 +22,7 @@ flag set are left unaffected.
 
 */
 
-class Filter_Trop {
+class Filter_Trop : public ParcelFilter {
 
    public:
    
@@ -57,6 +57,32 @@ class Filter_Trop {
       /*! This is the destructor for the Filter_Trop class
       */
       ~Filter_Trop();
+
+      /// copy constructor
+      /*!
+         This is the copy contructor method for the Filter_Trop class.
+         
+         \param src the source Filter_Trop object to copy from
+      */
+      Filter_Trop(const Filter_Trop& src);
+
+      /// copy assignment
+      /*! 
+          This is the copy assignment operator for the Filter_Trop class.
+      */
+      Filter_Trop& operator=(const Filter_Trop& src);
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source Filter_Trop object
+           to this one.
+           
+           \param src the source Filter_Trop object
+      */     
+      void assign( const Filter_Trop& src);
+
+
+
       
       /// return the tropopause quantity
       /*! This method returns the name of the tropopause quantity

@@ -24,6 +24,44 @@ copies of a given parcel object.
 class PGenRep : public ParcelGenerator {
 
    public:
+
+      /// \brief default constructor
+      /*! 
+            This is the basic constructor for the PGenRep class.
+      */
+      PGenRep();
+
+      /// \brief destructor
+      /*! 
+         This is the destructor method for the PGenRep class.
+      */
+      ~PGenRep(); 
+
+      /// \brief Copy-constructor
+      /*!
+         This is the copy contructor method for the Filter_Null class.
+         
+         \param src the source Filter_Null object to copy from
+      */
+      PGenRep(const PGenRep& src);
+
+      /// \brief copy assignment
+      /*!
+          This is the copy assignment operator for the PGenRep class.
+      */
+      PGenRep& operator=(const PGenRep& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source PGenRep object
+           to this one.
+           
+           \param src the source PGenRep object
+      */     
+      void assign( const PGenRep& src);
+      
+
    
       /// Create an array of Parcels as duplicates of a given Parcel
       /*! This methods creates an array of Parcels as duplicates of a given Parcel.

@@ -23,9 +23,41 @@ using namespace gigatraj;
 
 
 
+// constructor
 PGenRndLine::PGenRndLine()
 {
    rnd.seed();
+}
+
+// destructor
+PGenRndLine::~PGenRndLine()
+{
+
+}
+
+// copy constructor
+PGenRndLine::PGenRndLine(const PGenRndLine& src) : ParcelGenerator(src)
+{
+
+}
+
+PGenRndLine& PGenRndLine::operator=(const PGenRndLine& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PGenRndLine::assign( const PGenRndLine& src)
+{
+
+    ParcelGenerator::assign(src);
+    
 }
 
 

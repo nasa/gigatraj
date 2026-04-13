@@ -9,7 +9,7 @@ using namespace gigatraj;
 
 
 // default constructor
-StreamRead :: StreamRead( const std::string fmtstr )
+StreamRead::StreamRead( const std::string fmtstr )
 {
     std::string fs;
 
@@ -28,7 +28,7 @@ StreamRead :: StreamRead( const std::string fmtstr )
 
 
 // alternate constructor
-StreamRead :: StreamRead( std::istream& input,  const std::string fmtstr ) 
+StreamRead::StreamRead( std::istream& input,  const std::string fmtstr ) 
 {
     std::string fs;
 
@@ -46,12 +46,56 @@ StreamRead :: StreamRead( std::istream& input,  const std::string fmtstr )
 
 
 // destructor
-StreamRead :: ~StreamRead()
+StreamRead::~StreamRead()
 {
      clearFormat();
 }
 
-void StreamRead :: ingest( Parcel& p )
+StreamRead::StreamRead(const StreamRead& src) : ParcelInitializer(src)
+{
+    FmtSpec* fnew;
+    
+    is = src.is;
+    nf = src.nf;
+    
+    fmt.clear();
+    for (int i=0; i < fmt.size(); i++ ) {
+       fnew = new FmtSpec;
+       *fnew = *(src.fmt[i]);
+       fmt.push_back( fnew );
+    }
+}
+
+StreamRead& StreamRead::operator=(const StreamRead& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void StreamRead::assign( const StreamRead& src)
+{
+     FmtSpec* fnew;
+    
+     ParcelInitializer::assign( src );
+     is = src.is;
+     nf = src.nf;
+
+     fmt.clear();
+     for (int i=0; i < fmt.size(); i++ ) {
+        fnew = new FmtSpec;
+        *fnew = *(src.fmt[i]);
+        fmt.push_back( fnew );
+     }
+}
+
+
+void StreamRead::ingest( Parcel& p )
 {
    string input;
    real lat, lon, z;
@@ -286,14 +330,14 @@ void StreamRead :: ingest( Parcel& p )
 
 
 // init one Parcel
-void StreamRead :: apply( Parcel& p ) 
+void StreamRead::apply( Parcel& p ) 
 {
     ingest( p );    
 };
 
 
 // init an array of Parcels
-void StreamRead :: apply( Parcel * const p, const int n )
+void StreamRead::apply( Parcel * const p, const int n )
 {
     int i;
     
@@ -312,7 +356,7 @@ void StreamRead :: apply( Parcel * const p, const int n )
 };
 
 // init a vector of Parcels
-void StreamRead :: apply( std::vector<Parcel>& p )
+void StreamRead::apply( std::vector<Parcel>& p )
 {
     std::vector<Parcel>::iterator ip;
     int n;
@@ -335,7 +379,7 @@ void StreamRead :: apply( std::vector<Parcel>& p )
 
 
 // init a list of Parcels
-void StreamRead :: apply( std::list<Parcel>& p )
+void StreamRead::apply( std::list<Parcel>& p )
 {
     std::list<Parcel>::iterator ip;
     int n;
@@ -358,7 +402,7 @@ void StreamRead :: apply( std::list<Parcel>& p )
 
 
 // init a deque of Parcels
-void StreamRead :: apply( std::deque<Parcel>& p )
+void StreamRead::apply( std::deque<Parcel>& p )
 {
     std::deque<Parcel>::iterator ip;
     int n;
@@ -378,7 +422,7 @@ void StreamRead :: apply( std::deque<Parcel>& p )
 };
 
 // init a Flock of Parcels
-void StreamRead :: apply( Flock& p )
+void StreamRead::apply( Flock& p )
 {
     Flock::iterator ip;
     int n;
@@ -420,7 +464,7 @@ void StreamRead :: apply( Flock& p )
 
 
 // init a Swarm of Parcels
-void StreamRead :: apply( Swarm& p )
+void StreamRead::apply( Swarm& p )
 {
     Swarm::iterator ip;
     int n;
@@ -462,7 +506,7 @@ void StreamRead :: apply( Swarm& p )
 
 
 
-int StreamRead :: s2i( const std::string str ) 
+int StreamRead::s2i( const std::string str ) 
 {
     int n;
     
@@ -477,7 +521,7 @@ int StreamRead :: s2i( const std::string str )
     return n;
 }
 
-std::string StreamRead :: i2s( int i ) const
+std::string StreamRead::i2s( int i ) const
 {
     std::string result;
     std::ostringstream cc;
@@ -489,7 +533,7 @@ std::string StreamRead :: i2s( int i ) const
     return result;
 }
 
-int StreamRead :: s2d( const std::string &str, double *result, int beg, int wid, int dec ) 
+int StreamRead::s2d( const std::string &str, double *result, int beg, int wid, int dec ) 
 {
     int intg;
     int pos;
@@ -784,7 +828,7 @@ int StreamRead :: s2d( const std::string &str, double *result, int beg, int wid,
 }
 
 
-int StreamRead :: s2int( const std::string &str, int *result, int beg, int wid )
+int StreamRead::s2int( const std::string &str, int *result, int beg, int wid )
 {
     int intg;
     int pos;
@@ -941,7 +985,7 @@ int StreamRead :: s2int( const std::string &str, int *result, int beg, int wid )
 }
 
 
-int StreamRead :: s2c( const std::string &str, int mode, string &sval, int beg, int wid )
+int StreamRead::s2c( const std::string &str, int mode, string &sval, int beg, int wid )
 {
     int pos;
     bool done;
@@ -1052,7 +1096,7 @@ int StreamRead :: s2c( const std::string &str, int mode, string &sval, int beg, 
 
 } 
 
-void StreamRead :: clearFormat()
+void StreamRead::clearFormat()
 {
     int i;
     
@@ -1065,7 +1109,7 @@ void StreamRead :: clearFormat()
 }
 
 
-void StreamRead :: format( const std::string fmtstr )
+void StreamRead::format( const std::string fmtstr )
 {
    std::string tmpstr;
    int i;
@@ -1354,7 +1398,7 @@ void StreamRead :: format( const std::string fmtstr )
 
 }
 
-std::string StreamRead :: format() const
+std::string StreamRead::format() const
 {
     string result;
     int i;
@@ -1555,7 +1599,7 @@ std::string StreamRead :: format() const
 }
 
 // FmtSpec constructor
-StreamRead :: FmtSpec :: FmtSpec(const std::string type0, int start0, int len0, int fract0, std::string str0, int align0)
+StreamRead::FmtSpec::FmtSpec(const std::string type0, int start0, int len0, int fract0, std::string str0, int align0)
 {
 
     align = 0;
@@ -1564,8 +1608,46 @@ StreamRead :: FmtSpec :: FmtSpec(const std::string type0, int start0, int len0, 
 
 }
 
+StreamRead::FmtSpec::~FmtSpec() 
+{
+}
+
+StreamRead::FmtSpec::FmtSpec(const StreamRead::FmtSpec& src)
+{
+     type = src.type;
+     start = src.start;
+     len = src.len;
+     fract = src.fract;
+     align = src.align;
+     str = src.str;
+     field = src.field;
+}
+
+StreamRead::FmtSpec& StreamRead::FmtSpec::operator=(const StreamRead::FmtSpec& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void StreamRead::FmtSpec::assign( const StreamRead::FmtSpec& src)
+{
+      type = src.type;
+      start = src.start;
+      len = src.len;
+      fract = src.fract;
+      align = src.align;
+      str = src.str;
+      field = src.field;
+}
+
 // settle the defaults of a FmtSpec
-void StreamRead :: FmtSpec :: defaults( std::string type0, int start0, int len0, int fract0, std::string str0, int align0)
+void StreamRead::FmtSpec::defaults( std::string type0, int start0, int len0, int fract0, std::string str0, int align0)
 {
     if ( type0 == "" ) {
        type0 = "L";

@@ -63,6 +63,38 @@ class PGenNetcdf: public ParcelGenerator {
       
       */
       ~PGenNetcdf();
+
+      /// \brief Copy-constructor
+      /*!
+         This is the copy contructor method for the Filter_Null class.
+
+           Note that no open netcdf files carry over to the copy.
+         
+         \param src the source Filter_Null object to copy from
+      */
+      PGenNetcdf(const PGenNetcdf& src);
+
+      /// \brief copy assignment
+      /*!
+          This is the copy assignment operator for the PGenNetcdf class.
+          
+          Note that no open netcdf files carry over to the copy.
+      */
+      PGenNetcdf& operator=(const PGenNetcdf& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source PGenNetcdf object
+           to this one.
+
+           Note that no open netcdf files carry over to the copy.
+           
+           \param src the source PGenNetcdf object
+      */     
+      void assign( const PGenNetcdf& src);
+      
+
       
       
       /// opens the file without reading the parcel data
@@ -438,7 +470,7 @@ class PGenNetcdf: public ParcelGenerator {
       /// the NetcdfIn object that actuslly does the work
       NetcdfIn ncIn;
       
-      /// the PGenRep obejct that makes the parcels
+      /// the PGenRep object that makes the parcels
       PGenRep pgen;
       
       int dbug;

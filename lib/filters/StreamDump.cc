@@ -19,6 +19,35 @@ StreamDump :: StreamDump( std::ostream& output, int format )
     mode = format;
 };
 
+StreamDump::~StreamDump() 
+{
+}
+
+StreamDump::StreamDump(const StreamDump& src) : ParcelReporter(src)
+{
+    os = src.os;
+    mode = src.mode;
+}
+
+StreamDump& StreamDump::operator=(const StreamDump& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void StreamDump::assign( const StreamDump& src)
+{
+     ParcelReporter::assign( src );
+     os = src.os;
+     mode = src.mode;
+}
+
 int StreamDump :: format( int fmt ) {
    
     if ( fmt >= 0 ) {

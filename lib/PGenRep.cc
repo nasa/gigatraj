@@ -22,6 +22,45 @@
 using namespace gigatraj;
 
 
+// constructor
+PGenRep::PGenRep()
+{
+
+     
+}
+
+// destructor
+PGenRep::~PGenRep()
+{
+
+}
+
+// copy constructor
+PGenRep::PGenRep(const PGenRep& src) : ParcelGenerator(src)
+{
+
+}
+
+PGenRep& PGenRep::operator=(const PGenRep& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PGenRep::assign( const PGenRep& src)
+{
+
+    ParcelGenerator::assign(src);
+    
+}
+
+
 Parcel * PGenRep :: create_array(Parcel parcel, int n ) 
 {
     Parcel* pa;

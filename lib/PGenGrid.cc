@@ -28,6 +28,47 @@ using namespace gigatraj;
 // so it should not matter if we end up using a different
 // planets in the actual model run.
 static Earth e;
+      
+
+// constructor
+PGenGrid::PGenGrid()
+{
+
+     
+}
+
+// destructor
+PGenGrid::~PGenGrid()
+{
+
+}
+
+// copy constructor
+PGenGrid::PGenGrid(const PGenGrid& src) : ParcelGenerator(src)
+{
+
+}
+
+PGenGrid& PGenGrid::operator=(const PGenGrid& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void PGenGrid::assign( const PGenGrid& src)
+{
+
+    ParcelGenerator::assign(src);
+    
+}
+
+
 
 int PGenGrid :: count_gridlons( real beglon, real endlon, real deltalon ) const
 {

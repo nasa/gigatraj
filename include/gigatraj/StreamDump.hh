@@ -55,6 +55,37 @@ class StreamDump : public ParcelReporter {
       
       */
       StreamDump( std::ostream& output, int format=0 );      
+
+      /// Default destructor
+      /*!
+         This is the default destructor for the StreamDump class.
+      */
+      ~StreamDump();
+      
+      /// copy constructor
+      /*!
+         This is the copy contructor method for the StreamDump class.
+         
+         \param src the source StreamDump object to copy from
+      */
+      StreamDump(const StreamDump& src);
+
+      /// copy assignment
+      /*! 
+          This is the copy assignment operator for the StreamDump class.
+      */
+      StreamDump& operator=(const StreamDump& src);
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source StreamDump object
+           to this one.
+           
+           \param src the source StreamDump object
+      */     
+      void assign( const StreamDump& src);
+
+
    
       /// Returns/set the dump format
       /*! This method returns (and optionally sets) the format of the dump to either text

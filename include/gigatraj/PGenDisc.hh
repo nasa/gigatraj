@@ -55,6 +55,37 @@ class PGenDisc : public ParcelGenerator {
       */
       PGenDisc( const real lon, const real lat, const real level, const real r=50.0, const real thickness=1e-10 );
 
+      /// \brief destructor
+      /*! 
+         This is the destructor method for the PGenDisc class.
+      */
+      ~PGenDisc(); 
+
+      /// \brief Copy-constructor
+      /*!
+         This is the copy contructor method for the Filter_Null class.
+         
+         \param src the source Filter_Null object to copy from
+      */
+      PGenDisc(const PGenDisc& src);
+
+      /// \brief copy assignment
+      /*!
+          This is the copy assignment operator for the PGenDisc class.
+      */
+      PGenDisc& operator=(const PGenDisc& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source PGenDisc object
+           to this one.
+           
+           \param src the source PGenDisc object
+      */     
+      void assign( const PGenDisc& src);
+      
+
       /// returns the central location of the disc
       /*! This method returns the central location of the disc.
       
