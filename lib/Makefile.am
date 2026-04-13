@@ -113,14 +113,15 @@ libgigatraj_a_SOURCES += ../include/gigatraj/Parcel.hh           Parcel.cc \
                          ../include/gigatraj/PGenDisc.hh         PGenDisc.cc \
                          ../include/gigatraj/PGenLine.hh         PGenLine.cc \
                          ../include/gigatraj/PGenRndLine.hh      PGenRndLine.cc \
-                         ../include/gigatraj/ParcelFilter.hh \
-                         ../include/gigatraj/ParcelInitializer.hh \
-                         ../include/gigatraj/ParcelReporter.hh \
+                         ../include/gigatraj/ParcelFilter.hh     filters/ParcelFilter.cc \
+                         ../include/gigatraj/ParcelInitializer.hh ParcelInitializer.cc \
+                         ../include/gigatraj/ParcelReporter.hh   filters/ParcelReporter.cc \
                          ../include/gigatraj/StreamDump.hh       filters/StreamDump.cc \
                          ../include/gigatraj/StreamLoad.hh       filters/StreamLoad.cc \
                          ../include/gigatraj/StreamPrint.hh      filters/StreamPrint.cc \
                          ../include/gigatraj/StreamRead.hh       filters/StreamRead.cc \
                          ../include/gigatraj/Filter_Trop.hh      filters/Filter_Trop.cc \
+                         ../include/gigatraj/Filter_Null.hh      filters/Filter_Null.cc \
                          ../include/gigatraj/ChangeVertical.hh   filters/ChangeVertical.cc
 
 if NETCDF

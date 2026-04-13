@@ -163,6 +163,7 @@ check_PROGRAMS += test_MetSelector
 ##### Parcel stuff
 
 TESTS += test_Parcel \
+        test_Filter_Null \
         test_StreamDump_Load \
         test_StreamRead \
         test_StreamPrint \
@@ -170,6 +171,7 @@ TESTS += test_Parcel \
         test_SwarmSerial \
         test_ChangeVertical
 check_PROGRAMS += test_Parcel \
+        test_Filter_Null \
         test_StreamDump_Load \
         test_StreamRead \
         test_StreamPrint \
@@ -460,6 +462,9 @@ test_PGenDisc_DEPENDENCIES = ../lib/libgigatraj.a
 
 test_PGenFile_SOURCES = test_PGenFile.cc test_utils.cc test_utils.hh
 test_PGenFile_DEPENDENCIES = ../lib/libgigatraj.a
+
+test_Filter_Null_SOURCES = test_Filter_Null.cc test_utils.cc test_utils.hh
+test_Filter_Null_DEPENDENCIES = ../lib/libgigatraj.a
 
 test_Filter_Trop_SOURCES = test_Filter_Trop.cc test_utils.cc test_utils.hh
 test_Filter_Trop_DEPENDENCIES = ../lib/libgigatraj.a
