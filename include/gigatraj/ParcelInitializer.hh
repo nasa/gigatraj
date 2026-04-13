@@ -40,8 +40,35 @@ class ParcelInitializer : public ParcelFilter {
       /// An exception for some kind of problem with the filter
       class badinit: public ParcelFilter::badfilter {};
 
+      /// Default constructor
+      /*!
+         This is the default contructor for the ParcelInitializer class.
+      */
+      ParcelInitializer();
+      
       /// virtual destructor
-      virtual ~ParcelInitializer() {};
+      virtual ~ParcelInitializer();
+
+      /// copy constructor
+      /*!
+         This is the copy contructor method for the ParcelInitializer class.
+         
+         \param src the source ParcelInitializer object to copy from
+      */
+      ParcelInitializer(const ParcelInitializer& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source ParcelInitializer object
+           to this one.
+           
+           \param src the source ParcelInitializer object
+      */     
+      virtual void assign( const ParcelInitializer& src);
+
+
+
 
       /// Initialize a single Parcel
       /*! This method initializes a single Parcel object.

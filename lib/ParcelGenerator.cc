@@ -21,6 +21,44 @@
 
 using namespace gigatraj;
 
+
+// constructor
+ParcelGenerator::ParcelGenerator()
+{
+
+     
+}
+
+// destructor
+ParcelGenerator::~ParcelGenerator()
+{
+
+}
+
+// copy constructor
+ParcelGenerator::ParcelGenerator(const ParcelGenerator& src)
+{
+
+}
+
+ParcelGenerator& ParcelGenerator::operator=(const ParcelGenerator& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void ParcelGenerator::assign( const ParcelGenerator& src)
+{
+
+}
+
+
 /*!
 creates an array of parcels
 */

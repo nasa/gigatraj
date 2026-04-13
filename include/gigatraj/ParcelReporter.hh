@@ -41,8 +41,35 @@ class ParcelReporter : public ParcelFilter {
       /// An exception for some kind of problem with the filter
       class badreport: public ParcelFilter::badfilter {};
 
+
+      /// Default constructor
+      /*!
+         This is the default contructor for the ParcelReporter class.
+      */
+      ParcelReporter();
+      
       /// virtual destructor
-      virtual ~ParcelReporter() {};
+      virtual ~ParcelReporter();
+
+      /// copy constructor
+      /*!
+         This is the copy contructor method for the ParcelReporter class.
+         
+         \param src the source ParcelReporter object to copy from
+      */
+      ParcelReporter(const ParcelReporter& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source ParcelReporter object
+           to this one.
+           
+           \param src the source ParcelReporter object
+      */     
+      virtual void assign( const ParcelReporter& src);
+
+
 
       /// Report on a single Parcel
       /*! This method reports on a single Parcel.

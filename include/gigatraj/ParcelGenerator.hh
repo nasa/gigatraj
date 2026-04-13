@@ -48,6 +48,42 @@ class ParcelGenerator {
       /// An exception for a bad number of parcels
       class badparcelcount {};
 
+      /// \brief default constructor
+      /*! 
+            This is the basic constructor for the ParcelGenerator class.
+      */
+      ParcelGenerator();
+
+      /// \brief destructor
+      /*! 
+         This is the destructor method for the ParcelGenerator class.
+      */
+      virtual ~ParcelGenerator(); 
+
+      /// \brief Copy-constructor
+      /*!
+         This is the copy contructor method for the Filter_Null class.
+         
+         \param src the source Filter_Null object to copy from
+      */
+      ParcelGenerator(const ParcelGenerator& src);
+
+      /// \brief copy assignment
+      /*!
+          This is the copy assignment operator for the ParcelGenerator class.
+      */
+      ParcelGenerator& operator=(const ParcelGenerator& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source ParcelGenerator object
+           to this one.
+           
+           \param src the source ParcelGenerator object
+      */     
+      virtual void assign( const ParcelGenerator& src);
+      
    
       /// Create an array of Parcels
       /*! This method creates an array of Parcels. 
