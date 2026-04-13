@@ -15,87 +15,156 @@ using namespace gigatraj;
 
 NetcdfOut::NetcdfOut()
 {
-    const char *nanstr = "";
 
-    dbug = 0;
-    
-    maxchunk = 1000;
-    
-    fname = "";
-    hdr_contents = "gigatraj output: air parcle trajectcory histories";
-    hdr_contact = "";  // replace this with a gigatraj contact, but NOT a specific human person
-    dir = 0;
-    
-    vcoord = "";
-    vunits = "UNKNOWN";
-    vdesc = "";
-    vdir = 0;
-    vfactor = 1.0;
-    
-    do_si = false;
-    
-    tagquant = "";
-    tagunits = "";
-    tagdesc = "";
-    
     is_open = false;
-    t0 = 0.0;
-    tstamp = "";
-    tyme = t0;
-    pnum = 0;
-    ip = 0;
-    tnum = 0;
-    do_status = false;
-    do_flags = false;
-    do_tag = false;
-    do_tstamp = false;
-    
-    // time is not transformed
-    to = 0.0;
-    ts = 1.0;
-    
-    fmtspec = "";
-    
-    met = NULLPTR;
-    
-    NaN = RNAN(nanstr);
-    dNaN = nan(nanstr);
-    badval = NaN;
-    dbadval = dNaN;
-    
-    
-    tyme = dNaN;
 
-    vid_lon = -1;
-    vtyp_lon = NC_REEL;
-
-    vid_lat = -1;
-    vtyp_lat = NC_REEL;
-
-    vid_z = -1;
-    vtyp_z = NC_REEL;
-
-    vid_status = -1;
-    vtyp_status = NC_INT;
-
-    vid_flags = -1;
-    vtyp_flags = NC_INT;
-
-    vid_tag = -1;
-    vtyp_tag = NC_DOUBLE;
-    
-    vid_tstamp = -1;
-    vtyp_tstamp = NC_STRING;
-    
+    reset();    
 }
 
 
 NetcdfOut::~NetcdfOut()
 {
 
-    if ( ! is_open ) {
+    if ( is_open ) {
        close();
     }
+
+}
+
+// copy constructor
+NetcdfOut::NetcdfOut(const NetcdfOut& src) : ParcelReporter(src)
+{
+    reset();
+    
+    dbug = src.dbug;
+    
+    maxchunk = src.maxchunk;
+    
+    fname = src.fname;
+    hdr_contents = src.hdr_contents;;
+    hdr_contact = src.hdr_contact;
+    dir = src.dir;
+    
+    vcoord = src.vcoord;
+    vunits = src.vunits;
+    vdesc = src.vdesc;
+    vdir = src.vdir;
+    vfactor = src.vfactor;
+    
+    do_si = src.do_si;
+    
+    tagquant = src.tagquant;
+    tagunits = src.tagunits;
+    tagdesc = src.tagdesc;
+    
+    t0 = src.t0;
+    tstamp = src.tstamp;
+    tyme = src.t0;
+    pnum = src.pnum;
+    ip = src.ip;
+    tnum = src.tnum;
+    do_status = src.do_status;
+    do_flags = src.do_flags;
+    do_tag = src.do_tag;
+    do_tstamp = src.do_tstamp;
+    
+    // time is not transformed
+    to = src.to;
+    ts = src.ts;
+    
+    fmtspec = src.fmtspec;
+    
+    met = src.met;
+    
+    NaN = src.NaN;
+    dNaN = src.dNaN;
+    badval = src.badval;
+    dbadval = src.dbadval;
+        
+    tyme = src.tyme;
+
+    vtyp_lon = src.vtyp_lon;
+    vtyp_lat = src.vtyp_lat;
+    vtyp_z = src.vtyp_z;
+    vtyp_status = src.vtyp_status;
+    vtyp_flags = src.vtyp_flags;
+    vtyp_tag = src.vtyp_tag;    
+    vtyp_tstamp = src.vtyp_tstamp;
+
+}
+
+NetcdfOut& NetcdfOut::operator=(const NetcdfOut& src)
+{
+    // handle assignment to self
+    if ( this == &src ) {
+       return *this;
+    }
+    
+    this->assign( src ) ;
+    
+    return *this;
+}
+
+void NetcdfOut::assign( const NetcdfOut& src)
+{
+    reset();
+    
+    ParcelReporter::assign(src);
+    
+    dbug = src.dbug;
+    
+    maxchunk = src.maxchunk;
+    
+    fname = src.fname;
+    hdr_contents = src.hdr_contents;;
+    hdr_contact = src.hdr_contact;
+    dir = src.dir;
+    
+    vcoord = src.vcoord;
+    vunits = src.vunits;
+    vdesc = src.vdesc;
+    vdir = src.vdir;
+    vfactor = src.vfactor;
+    
+    do_si = src.do_si;
+    
+    tagquant = src.tagquant;
+    tagunits = src.tagunits;
+    tagdesc = src.tagdesc;
+    
+    t0 = src.t0;
+    tstamp = src.tstamp;
+    tyme = src.t0;
+    pnum = src.pnum;
+    ip = src.ip;
+    tnum = src.tnum;
+    do_status = src.do_status;
+    do_flags = src.do_flags;
+    do_tag = src.do_tag;
+    do_tstamp = src.do_tstamp;
+    
+    // time is not transformed
+    to = src.to;
+    ts = src.ts;
+    
+    fmtspec = src.fmtspec;
+    
+    met = src.met;
+    
+    NaN = src.NaN;
+    dNaN = src.dNaN;
+    badval = src.badval;
+    dbadval = src.dbadval;
+        
+    tyme = src.tyme;
+
+    vtyp_lon = src.vtyp_lon;
+    vtyp_lat = src.vtyp_lat;
+    vtyp_z = src.vtyp_z;
+    vtyp_status = src.vtyp_status;
+    vtyp_flags = src.vtyp_flags;
+    vtyp_tag = src.vtyp_tag;    
+    vtyp_tstamp = src.vtyp_tstamp;
 
 }
 
@@ -441,6 +510,85 @@ void NetcdfOut::clear()
     }
 }
 
+void NetcdfOut::reset()
+{
+    const char *nanstr = "";
+
+    if ( is_open ) {
+        close();
+    }
+    clear();
+
+    dbug = 0;
+    
+    maxchunk = 1000;
+    
+    fname = "";
+    hdr_contents = "gigatraj output: air parcle trajectcory histories";
+    hdr_contact = "";  // replace this with a gigatraj contact, but NOT a specific human person
+    dir = 0;
+    
+    vcoord = "";
+    vunits = "UNKNOWN";
+    vdesc = "";
+    vdir = 0;
+    vfactor = 1.0;
+    
+    do_si = false;
+    
+    tagquant = "";
+    tagunits = "";
+    tagdesc = "";
+    
+    t0 = 0.0;
+    tstamp = "";
+    tyme = t0;
+    pnum = 0;
+    ip = 0;
+    tnum = 0;
+    do_status = false;
+    do_flags = false;
+    do_tag = false;
+    do_tstamp = false;
+    
+    // time is not transformed
+    to = 0.0;
+    ts = 1.0;
+    
+    fmtspec = "";
+    
+    met = NULLPTR;
+    
+    NaN = RNAN(nanstr);
+    dNaN = nan(nanstr);
+    badval = NaN;
+    dbadval = dNaN;
+    
+    tyme = dNaN;
+
+    vid_lon = -1;
+    vtyp_lon = NC_REEL;
+
+    vid_lat = -1;
+    vtyp_lat = NC_REEL;
+
+    vid_z = -1;
+    vtyp_z = NC_REEL;
+
+    vid_status = -1;
+    vtyp_status = NC_INT;
+
+    vid_flags = -1;
+    vtyp_flags = NC_INT;
+
+    vid_tag = -1;
+    vtyp_tag = NC_DOUBLE;
+    
+    vid_tstamp = -1;
+    vtyp_tstamp = NC_STRING;
+    
+}
+
 void NetcdfOut::format( std::string fmt )
 {
       int i;
@@ -743,29 +891,29 @@ std::string NetcdfOut::tunits()
    
    
    if ( abs( to - 693596.00 ) < 1e-3 ) {
-      // It's the GEOS FP reference time 1-1-1 00:00:0.0
-      result = "1-1-1 00:00:0.0";
+      // It's the GEOS FP reference time 1-1-1 00:00:00
+      result = "1-1-1 00:00:00";
    } else {
       // first, get the model time that corresponds to the
       // zero netcdf time
       tm = (0.0 - to)/ts;
       // now translate this to a calendar timestamp
-      result = met->time2Cal( tm );
+      result = met->time2Cal( tm ) + ":00";
    }
    // now size up the units
    units = "";
    if ( abs( ts - 1.0 ) < 1e-3 ) {
       // it's in days
-      units = "Days since ";
+      units = "days since ";
    } else if ( abs( ts - 24.0 ) < 1e-3 ) {
       // it's in hours
-      units = "Hours since ";      
+      units = "hours since ";      
    } else if ( abs( ts - 24.0*60.0 ) < 1e-3 ) {
       // it's in minutes
-      units = "Minutes since ";         
+      units = "minutes since ";         
    } else if ( abs( ts - 24.0*60.0*60.0 ) < 1e-3 ) {
       // it's in seconds
-      units = "Seconds since ";         
+      units = "seconds since ";         
    } else {
       
       oo.setf( std::ios::fixed );
@@ -949,7 +1097,8 @@ void NetcdfOut::open( std::string file, Parcel* p, unsigned int n )
      }
      // write long_name time attribute
      aname = "long_name";
-     val = tunits(); 
+     //val = tunits(); 
+     val = "time"; 
      aval = val.c_str();
      if ( i_am_root ) {
         err = nc_put_att_string( ncid, vid_time, aname.c_str(), 1, &aval );
@@ -969,7 +1118,8 @@ void NetcdfOut::open( std::string file, Parcel* p, unsigned int n )
      }
      // write units time attrbiute
      aname = "units";
-     val = "day"; 
+     //val = "day"; 
+     val = tunits(); 
      aval = val.c_str();
      if ( i_am_root ) {
         err = nc_put_att_string( ncid, vid_time, aname.c_str(), 1, &aval );
@@ -1547,6 +1697,7 @@ void NetcdfOut::close()
      vid_status = -1;
      vid_flags = -1;
      vid_tag = -1;
+     vid_tstamp = -1;
      for ( int i=0; i < other.size(); i++ ) {
          vid_other[i] = -1;
      }

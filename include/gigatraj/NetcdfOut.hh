@@ -78,6 +78,36 @@ class NetcdfOut : public ParcelReporter {
       */
       ~NetcdfOut();
 
+      /// \brief Copy-constructor
+      /*!
+         This is the copy contructor method for the Filter_Null class.
+
+           Note that no open netcdf files carry over to the copy.
+         
+         \param src the source Filter_Null object to copy from
+      */
+      NetcdfOut(const NetcdfOut& src);
+
+      /// \brief copy assignment
+      /*!
+          This is the copy assignment operator for the NetcdfOut class.
+
+           Note that no open netcdf files carry over to the copy.
+      */
+      NetcdfOut& operator=(const NetcdfOut& src);
+
+
+      /// copies settings from a source object to this one
+      /*! 
+           This method copies settings from a source NetcdfOut object
+           to this one.
+
+           Note that no open netcdf files carry over to the copy.
+           
+           \param src the source NetcdfOut object
+      */     
+      void assign( const NetcdfOut& src);
+
       /// sets the netcdf file name
       /*! This method sets the netcdf file name.
    
@@ -784,11 +814,16 @@ class NetcdfOut : public ParcelReporter {
      */
      bool is_root();
   
-     /// resets the object's specifications
+     /// clears the object's specifications
      /*! this method clears all of the flags for writing extra variables, as well as the list of extra meteorological variables.
      */
      void clear();
      
+     /// resets the object 
+     /*! This method resets all of the object's settings to those of a newly-create object,
+         just after closing any open file.
+     */
+     void reset();     
      
      /// convert model time to netcdf time
      /*! This method converts model time to netcdf time
