@@ -54,8 +54,28 @@ class ParcelFilter {
       /// An exception for a bad number of parcels
       class badparcelnum {};
 
+      /// virtual constructor
+      ParcelFilter();
+      
       /// virtual destructor
-      virtual ~ParcelFilter() {};
+      virtual ~ParcelFilter();
+
+      /// virtual copy constructor
+      /*!
+         This is the copy constructor method for the ParcelFilter class.
+         
+         \param src the source ParcelFilter object to copy from
+      */
+      ParcelFilter(const ParcelFilter& src);
+
+      /// copies settings from a source into this filter
+      /*! This method copies the seetings from a source filter
+          into this filter.
+          
+          \param src the src filter object.
+      */    
+      virtual void assign( const ParcelFilter& src);
+
 
       /// Virtual method for applying the filter to a single Parcel
       /*! Apply the filter to a single parcel
@@ -115,6 +135,61 @@ class ParcelFilter {
     
       */
       virtual void apply( Swarm& p ) = 0; 
+
+
+   
+     /// returns some class-dependent information about the filter results
+     /*! This method queries the filter about its results
+            
+         Some ParcelFilter may compile statistics, such as the minimum
+         temperature seen by any parcels. This method provides a way to query the
+         filter for its results.
+         
+         \return true if the query was able ot be satisfied, false if not. 
+         \param keyword a string containing the query. If 
+         \param value a pointer to an integer which will contain the value  
+     */
+     virtual bool query( const std::string keyword, int* value ) const;
+   
+     /// returns some class-dependent information about the filter results
+     /*! This method queries the filter about its results
+            
+         Some ParcelFilter may compile statistics, such as the minimum
+         temperature seen by any parcels. This method provides a way to query the
+         filter for its results.
+         
+         \return true if the query was able ot be satisfied, false if not. 
+         \param keyword a string containing the query
+         \param value a pointer to astring which will contain the value  
+     */
+     virtual bool query( const std::string keyword, std::string* value ) const;
+   
+     /// returns some class-dependent information about the filter results
+     /*! This method queries the filter about its results
+            
+         Some ParcelFilter may compile statistics, such as the minimum
+         temperature seen by any parcels. This method provides a way to query the
+         filter for its results.
+         
+         \return true if the query was able ot be satisfied, false if not. 
+         \param keyword a string containing the query
+         \param value a pointer to a float which will contain the value;   
+     */
+     virtual bool query( const std::string keyword, float* value ) const;
+   
+     /// returns some class-dependent information about the filter results
+     /*! This method queries the filter about its results
+            
+         Some ParcelFilter may compile statistics, such as the minimum
+         temperature seen by any parcels. This method provides a way to query the
+         filter for its results.
+         
+         \return true if the query was able ot be satisfied, false if not. 
+         \param keyword a string containing the query
+         \param value a pointer to a double which will contain the value  
+     */
+     virtual bool query( const std::string keyword, double* value ) const;
+
 
 
 };
