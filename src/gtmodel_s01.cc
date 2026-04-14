@@ -810,6 +810,9 @@ int main( int argc, char * argv[] )
 #ifdef USE_MPI
        config.fetchParam("mpi", use_mpi);
        config.fetchParam("met_server_ratio", mcsr);
+#else
+       use_mpi = false;
+       mcsr = 0;
 #endif
        config.fetchParam("save_to", save_file );
        config.fetchParam("restore_from", restore_file );
