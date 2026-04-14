@@ -536,6 +536,9 @@ void IntegRK4a :: go( int n, real *lons, real *lats, real *zs, int *flags, doubl
 
     }
     
+    delete []dzs;
+    delete []dlats;
+    delete []dlons;
     delete []zhold;
     delete []yhold;
     delete []xhold;
