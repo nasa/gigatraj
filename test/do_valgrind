@@ -154,18 +154,18 @@ do
    fi
    echo "=== ${TSTCC} -> ${TSTPROG}"
 
-   if [ -s "${TSTCC}" ] ; then
       if [ "x${COMPILE}" = "xY" ] ; then
-         touch ${TSTCC} && make ${TSTPROG} >/dev/null 2>&1
-         if [ $? != 0 ] ; then
-            echo "${TST} Compile failed"
-            exit 1
+         if [ -s "${TSTCC}" ] ; then
+               touch ${TSTCC} && make ${TSTPROG} >/dev/null 2>&1
+               if [ $? != 0 ] ; then
+                  echo "${TST} Compile failed"
+                  exit 1
+               fi
+         else
+            echo "nothing to compile" 
+            continue
          fi
       fi
-   else
-      echo "nothing to compile" 
-      continue
-   fi
 
 
    LOG="valgrind_${TST}.log"
