@@ -695,7 +695,7 @@ void NetcdfIn::open( std::string file )
      
      err = nc_open( fname.c_str(), NC_NOWRITE, &ncid);     
      if ( err != NC_NOERR ) {
-        std::cerr << "NetcdfIn::Popen: failed to open file: " << fname << std::endl;
+        std::cerr << "NetcdfIn::open: failed to open file: " << fname << std::endl;
         throw(badNetcdfOpen(err));
      }
      
@@ -739,7 +739,7 @@ void NetcdfIn::open( std::string file )
               std::cerr << "NetcdfIn::open: base time: " << time0 << std::endl;
            }
            
-           free(val);
+           nc_free_string( 1, &val);
 
         }
         // todo: handle the case where the timestamp is a char array
@@ -825,10 +825,10 @@ void NetcdfIn::open( std::string file )
      if ( err != NC_NOERR ) {
         throw(badNetcdfError(err));
      }
+     t0 = tconv( tt0 );
      if ( dbug > 1 ) {
         std::cerr << "NetcdfIn::open: Parcel time is " << t0 << std::endl;
      }
-     t0 = tconv( tt0 );
      
      // now find out about parcels (mainly, how many there are)
      name = "id";
@@ -849,7 +849,7 @@ void NetcdfIn::open( std::string file )
      if ( dbug > 10 ) {
         std::cerr << "NetcdfIn::open: There are " << np << " parcels" << std::endl;
      }
-     // start with the zeroeth prcel
+     // start with the zeroeth parcel
      ip = 0;   
      
      
