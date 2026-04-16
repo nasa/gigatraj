@@ -110,7 +110,11 @@ begdate=2007-10-23T13
   \li \c noBadOutput : prevents parcels which are not being traced (e.g., parcels which have hit 
                        the ground) from being output
   
-  \li \c netcdf_out : sends output to the given netcdf file
+  \li \c netcdf_out : sends output to the given netcdf file. 
+                      Note that if the model run is interrupted bu SIGINT,SIGTERM, or SIGABRT,
+                      then an attempt is made to close the netcdf file cleanly before terminating.
+                      Also, if using the --restore_from option, then the output netcdf file should already
+                      exist, and subsequent output will be appended to this file. 
   
   \li \c si   writes (to netcdf )at least the vertical coordinates in SI units (i.e., m instead of km, Pa instead of hPa)
   
@@ -208,6 +212,8 @@ Finally, settings from the command-line options are loaded, overwriting any prev
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <signal.h>
+#include <string.h>
 
 #include "gigatraj/gigatraj.hh"
 #include "gigatraj/FilePath.hh"
@@ -244,6 +250,84 @@ using std::endl;
 using std::string;
 using std::vector;
 
+#ifdef USE_NETCDF
+    // flag indicating whether to use netcdf for output
+    bool outNetcdf;
+    // for writing to a netcdf file
+    NetcdfOut* out_netcdf;
+
+    /* define a signal handler to close any output netcdf file
+       so that something from the run might be salvaged
+       if the program gets interrupted.
+    */
+     void last_gasp( int signum )
+{
+      // we try this only if we are actually using netcdf output
+      if ( outNetcdf ) {
+         if ( out_netcdf != NULL ) {
+            /* Try to close the netcdf output file.
+               This might not work, but it's worth a try.
+               If would be more reliable if we could simply set a sig_atomic_t
+               flag in here and then test for it in the main loop.
+               The problem with that is that the integration steps in the main loop
+               can take a lot of time--more time than we should wait to 
+               do this bit of cleanup.
+               
+               If we don't even try, then the output file is a writeoff loss anyway
+               if the model run gets interrupted, so what have we to lose?
+            */
+            out_netcdf->close();
+         }
+      }
+      
+      exit(1);
+}      
+     void set_last_gasp()
+{
+     struct sigaction act;
+     
+     memset( &act, 0, sizeof(act));
+     act.sa_handler = last_gasp;
+     
+     if ( sigemptyset(&act.sa_mask) != -1 ) {
+        
+        act.sa_flags = SA_RESTART;
+        
+        if ( sigaction(SIGINT, &act, NULL ) != -1 ) {
+           if ( sigaction(SIGTERM, &act, NULL ) != -1 ) {
+              if ( sigaction(SIGABRT, &act, NULL ) != -1 ) {
+                 return;
+              }
+           }
+        }
+        
+     }
+     
+}
+     void clear_last_gasp()
+{
+     struct sigaction act;
+     
+     memset( &act, 0, sizeof(act));
+     act.sa_handler = SIG_DFL;
+     
+     if ( sigemptyset(&act.sa_mask) != -1 ) {
+        
+        act.sa_flags = 0;
+        
+        if ( sigaction(SIGINT, &act, NULL ) != -1 ) {
+           if ( sigaction(SIGTERM, &act, NULL ) != -1 ) {
+              if ( sigaction(SIGABRT, &act, NULL ) != -1 ) {
+                 return;
+              }
+           }
+        }
+        
+     }
+
+}
+
+#endif
 
 /*------------------------------------------------------------------------------------------*/
 /* This function sets up configuration parameters and gathers settings
@@ -466,7 +550,6 @@ Flock* restore( Parcel &pcl, std::string &restore_file, ProcessGrp *pgrp, int mc
     return result;
 }
 
-
 void save( std::string &save_file, double time, double accumul_time, Flock*  flock )
 {
     int id;
@@ -683,14 +766,10 @@ int main( int argc, char * argv[] )
 #ifdef USE_NETCDF
     // flag indicating whether to use netcdf for input
     bool inNetcdf;
-    // flag indicating whether to use netcdf for output
-    bool outNetcdf;
     // the name of the output netcdf file
     std::string outNetcdfFile;
     // for reading a netcdf file
     PGenNetcdf* in_netcdf;
-    // of rwriting to a netcdf file
-    NetcdfOut* out_netcdf;
 #endif
     
     // a comma-separated list (no spaces!) of quantities to be read and cached
@@ -1164,16 +1243,18 @@ int main( int argc, char * argv[] )
           time = begtime;
           
        } else {
+          
+         // we need to restore
        
-          // restore the Flock from a previous, interrupted run
-          if ( verbose ) {
-             cerr << "Restoring parcels from file " << restore_file << ":";
-          }
-          flock = restore( pcl, restore_file, pgrp, mcsr, &time, &accumul_time ); 
-          if ( verbose ) {
-             cerr << " resuming from model time " << time << std::endl;
-          }
-       }   
+         // restore the Flock from a previous, interrupted run
+         if ( verbose ) {
+            cerr << "Restoring parcels from file " << restore_file << ":";
+         }
+         flock = restore( pcl, restore_file, pgrp, mcsr, &time, &accumul_time ); 
+         if ( verbose ) {
+            cerr << " resuming from model time " << time << std::endl;
+         }
+       }
        
        // set wind vector conformal adjustments
        if ( confml >= 0 ) {
@@ -1268,8 +1349,12 @@ int main( int argc, char * argv[] )
           }
           out_netcdf->format( fmt );
           out_netcdf->init( &pcl, flock->size() );
+          if ( do_restore ) {
+             out_netcdf->resuming( true );
+          }
           out_netcdf->open();
           out_netcdf->apply( *flock );
+          set_last_gasp();
        }
 #endif
        
@@ -1382,7 +1467,9 @@ int main( int argc, char * argv[] )
                  Out << *flock;
 #ifdef USE_NETCDF
               } else {
+                 clear_last_gasp();
                  out_netcdf->apply( *flock );
+                 set_last_gasp();
               }
 #endif
 
@@ -1404,6 +1491,7 @@ int main( int argc, char * argv[] )
        // All done.  Destroy the things we created
 #ifdef USE_NETCDF
        if ( outNetcdf ) {
+          clear_last_gasp();
           out_netcdf->close();
           delete out_netcdf;
        }
@@ -1418,7 +1506,7 @@ int main( int argc, char * argv[] )
     /* Shut down any multiprocesing */
     pgrp->shutdown();
     
-    /* since we go there without craching, remove any savefiles */
+    /* since we got here without crashing, remove any savefiles */
     if ( ! keep_save ) {
        remove( save_file.c_str() );
     }

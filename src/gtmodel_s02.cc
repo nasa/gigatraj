@@ -110,7 +110,11 @@ begdate=2007-10-23T13
   \li \c noBadOutput : prevents parcels which are not being traced (e.g., parcels which have hit 
                        the ground) from being output
   
-  \li \c netcdf_out : sends output to 
+  \li \c netcdf_out : sends output to  the given netcdf file. 
+                      Note that if the model run is interrupted bu SIGINT,SIGTERM, or SIGABRT,
+                      then an attempt is made to close the netcdf file cleanly before terminating.
+                      Also, if using the --restore_from option, then the output netcdf file should already
+                      exist, and subsequent output will be appended to this file. 
   
   \li \c inputformat : an initialization input format specifier, as described in the StreamRead class.
                    The codes are basically the same as for the --format option. Any input fields
@@ -201,6 +205,8 @@ Finally, settings from the command-line options are loaded, overwriting any prev
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <signal.h>
+#include <string.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -241,6 +247,85 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
+
+#ifdef USE_NETCDF
+    // flag indicating whether to use netcdf for output
+    bool outNetcdf;
+    // for writing to a netcdf file
+    NetcdfOut* out_netcdf;
+
+    /* define a signal handler to close any output netcdf file
+       so that something from the run might be salvaged
+       if the program gets interrupted.
+    */
+     void last_gasp( int signum )
+{
+      // we try this only if we are actually using netcdf output
+      if ( outNetcdf ) {
+         if ( out_netcdf != NULL ) {
+            /* Try to close the netcdf output file.
+               This might not work, but it's worth a try.
+               If would be more reliable if we could simply set a sig_atomic_t
+               flag in here and then test for it in the main loop.
+               The problem with that is that the integration steps in the main loop
+               can take a lot of time--more time than we should wait to 
+               do this bit of cleanup.
+               
+               If we don't even try, then the output file is a writeoff loss anyway
+               if the model run gets interrupted, so what have we to lose?
+            */
+            out_netcdf->close();
+         }
+      }
+      
+      exit(1);
+}      
+     void set_last_gasp()
+{
+     struct sigaction act;
+     
+     memset( &act, 0, sizeof(act));
+     act.sa_handler = last_gasp;
+     
+     if ( sigemptyset(&act.sa_mask) != -1 ) {
+        
+        act.sa_flags = SA_RESTART;
+        
+        if ( sigaction(SIGINT, &act, NULL ) != -1 ) {
+           if ( sigaction(SIGTERM, &act, NULL ) != -1 ) {
+              if ( sigaction(SIGABRT, &act, NULL ) != -1 ) {
+                 return;
+              }
+           }
+        }
+        
+     }
+     
+}
+     void clear_last_gasp()
+{
+     struct sigaction act;
+     
+     memset( &act, 0, sizeof(act));
+     act.sa_handler = SIG_DFL;
+     
+     if ( sigemptyset(&act.sa_mask) != -1 ) {
+        
+        act.sa_flags = 0;
+        
+        if ( sigaction(SIGINT, &act, NULL ) != -1 ) {
+           if ( sigaction(SIGTERM, &act, NULL ) != -1 ) {
+              if ( sigaction(SIGABRT, &act, NULL ) != -1 ) {
+                 return;
+              }
+           }
+        }
+        
+     }
+
+}
+
+#endif
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -680,14 +765,10 @@ int main( int argc, char * argv[] )
 #ifdef USE_NETCDF
     // flag indicating whether to use netcdf for input
     bool inNetcdf;
-    // flag indicating whether to use netcdf for output
-    bool outNetcdf;
     // the name of the output netcdf file
     std::string outNetcdfFile;
     // for reading a netcdf file
     PGenNetcdf* in_netcdf;
-    // of rwriting to a netcdf file
-    NetcdfOut* out_netcdf;
 #endif
 
     // a comma-separated list (no spaces!) of quantities to be read and cached
@@ -1159,6 +1240,8 @@ int main( int argc, char * argv[] )
           double accumul_time = 0.0;
 
        } else {
+          
+         // we need to restore
        
           // restore the Swarm from a previous, interrupted run
           if ( verbose ) {
@@ -1263,8 +1346,12 @@ int main( int argc, char * argv[] )
           }
           out_netcdf->format( fmt );
           out_netcdf->init( &pcl, swarm->size() );
+          if ( do_restore ) {
+             out_netcdf->resuming( true );
+          }
           out_netcdf->open();
           out_netcdf->apply( *swarm );
+          set_last_gasp();
        }
 #endif
 
@@ -1377,7 +1464,9 @@ int main( int argc, char * argv[] )
                  Out << *swarm ;
 #ifdef USE_NETCDF
               } else {
+                 clear_last_gasp();
                  out_netcdf->apply( *swarm );
+                 set_last_gasp();
               }
 #endif
 
@@ -1399,6 +1488,7 @@ int main( int argc, char * argv[] )
        // All done.  Destroy the things we created
 #ifdef USE_NETCDF
        if ( outNetcdf ) {
+          clear_last_gasp();
           out_netcdf->close();
           delete out_netcdf;
        }
@@ -1413,7 +1503,7 @@ int main( int argc, char * argv[] )
     /* Shut down any multiprocesing */
     pgrp->shutdown();
     
-    /* since we go there without crashing, remove any savefiles */
+    /* since we got here without crashing, remove any savefiles */
     if ( ! keep_save ) {
        remove( save_file.c_str() );
     }
