@@ -140,7 +140,7 @@ int main()
     
     
     out->open();
-    for ( it=0; it<12; it++ ) {
+    for ( it=0; it<11; it++ ) {
         time = it*0.15;
         p.setTime( time );
         for ( ip=0; ip<np; ip++ ) {
@@ -155,6 +155,27 @@ int main()
     }
     
     out->close();
+
+    // now set to resuming, re-open, and try to add to the file
+    out->resuming( true );
+    out->open();
+    for ( it=11; it<12; it++ ) {
+        time = it*0.15;
+        p.setTime( time );
+        for ( ip=0; ip<np; ip++ ) {
+            lat = 45.0 + (ip - np/2)*0.5 + time/50.0;
+            lon = COS( lat/180*PI );
+            z = baseZ + time/100.0;
+            p.setPos( lon, lat );
+            p.setZ( z );
+            
+            out->apply( p );    
+        }
+    }
+    
+    out->close();
+
+    out->resuming( false );
 
     // try reading in what we just wrote
     // (remember: by default twe will take the first time step)

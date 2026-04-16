@@ -38,6 +38,8 @@ NetcdfOut::NetcdfOut(const NetcdfOut& src) : ParcelReporter(src)
     
     dbug = src.dbug;
     
+    restore = src.restore;
+    
     maxchunk = src.maxchunk;
     
     fname = src.fname;
@@ -113,6 +115,8 @@ void NetcdfOut::assign( const NetcdfOut& src)
     
     dbug = src.dbug;
     
+    restore = src.restore;
+    
     maxchunk = src.maxchunk;
     
     fname = src.fname;
@@ -184,6 +188,16 @@ void NetcdfOut::filename( const std::string file )
 std::string& NetcdfOut::filename()
 {
     return fname;
+}
+
+void NetcdfOut::resuming( bool res )
+{
+     restore = res;
+}
+
+bool NetcdfOut::resuming()
+{
+    return restore;
 }
 
 void NetcdfOut::si( bool value )
@@ -520,6 +534,8 @@ void NetcdfOut::reset()
     clear();
 
     dbug = 0;
+    
+    restore = false;
     
     maxchunk = 1000;
     
@@ -931,6 +947,16 @@ std::string NetcdfOut::tunits()
 
 void NetcdfOut::open( std::string file, Parcel* p, unsigned int n )
 {
+     if ( ! restore ) {
+        newopen( file, p, n );
+     } else {
+        reopen( file, p, n );     
+     }
+
+}
+
+void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
+{
      int err;
      std::string aname;
      std::string val;
@@ -960,7 +986,7 @@ void NetcdfOut::open( std::string file, Parcel* p, unsigned int n )
      }
 
      if ( dbug > 1 ) {
-        std::cerr << "NetcdfOut::open: Trying to open " << fname <<  std::endl;
+        std::cerr << "NetcdfOut::newopen: Trying to open " << fname <<  std::endl;
      }
 
      
@@ -1660,12 +1686,480 @@ void NetcdfOut::open( std::string file, Parcel* p, unsigned int n )
      }
 
      if ( dbug > 1 ) {
-        std::cerr << "NetcdfOut::open: " << fname << " is opened." << std::endl;
+        std::cerr << "NetcdfOut::newopen: " << fname << " is opened." << std::endl;
      }
 
 
 }    
 
+
+void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
+{
+     int err;
+     std::string aname;
+     std::string val;
+     char *cval;
+     const char *attr_name;
+     const char *var_name;
+     std::string name;
+     nc_type attr_type;
+     size_t  attr_size;
+     int attr_id;
+     int var_id;
+     const char *aval;
+     nc_type var_type;
+     int var_ndims;
+     int var_dims[NC_MAX_VAR_DIMS];
+     int  var_natts;
+     time_t t;
+     int dims[2];
+     float fval;
+     double dval;
+     int ival;
+     const char* nanstr = "";
+     int vid;
+     size_t put_count;
+     size_t put_start;
+     ptrdiff_t put_stride;
+     char *xstamp;
+     struct tm *tm;
+     std::string *tst1;
+     ProcessGrp *pgrp;
+     std::string traj_start;
+     std::string my_traj_start;
+     bool i_am_root;
+     int ndimens;
+     int unlimdim_idx;
+     size_t ntimes;
+     int time_index;
+     size_t istart;
+     size_t icount;
+     double file_t0;
+     double file_t1;
+     double tt0;
+     size_t time_idx;
+     size_t file_pnum;
+     int dim_id;
+     int file_direction;
+     real badlon;
+     real badlat;
+     real badvert;
+     int vtype;
+
+     if ( is_open ) {
+        close();
+     }
+
+     if ( file != "" ) {
+        filename( file );
+     }
+
+     if ( dbug > 1 ) {
+        std::cerr << "NetcdfOut::reopen: Trying to open " << fname <<  std::endl;
+     }
+
+     
+     if ( p != NULLPTR ) {
+        init(p);
+     }
+
+     if ( n > 0 ) {
+        pnum = n;
+     }
+
+     i_am_root = is_root();
+     
+     if ( i_am_root ) {
+        err = nc_open( fname.c_str(), NC_WRITE, &ncid);     
+        if ( err != NC_NOERR ) {
+           std::cerr << "NetcdfOut::reopen: failed to open file: " << fname << std::endl;
+           throw(badNetcdfOpen(err));
+        }
+     }
+     
+     is_open = true;
+     
+     if ( i_am_root ) {
+
+        // read Contents global attribute
+        aname = "Contents";
+        attr_name = aname.c_str();
+        err = nc_inq_attid( ncid, NC_GLOBAL, attr_name, &attr_id );
+        if ( err == NC_NOERR ) {
+           err = nc_inq_att(ncid, NC_GLOBAL, attr_name, &attr_type, &attr_size );
+           if ( err != NC_NOERR ) {
+              throw(badNetcdfError(err));
+           }
+           if ( attr_type == NC_STRING && attr_size == 1 ) {
+              
+              err = nc_get_att_string( ncid, NC_GLOBAL, attr_name, &cval );
+              if ( err != NC_NOERR ) {
+                 throw(badNetcdfError(err));
+              }
+
+              hdr_contents.assign( cval );
+              
+              nc_free_string(1, &cval);
+     
+           }
+        }
+     
+        // leave the Creation_date attribute as-is
+
+        // read Contact global attribute
+        aname = "Contact";
+        attr_name = aname.c_str();
+        err = nc_inq_attid( ncid, NC_GLOBAL, attr_name, &attr_id );
+        if ( err == NC_NOERR ) {
+           err = nc_inq_att(ncid, NC_GLOBAL, attr_name, &attr_type, &attr_size );
+           if ( err != NC_NOERR ) {
+              throw(badNetcdfError(err));
+           }
+           if ( attr_type == NC_STRING && attr_size == 1 ) {
+              
+              err = nc_get_att_string( ncid, NC_GLOBAL, attr_name, &cval );
+              if ( err != NC_NOERR ) {
+                 throw(badNetcdfError(err));
+              }
+
+              hdr_contact.assign( cval );
+              
+              nc_free_string(1, &cval);
+     
+           }
+        }
+     
+
+        // read the base time global attribute
+        aname = "Trajectory_start";
+        attr_name = aname.c_str();
+        err = nc_inq_attid( ncid, NC_GLOBAL, attr_name, &attr_id );
+        if ( err == NC_NOERR ) {
+           err = nc_inq_att(ncid, NC_GLOBAL, attr_name, &attr_type, &attr_size );
+           if ( err != NC_NOERR ) {
+              throw(badNetcdfError(err));
+           }
+           if ( attr_type == NC_STRING && attr_size == 1 ) {
+              
+              err = nc_get_att_string( ncid, NC_GLOBAL, attr_name, &cval );
+              if ( err != NC_NOERR ) {
+                 throw(badNetcdfError(err));
+              }
+
+              traj_start.assign( cval );
+              
+              nc_free_string(1, &cval);
+     
+           }
+           // todo: handle the case where the timestamp is a char array
+        }
+        if ( (tstamp == "") && (met != NULLPTR) ) {
+           tstamp = met->time2Cal( t0 );
+        }
+        // get the trajectory direction and ensure we are working in the same direction
+        aname = "Trajectory_direction";
+        attr_name = aname.c_str();
+        err = nc_inq_attid( ncid, NC_GLOBAL, attr_name, &attr_id );
+        if ( err == NC_NOERR ) {
+           err = nc_inq_att(ncid, NC_GLOBAL, attr_name, &attr_type, &attr_size );
+           if ( err != NC_NOERR ) {
+              throw(badNetcdfError(err));
+           }
+           if ( attr_type == NC_STRING && attr_size == 1 ) {
+              
+              err = nc_get_att_string( ncid, NC_GLOBAL, attr_name, &cval );
+              if ( err != NC_NOERR ) {
+                 throw(badNetcdfError(err));
+              }
+
+              val.assign( cval );
+              nc_free_string(1, &cval);
+              
+              file_direction = 0;
+              if ( val == "fwd" ) {
+                 file_direction = 1;
+              } else if ( val == "bck" ) {
+                 file_direction = -1;           
+              }
+              
+              if ( dir != 0 ) {              
+                 if ( file_direction != dir ) {
+                     std::cerr << " reopened file's trajectory direction is not the same ours " << std::endl;
+                     throw(badNetcdfReOpenMismatch());
+                 }
+              } else {
+                 dir = file_direction;
+              }
+     
+           }
+        }
+     
+     
+     
+        // do the initial inquiries to get basic sizes and shapes
+        err = nc_inq(ncid, &ndimens, &nvars, &ngatts, &unlimdim_idx);
+        if ( err != NC_NOERR ) {
+           throw(badNetcdfError(err));
+        }
+        if ( dbug > 2 ) {
+           std::cerr << "NetcdfIn::reopen: initial inq: " << ndimens << ", " << nvars << ", " << ngatts << ", " << unlimdim_idx << std::endl;
+        }
+
+        // get the dimensional IDs for time and id
+        err = nc_inq_dimid( ncid, "time", &did_time);
+        if ( err == NC_EBADDIM ) {
+           std::cerr << " No 'time' dimension in file" << std::endl;
+           throw(badFileConventions());  
+        } else if ( err != NC_NOERR ) {
+           throw(badNetcdfError(err));
+        }     
+        if ( did_time != unlimdim_idx ) {
+           std::cerr << " reopened file's time dimension index is not the same as its unlimited dinmension index " << std::endl;
+           throw(badNetcdfReOpenMismatch());
+        }
+        err = nc_inq_dimlen( ncid, did_time, &ntimes );
+        if ( err != NC_NOERR ) {
+           throw(badNetcdfError(err));
+        }
+        if ( dbug > 10 ) {
+           std::cerr << "NetcdfIn::open: There are " << ntimes << " times" << std::endl;
+        }   
+     
+        err = nc_inq_dimid( ncid, "id", &did_id);
+        if ( err == NC_EBADDIM ) {
+           std::cerr << " No 'id' dimension in file" << std::endl;
+           throw(badFileConventions());  
+        } else if ( err != NC_NOERR ) {
+           throw(badNetcdfError(err));
+        }
+
+        // set up dimensions for the regular variables
+        dims[0] = did_time;
+        dims[1] = did_id;
+     
+
+
+        name = "time";
+        var_name = name.c_str();
+        err = nc_inq_varid( ncid, var_name, &vid_time );
+        if ( err == NC_ENOTVAR ) {
+           std::cerr << " No 'time' variable in file" << std::endl;
+           throw(badFileConventions());
+        } else if ( err != NC_NOERR ) {
+           throw(badNetcdfError(err));
+        }
+
+        err = nc_inq_var( ncid, vid_time, NULL, &var_type, &var_ndims, var_dims, &var_natts);
+        if ( err != NC_NOERR ) {
+           std::cerr << " 'time' variable has wrong type or wrong dimensions" << std::endl;
+           throw(badNetcdfError(err));
+        }
+        if ( dbug > 10 ) {
+           std::cerr << "NetcdfOut::reopen: time varid: " << vid_time
+                     << "; time type: " << var_type
+                     << "; time ndims: " << var_ndims
+                     << "; time dims[0]: " << var_dims[0] 
+                     << "; time natts: " << var_natts << std::endl;
+        }
+        if ( (var_type != NC_DOUBLE) || (var_ndims != 1) || (vid_time != var_dims[0]) ) {
+           std::cerr << " 'time' variable has wrong type or wrong dimensions" << std::endl;
+           throw(badFileConventions());
+        }
+
+        time_idx = 0;
+        icount = 1;
+        err = nc_get_vara_double( ncid, vid_time, &time_idx, &icount, &tt0 );
+        if ( err != NC_NOERR ) {
+           throw(badNetcdfError(err));
+        }
+        file_t0 = tconv( tt0 );
+        if ( dbug > 1 ) {
+           std::cerr << "NetcdfOut::reopen: 0th Parcel time is " << file_t0 << std::endl;
+        }
+        time_idx = ntimes - 1;
+        icount = 1;
+        err = nc_get_vara_double( ncid, vid_time, &time_idx, &icount, &tt0 );
+        if ( err != NC_NOERR ) {
+           throw(badNetcdfError(err));
+        }
+        file_t1 = tconv( tt0 );
+        if ( dbug > 1 ) {
+           std::cerr << "NetcdfOut::reopen: final Parcel time is " << file_t1 << std::endl;
+        }
+
+        // now check whether the starting time stamps match
+        my_traj_start = met->time2Cal( t0 + file_t0 );
+        if ( my_traj_start != traj_start ) {
+           std::cerr << "NetcdfOut::reopen: WARNING: reopened file's start time " << traj_start 
+           << " and the given start time " << my_traj_start << " do not match!" 
+           << " This could also be a symptom of the zero time of the former run not matching the current zaero time."
+           << std::endl;
+        }
+        // we could put a number of other time checks in here as well.
+     
+     
+        // now find out about parcels (mainly, how many there are)
+        name = "id";
+        var_name = name.c_str(); 
+        err = nc_inq_varid( ncid, var_name, &vid_id );
+        if ( err == NC_EBADDIM ) {
+           std::cerr << name << " variable does not exist" << std::endl;
+           throw(badFileConventions());
+        } else if ( err != NC_NOERR ) {
+           throw(badNetcdfError(err));
+        }
+        err = nc_inq_dimlen( ncid, vid_id, &file_pnum );
+        if ( err != NC_NOERR ) {
+           throw(badNetcdfError(err));
+        }
+        if ( dbug > 10 ) {
+           std::cerr << "NetcdfOut::reopen: There are " << file_pnum << " parcels" << std::endl;
+        }
+        if ( file_pnum != pnum ) {
+           std::cerr << " reopened file's number of parcels does not match ours " << std::endl;
+           throw(badNetcdfReOpenMismatch());
+        }
+
+        // start with the zeroeth parcel
+        ip = 0;   
+
+        // get longitude variable id
+        vid_lon = get_var_id( "lon", true, "", &vtyp_lon );
+        if ( dbug > 1 ) {
+           std::cerr << "NetcdfOut::reopen: Got the id for the 'lon' coordinate." <<  std::endl;
+        }
+        // get the bad-value flag for longitudes
+#ifdef USE_DOUBLE
+        err = nc_get_att_double( ncid, vid_lon, "missing_value", &badlon);
+#else
+        err = nc_get_att_float( ncid, vid_lon, "missing_value", &badlon);
+#endif 
+        if ( err != NC_NOERR ) {
+#ifdef USE_DOUBLE
+           err = nc_get_att_double( ncid, vid_lon, "_FillValue", &badlon);
+#else
+           err = nc_get_att_float( ncid, vid_lon, "_FillValue", &badlon);
+#endif      
+           if ( err != NC_NOERR ) {
+              badlon = badval;
+           }   
+        }
+        if ( (FINITE(badlon) || FINITE(badval)) && (badval != badlon ) ) {
+           std::cerr << " reopened file's longitude bad value does not match ours " << std::endl;
+           throw(badNetcdfReOpenMismatch());     
+        }
+
+        // get latitude variable id
+        vid_lat = get_var_id( "lat", true, "", &vtyp_lat );
+        if ( dbug > 1 ) {
+           std::cerr << "NetcdfOut::reopen: Got the id for the 'lat' coordinate." <<  std::endl;
+        }
+        // get the bad-value flag for latitudes
+#ifdef USE_DOUBLE
+        err = nc_get_att_double( ncid, vid_lat, "missing_value", &badlat);
+#else
+        err = nc_get_att_float( ncid, vid_lat, "missing_value", &badlat);
+#endif 
+        if ( err != NC_NOERR ) {
+#ifdef USE_DOUBLE
+           err = nc_get_att_double( ncid, vid_lat, "_FillValue", &badlat);
+#else
+           err = nc_get_att_float( ncid, vid_lat, "_FillValue", &badlat);
+#endif      
+           if ( err != NC_NOERR ) {
+              badlat = badval;
+           }   
+        }
+        if ( (FINITE(badlat) || FINITE(badval)) && (badval != badlat ) ) {
+           std::cerr << " reopened file's latitude bad value does not match ours " << std::endl;
+           throw(badNetcdfReOpenMismatch());     
+        }
+     
+        // get the vertical coordinate variable id
+        val = vcoord;
+        vid_z = get_var_id( vcoord, true, "vertical_coordinate", &vtyp_z );
+#ifdef USE_DOUBLE
+        err = nc_get_att_double( ncid, vid_z, "missing_value", &badvert);
+#else
+        err = nc_get_att_float( ncid, vid_z, "missing_value", &badvert);
+#endif 
+        if ( err != NC_NOERR ) {
+#ifdef USE_DOUBLE
+           err = nc_get_att_double( ncid, vid_z, "_FillValue", &badvert);
+#else
+           err = nc_get_att_float( ncid, vid_z, "_FillValue", &badvert);
+#endif  
+               
+           if ( err != NC_NOERR ) {
+              badvert = badval;
+           }
+        }    
+        if ( (FINITE(badvert) || FINITE(badval)) && (badval != badvert ) ) {
+           std::cerr << " reopened file's vertical coordinate " << vcoord << " bad value does not match ours " << std::endl;
+           throw(badNetcdfReOpenMismatch());     
+        }
+     
+        // try status
+        vid_status = get_var_id( "status", false, "", &vtyp_status );
+        if (  ((vid_status >= 0) && ( ! do_flags) )
+           || ((vid_status < 0) && (do_flags) ) ) {
+           std::cerr << " reopened file and our output do not match with respect to outputting status " << std::endl;
+           throw(badNetcdfReOpenMismatch());     
+        }
+           
+        // try flags
+        vid_flags = get_var_id( "flags", false, "", &vtyp_flags );
+        if (  ((vid_flags >= 0) && (! do_flags) )
+           || ((vid_flags < 0) && (do_flags) ) ) {
+           std::cerr << " reopened file and our output do not match with respect to outputting flags " << std::endl;
+           throw(badNetcdfReOpenMismatch());     
+        }
+     
+        // try tag
+        vid_tag = get_var_id( "tag", false, "", &vtyp_tag );
+        if (  ((vid_tag >= 0) && (! do_tag) )
+           || ((vid_tag < 0) && (do_tag) ) ) {
+           std::cerr << " reopened file and our output do not match with respect to outputting tag values " << std::endl;
+           throw(badNetcdfReOpenMismatch());     
+        }
+     
+        // try timestamp
+        vid_tstamp = get_var_id( "tstamp", false, "", &vtyp_tstamp );
+        if (  ((vid_tstamp >= 0) && (! do_tstamp) )
+           || ((vid_tstamp < 0) && (do_tstamp) ) ) {
+           std::cerr << " reopened file and our output do not match with respect to outputting tstamp values " << std::endl;
+           throw(badNetcdfReOpenMismatch());     
+        }
+     
+        // try met variables
+        for ( int i=0; i < other.size(); i++ ) {
+            //// define other variable
+            val = other[i];
+
+            vid = get_var_id( val, true, "", &vtype );
+            if ( vid >= 0 ) {
+            
+               // we should probably check the units, bad-value, etc. before proceeding.
+               // maybe someday....
+            
+               vid_other[i] = vid;
+               vtyp_other[i] = vtype;
+            } else {
+               std::cerr << " reopened file does not have the met field " << val  << std::endl;
+               throw(badNetcdfReOpenMismatch());     
+            }
+        }
+
+// test file's traj_start against our tstamp
+     
+     }     
+
+     if ( dbug > 1 ) {
+        std::cerr << "NetcdfOut::reopen: " << fname << " is opened." << std::endl;
+     }
+
+
+}    
 
 void NetcdfOut::close()
 {
@@ -1684,7 +2178,7 @@ void NetcdfOut::close()
         }
 
         is_open = false;
-
+        
         if ( dbug > 1 ) {
            std::cerr << "NetcdfOut::close: " << fname << " is closed." << std::endl;
         }
@@ -1703,6 +2197,136 @@ void NetcdfOut::close()
      }
      
 }
+
+
+int NetcdfOut::get_var_id( const std::string &varname, bool required, const std::string &flag, int*vtype )
+{
+     int result;
+     int err;
+     const char* c_var_name;
+     int var_id;
+     int var_type;
+     int var_ndims;
+     int nvars;
+     int natts;
+     int att_id;
+     int att_type;
+     size_t att_len;
+     char c_aname[NC_MAX_NAME + 1];
+     std::string aname;
+     char *c_att_val;
+     std::string att_val;
+     int var_dims[NC_MAX_VAR_DIMS];
+     std::string alt_vertname;
+     
+     result = -1;
+
+     if ( varname != "" ) {
+     
+         c_var_name = varname.c_str();
+         err = nc_inq_varid( ncid, c_var_name, &var_id );
+         if ( err == NC_NOERR ) {
+            result = var_id;
+         } else if ( err == NC_ENOTVAR ) {
+            if ( required ) {
+               std::cerr << varname << " is required but not present in this file " << std::endl;
+               throw(badFileConventions());
+            }
+         } else {
+            throw(badNetcdfError(err));
+         }
+     
+     }
+     
+     if ( (result == -1) && (flag != "") ) {
+        // no var ID yet
+        
+        // go through each variable in the file
+        err = nc_inq_nvars( ncid, &nvars );
+        if ( err != NC_NOERR ) {
+           throw(badNetcdfError(err));
+        }
+        
+        for ( var_id=0; var_id < nvars; var_id++ ) {
+             
+             // go through the atttributes
+             err = nc_inq_varnatts( ncid, var_id, &natts );
+             if ( err != NC_NOERR ) {
+                throw(badNetcdfError(err));
+             }
+             for ( att_id=0; att_id < natts; att_id++ ) {
+        
+                 err = nc_inq_attname( ncid, var_id, att_id, c_aname );
+                 if ( err != NC_NOERR ) {
+                    throw(badNetcdfError(err));
+                 }
+        
+                 err = nc_inq_att( ncid, var_id, c_aname, &att_type, &att_len );
+                 if ( err != NC_NOERR ) {
+                    throw(badNetcdfError(err));
+                 }
+                 
+                 aname.assign( c_aname );
+                 if ( aname == flag ) {
+                    // we fund the flag attribute in one of the variables
+                    
+                    // now check that it is set to "yes"
+                    if ( att_type == NC_STRING && att_len == 1 ) {
+                    
+                       err = nc_get_att_string( ncid, var_id, c_aname, &c_att_val );
+                       if ( err != NC_NOERR ) {
+                          throw(badNetcdfError(err));
+                       }
+                       att_val.assign( c_att_val );
+                       free(c_att_val);
+                       
+                       if ( att_val == "yes" ) {
+                          result = var_id;
+                          break;
+                       }
+                    
+                    }
+                    
+                 
+                 
+                 }
+                 
+        
+             }
+             
+             if ( result != -1 ) {
+                break;
+             }
+        }
+     }
+     
+     
+     // if we found the variable, then do a little anity checking
+     if ( result >= 0 ) {
+        err = nc_inq_var( ncid, result, NULL, &var_type, &var_ndims, var_dims, &natts);
+        if ( err != NC_NOERR ) {
+           throw(badNetcdfError(err));
+        }
+     
+        if ( var_ndims != 2 ) {
+           std::cerr << "variable " << varname << " has " << var_ndims << " dimensions instead of 2 " << std::endl;
+           throw(badFileConventions());
+        }
+        if ( ( var_dims[0] != did_time ) || ( var_dims[1] != did_id ) ) {
+           std::cerr << " variable " << varname 
+           << " has dimensions that do not match time and/or did_id" << std::endl;
+           throw(badFileConventions());        
+        }
+     
+        *vtype = var_type;
+     
+     }
+     
+     return result;
+
+}
+
+
 
 void NetcdfOut::writeout( double t, unsigned int n, real *lons, real *lats, real *zs, int *flags, int *statuses, double *tags, real **stuff )
 {

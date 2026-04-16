@@ -64,6 +64,12 @@ class NetcdfOut : public ParcelReporter {
       /// an exception for a badly-formatted format specification string
       class badNetcdfFormatSpec {};
       
+      /// An exception for when the input does not match the format
+      class badFileConventions {};
+
+      /// an exception for an re-opened file whose metadata is not compatible with that we were expecting
+      class badNetcdfReOpenMismatch {};
+      
    public:
 
       /// default constructor
@@ -122,8 +128,27 @@ class NetcdfOut : public ParcelReporter {
       */
       std::string& filename();
 
+      /// sets whether we are adding to an older netcdf output file
+      /*! This method sets an internal flag that indicates whether an existing
+          netcdf file is to be opened and appended to.
+          
+          The variable definitions of that file must match the definitions 
+          set for output here.
+          
+          \param res set to true to resume writing to an existing file, false otherwise
+           
+      */
+      void resuming( bool res=true );     
 
-
+      /// resturns whether we are adding to an older netcdf output file
+      /*! This method returns the internal flags that indicates whether an existing
+          netcdf file is to be opened and appended to.
+          
+          \return ture if the file is opened for appending, alfse if it is to be created fresh
+          
+      */
+      bool resuming();     
+          
 
       /// sets the vertical quantity to use
       /*! This method sets which variable in the file to use as the vertical coordinate
@@ -445,6 +470,12 @@ class NetcdfOut : public ParcelReporter {
       
       /// open a netcdf file for output
       /*! This method opens a netcdf file for input. 
+      
+          If the NetcdfOut object has been set with resuming(), then
+          an old file will be opened. Otherwise, a new file will be created,
+          even if a file with the same name already exists. That older
+         file will be overwritten.
+                
           Note that, ordinarily, the calling routine will not call open() directly
           but will simply starting calling apply() after calling any setup methods.
           the apply() methods will call open() if the file is not already open.
@@ -461,7 +492,8 @@ class NetcdfOut : public ParcelReporter {
     
     
       /// closes the netcdf file
-      /*! this method clsoes the netcdf file.
+      /*! This method closes the netcdf file.
+      
       */
       void close();
       
@@ -652,6 +684,9 @@ class NetcdfOut : public ParcelReporter {
       
       /// says whether the file has bene opened or not
       bool is_open;
+      
+      /// says whether we are re-opening an old file (true) or starting new (false)
+      bool restore;
       
       /// the vertical coordinate being used
       std::string vcoord;
@@ -851,6 +886,63 @@ class NetcdfOut : public ParcelReporter {
         
      */
      void tweakUnits();
+
+
+      /// retrieves the variable ID for a netcdf variable
+      /*! This method obtains the netcdf varibale ID, given 
+          the desitred variable name and a few other pieces of information.
+          
+          \param varname this is a reference to a string that contains the nameof the desired variable
+          \param required a boolean flag, set to true if the variable must be present in the file.
+                 If it is required but not present, then a badFileConventions error is thrown. 
+          \param flag A reference to a string that contains the name of an attribute. If the varname
+                      parameter is the empty string, and if flag is non-empty, then the variables
+                      are seatched for an attribute with this name, whose value is set to "yes".
+                      That variable's ID is then returned.
+          
+          \return the netcdf variable ID of the desired variable. If the value is -1 , then the variable
+                   was not found. 
+      */                               
+      int get_var_id( const std::string &varname, bool required, const std::string &flag, int *vtype = NULLPTR );
+
+      /// open a new netcdf file for output
+      /*! This method opens a new netcdf file for output. 
+      
+          Note that, ordinarily, the calling routine will not call open() directly
+          but will simply starting calling apply() after calling any setup methods.
+          the apply() methods will call open() if the file is not already open.
+   
+          \param file the name of the file to open. If the file already exists, it is replaced with a new version.
+          
+          \param p a pointer to a Parcel object that is typical of thsoe to be used.
+                   If given, then the meteorological data source for the NetcdfOout object is taken from this Parcel.
+          
+          \param n the number of parcels to be written
+                   
+      */
+      void newopen( std::string file="", Parcel* p=NULLPTR, unsigned int n=0 );    
+
+      /// reopen an old netcdf file for output
+      /*! This method opens a pre-existing netcdf file for output. 
+          This can be useful when continuing a previous trajectory run.
+      
+          Sanity checks are done to verify that the old file is
+          compartible with the output that we want to do.
+      
+          Note that, ordinarily, the calling routine will not call open() directly
+          but will simply starting calling apply() after calling any setup methods.
+          the apply() methods will call open() if the file is not already open.
+   
+          \param file the name of the file to open
+          
+          \param p a pointer to a Parcel object that is typical of thsoe to be used.
+                   If given, then the meteorological data source for the NetcdfOout object is taken from this Parcel.
+          
+          \param n the number of parcels to be written
+                   
+      */
+      void reopen( std::string file="", Parcel* p=NULLPTR, unsigned int n=0 );    
+
 };
 }
 
