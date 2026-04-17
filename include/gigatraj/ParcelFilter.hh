@@ -145,8 +145,8 @@ class ParcelFilter {
          temperature seen by any parcels. This method provides a way to query the
          filter for its results.
          
-         \return true if the query was able ot be satisfied, false if not. 
-         \param keyword a string containing the query. If 
+         \return true if the query was able to be satisfied, false if not. 
+         \param keyword a string containing the query. 
          \param value a pointer to an integer which will contain the value  
      */
      virtual bool query( const std::string keyword, int* value ) const;
@@ -158,7 +158,7 @@ class ParcelFilter {
          temperature seen by any parcels. This method provides a way to query the
          filter for its results.
          
-         \return true if the query was able ot be satisfied, false if not. 
+         \return true if the query was able to be satisfied, false if not. 
          \param keyword a string containing the query
          \param value a pointer to astring which will contain the value  
      */
@@ -171,7 +171,7 @@ class ParcelFilter {
          temperature seen by any parcels. This method provides a way to query the
          filter for its results.
          
-         \return true if the query was able ot be satisfied, false if not. 
+         \return true if the query was able to be satisfied, false if not. 
          \param keyword a string containing the query
          \param value a pointer to a float which will contain the value;   
      */
@@ -184,7 +184,7 @@ class ParcelFilter {
          temperature seen by any parcels. This method provides a way to query the
          filter for its results.
          
-         \return true if the query was able ot be satisfied, false if not. 
+         \return true if the query was able to be satisfied, false if not. 
          \param keyword a string containing the query
          \param value a pointer to a double which will contain the value  
      */
