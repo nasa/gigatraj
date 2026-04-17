@@ -107,5 +107,7 @@ pkginclude_HEADERS += \
                      StreamPrint.hh \
                     NetcdfIn.hh \
                     NetcdfOut.hh \
-                    Filter_Trop.hh
+                    Filter_Trop.hh \
+                    Filter_Null.hh \
+                    CountFlags.hh 
                      

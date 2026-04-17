@@ -169,6 +169,7 @@ TESTS += test_Parcel \
         test_StreamPrint \
         test_FlockSerial \
         test_SwarmSerial \
+        test_CountFlags \
         test_ChangeVertical
 check_PROGRAMS += test_Parcel \
         test_Filter_Null \
@@ -177,6 +178,7 @@ check_PROGRAMS += test_Parcel \
         test_StreamPrint \
         test_FlockSerial \
         test_SwarmSerial \
+        test_CountFlags \
         test_ChangeVertical
 EXTRA_DIST += parcels_test00.dat 
 
@@ -468,6 +470,9 @@ test_Filter_Null_DEPENDENCIES = ../lib/libgigatraj.a
 
 test_Filter_Trop_SOURCES = test_Filter_Trop.cc test_utils.cc test_utils.hh
 test_Filter_Trop_DEPENDENCIES = ../lib/libgigatraj.a
+
+test_CountFlags_SOURCES = test_CountFlags.cc test_utils.cc test_utils.hh
+test_CountFlags_DEPENDENCIES = ../lib/libgigatraj.a
 
 test_traj000_SOURCES = test_traj000.cc test_utils.cc test_utils.hh
 test_traj000_DEPENDENCIES = ../lib/libgigatraj.a
