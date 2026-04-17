@@ -1758,6 +1758,25 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
         std::cerr << "NetcdfOut::reopen: Trying to open " << fname <<  std::endl;
      }
 
+     i_am_root = is_root();
+     
+     if ( i_am_root ) {
+        err = nc_open( fname.c_str(), NC_WRITE, &ncid);     
+        if ( err != NC_NOERR ) {
+           if ( err == NC_ENOTFOUND ) {
+              std::cerr << "NetcdfOut::reopen: ***WARNING*** output netcdf file  " 
+              << fname << " does not exist. Opening as a new file. " << std::endl;
+              open( fname, p, n);
+              return;
+           } else {
+              std::cerr << "NetcdfOut::reopen: failed to open file: " << fname << std::endl;
+              throw(badNetcdfOpen(err));
+           }
+        }
+     }
+     
+     is_open = true;
+
      
      if ( p != NULLPTR ) {
         init(p);
@@ -1766,18 +1785,6 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
      if ( n > 0 ) {
         pnum = n;
      }
-
-     i_am_root = is_root();
-     
-     if ( i_am_root ) {
-        err = nc_open( fname.c_str(), NC_WRITE, &ncid);     
-        if ( err != NC_NOERR ) {
-           std::cerr << "NetcdfOut::reopen: failed to open file: " << fname << std::endl;
-           throw(badNetcdfOpen(err));
-        }
-     }
-     
-     is_open = true;
      
      if ( i_am_root ) {
 
