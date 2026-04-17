@@ -47,6 +47,7 @@ int main()
     Flock::iterator iter;
     SerialGrp *pgrp;
     int k;
+    ParcelFlag checkflag;
 
     // create a process group (serial, of course)
     pgrp = new SerialGrp();
@@ -71,6 +72,11 @@ int main()
        lon = k*10.0;
        lat = 80.0 - k*1.0;
        iter->setPos(lon,lat);
+       
+       // set a Flag on two of these
+       if ( k == 30 || k == 60 ) {
+           iter->setNoTrace();
+       }
        
        k++;
     }
@@ -108,18 +114,32 @@ int main()
        z = -999.0;
        iter->getPos(&lon,&lat);
        z = iter->getZ();
+       checkflag = iter->flags();
        if ( mismatch( lat, 80.0 - k*1.0 ) || mismatch( lon, k*10.0 ) 
        || mismatch( z, 300.0+k) ) {
           cerr << "Bad lon,lat,z retrieval on " << k << ":"
           << "(" << k*10.0 << ", " << 80-k*1.0 << ", " << 300.0+k << ") != "
           << "(" << lon << ", " << lat << ", " << z << ")" << endl;
           exit(1);
-       }   
+       } 
+       
+       if ( k == 30 || k == 60 ) {
+           if ( checkflag != NoTrace ) {
+              cerr << "Parcel flagset for " << k << " is " << checkflag 
+              << " instead of " << NoTrace << endl;
+              exit(1);
+           }
+       } else {
+           if ( checkflag != 0 ) {
+              cerr << "Parcel flagset for " << k << " is " << checkflag 
+              << " instead of " << 0 << endl;
+              exit(1);
+           }   
+       }
        
        
        k++;
     }
-
     // test [] syntax
     for ( k=0; k<flk->size(); k++ ) {
        lon = -999.0;
@@ -145,6 +165,14 @@ int main()
        exit(1);
     }
     
+    // check the count
+    int cnt;
+    cnt = flk->countFlags( NoTrace, false );
+    if ( cnt != 2 ) {
+       cerr << "Flock countFlags returned " << cnt << " instead of " << 2 << endl;
+       exit(1);
+    }
+
 
     delete flk;
 

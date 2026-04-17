@@ -56,6 +56,9 @@ int main(int argc, char* argv[])
     int n;
     int my_id;
     int nprocs;
+    ParcelFlag checkflag;
+    ParcelStatus checkstatus;
+    int cnt;
     
     n = 104;
     
@@ -100,7 +103,16 @@ int main(int argc, char* argv[])
         p.setZ(z);
         p.setPos(lon,lat);
 
+        // set a Flag on two of these
+        if ( k == 30 || k == 60 ) {
+           p.setNoTrace();
+           p.setHitBdy();
+        }
+
         swm->set(k, p);
+     
+        p.clearNoTrace();
+        p.clearHitBdy();
         
     }
     pgrp->sync();
@@ -115,6 +127,8 @@ int main(int argc, char* argv[])
        p = swm->get(k);
        p.getPos(&lon,&lat);
        z = p.getZ();
+       checkflag = p.flags();
+       checkstatus = p.status();
        if ( mismatch( lat, 80.0 - k*1.0 ) || mismatch( lon, k*10.0 ) 
        || mismatch( z, 300.0+k) ) {
           cerr << "A: Bad lon,lat,z retrieval on " << k << ":"
@@ -124,6 +138,29 @@ int main(int argc, char* argv[])
           exit(1);
        }   
     
+       if ( k == 30 || k == 60 ) {
+           if ( checkflag != NoTrace ) {
+              cerr << "Parcel flagset for " << k << " is " << checkflag 
+              << " instead of " << NoTrace << endl;
+              exit(1);
+           }
+           if ( checkstatus != HitBdy ) {
+              cerr << "Parcel status for " << k << " is " << checkstatus 
+              << " instead of " << HitBdy << endl;
+              exit(1);
+           }
+       } else {
+           if ( checkflag != 0 ) {
+              cerr << "Parcel flagset for " << k << " is " << checkflag 
+              << " instead of " << 0 << endl;
+              exit(1);
+           }   
+           if ( checkstatus != 0 ) {
+              cerr << "Parcel status for " << k << " is " << checkstatus 
+              << " instead of " << 0 << endl;
+              exit(1);
+           }   
+       }
     }
     pgrp->sync();
     
@@ -273,6 +310,22 @@ int main(int argc, char* argv[])
 
     pgrp->sync();
 
+    
+    // check the flags count
+    cnt = swm->countFlags( NoTrace, false );
+    if ( cnt != 2 ) {
+       cerr << "Swarm countFlags returned " << cnt << " instead of " << 2 << endl;
+       exit(1);
+    }
+    // check the status count
+    cnt = swm->countStatus( HitBdy, false );
+    if ( cnt != 2 ) {
+       cerr << "Swarm countStatus returned " << cnt << " instead of " << 2 << endl;
+       exit(1);
+    }
+
+    pgrp->sync();
+
 
     delete swm;
 
@@ -303,7 +356,16 @@ int main(int argc, char* argv[])
         p.setZ(z);
         p.setPos(lon,lat);
 
+        // set a Flag on two of these
+        if ( k == 30 || k == 60 ) {
+           p.setNoTrace();
+           p.setHitBdy();
+        }
+
         swm->set(k, p);
+        
+        p.clearNoTrace();
+        p.clearHitBdy();
         
     }
 
@@ -376,7 +438,22 @@ int main(int argc, char* argv[])
 
     //swm->dump();
 
+    // check the count
+    cnt = swm->countFlags( NoTrace, false );
+    if ( cnt != 2 ) {
+       cerr << "Swarm countFlags returned " << cnt << " instead of " << 2 << endl;
+       exit(1);
+    }
+    // check the status count
+    cnt = swm->countStatus( HitBdy, false );
+    if ( cnt != 2 ) {
+       cerr << "Swarm countStatus returned " << cnt << " instead of " << 2 << endl;
+       exit(1);
+    }
+
     delete swm;
+
+    pgrp->sync();    
 
 
     /* Shut down MPI */

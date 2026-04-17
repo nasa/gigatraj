@@ -324,7 +324,7 @@ class Swarm {
                Swarm::Iter object
 
                \param init which of the local processor's parcels to point to
-               \param flk the Flock for which this is an iterator
+               \param flk the Swarm for which this is an iterator
            */
            void set(int init, Swarm *flk);
            
@@ -466,7 +466,7 @@ class Swarm {
 
 
      /// returns the total number of parcels in the Swarm
-     /*! This method returns the total number of Parcle in the Swarm.
+     /*! This method returns the total number of Parcels in the Swarm.
 
          Note that this is the total number of all Parcels summed
          across all processors, not the number of Parcles handled by any 
@@ -490,7 +490,7 @@ class Swarm {
      */   
      void set( const int n, const Parcel& p, const int mode=0);
      
-     ///  returns a parcel in this Swarm
+     ///  returns a parcel from this Swarm
      /*! This method returns a pointer to a specific Parcel in the Swarm.
      
           \param n the index of the parcel to be replaced.  (This is relative
@@ -510,7 +510,7 @@ class Swarm {
      */
      Parcel* parcel( const int n, const int mode=0 ) const;
      
-     /// returns a parcel in this Swarm 
+     /// returns a parcel from this Swarm 
      /*! This method returns a reference to a specific Parcel in the Swarm.
          It exists for convenience only, and merely calls the parcel() method.
      
@@ -572,6 +572,31 @@ class Swarm {
      */
      int advance( double dt );
      
+     /// count the number of Parcels with one or more ParcelFlag values set. 
+     /*! This methods counts the number of parcels in the Swarm 
+         whose flags settings match a query.
+      
+         \param flgs a bitwise ORing of possible ParcelFlag settings.
+         \param negate set to true if a count is desired of the Parcels whose flags are NOT set
+         
+         \return the count.
+         
+     */
+     int countFlags( ParcelFlag flgs=0, bool negate=false );
+     
+     /// count the number of Parcels with one or more ParcelStatus values set. 
+     /*! This methods counts the number of parcels in the Swarm 
+         whose status settings match a query.
+      
+         \param stat a bitwise ORing of possible ParcelStatus settings.
+         \param negate set to true if a count is desired of the Parcels whose status settings are NOT set
+         
+         \return the count.
+         
+     */
+     int countStatus( ParcelStatus stat=0, bool negate=false );
+     
+     
      
      /// synchronizes the Swarm's processors
      /*! This method synchronizes the Swarm's processors.
@@ -623,7 +648,7 @@ class Swarm {
      
      /// holds the processor groups for this Swarm
      /*!
-         As noted above, the prgoup is split into multiple processor
+         As noted above, the pgroup is split into multiple processor
          groups. This vector holds the objects for those (sub)groups.
      */
      std::vector<ProcessGrp*> subgroups;

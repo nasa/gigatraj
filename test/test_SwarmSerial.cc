@@ -47,6 +47,9 @@ int main()
     Swarm::iterator iter;
     SerialGrp *pgrp;
     int k;
+    ParcelFlag checkflag;
+    ParcelStatus checkstatus;
+    int cnt;
 
     // create a process group (serial, of course)
     pgrp = new SerialGrp();
@@ -71,6 +74,12 @@ int main()
        lon = k*10.0;
        lat = 80.0 - k*1.0;
        iter->setPos(lon,lat);
+
+        // set a Flag on two of these
+        if ( k == 30 || k == 60 ) {
+           iter->setNoTrace();
+           iter->setHitBdy();
+        }
        
        k++;
     }
@@ -108,6 +117,8 @@ int main()
        z = -999.0;
        iter->getPos(&lon,&lat);
        z = iter->getZ();
+       checkflag = iter->flags();
+       checkstatus = iter->status();
        if ( mismatch( lat, 80.0 - k*1.0 ) || mismatch( lon, k*10.0 ) 
        || mismatch( z, 300.0+k) ) {
           cerr << "Bad lon,lat,z retrieval on " << k << ":"
@@ -115,6 +126,30 @@ int main()
           << "(" << lon << ", " << lat << ", " << z << ")" << endl;
           exit(1);
        }   
+    
+       if ( k == 30 || k == 60 ) {
+           if ( checkflag != NoTrace ) {
+              cerr << "Parcel flagset for " << k << " is " << checkflag 
+              << " instead of " << NoTrace << endl;
+              exit(1);
+           }
+           if ( checkstatus != HitBdy ) {
+              cerr << "Parcel status for " << k << " is " << checkstatus 
+              << " instead of " << HitBdy << endl;
+              exit(1);
+           }
+       } else {
+           if ( checkflag != 0 ) {
+              cerr << "Parcel flagset for " << k << " is " << checkflag 
+              << " instead of " << 0 << endl;
+              exit(1);
+           }   
+           if ( checkstatus != 0 ) {
+              cerr << "Parcel status for " << k << " is " << checkstatus 
+              << " instead of " << 0 << endl;
+              exit(1);
+           }   
+       }
        
        
        k++;
@@ -145,6 +180,19 @@ int main()
        exit(1);
     }
     
+    
+    // check the flags count
+    cnt = swm->countFlags( NoTrace, false );
+    if ( cnt != 2 ) {
+       cerr << "Swarm countFlags returned " << cnt << " instead of " << 2 << endl;
+       exit(1);
+    }
+    // check the status count
+    cnt = swm->countStatus( HitBdy, false );
+    if ( cnt != 2 ) {
+       cerr << "Swarm countStatus returned " << cnt << " instead of " << 2 << endl;
+       exit(1);
+    }
 
     delete swm;
 

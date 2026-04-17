@@ -1260,7 +1260,7 @@ Parcel* Swarm::parcel( int n, int flag ) const
    }
    
    // sanity-check the index
-   if ( n < 0 | n > num_parcels_total ) {
+   if ( n < 0 | n >= num_parcels_total ) {
       throw ( Swarm::badparcelindex() );
    }
 
@@ -1618,6 +1618,188 @@ int Swarm::advance( double dt )
     
     return 0;
 }
+
+int Swarm::countFlags( ParcelFlag flgs, bool negate )
+{
+    int result;
+    int local_result;
+    int remote_result;
+    bool i_am_root;
+    int i;
+    ParcelFlag mask;
+    int my_groot;
+    int my_gid;
+    int my_gn;
+ 
+    result = 0;
+    
+ 
+    i_am_root = is_root();
+    
+    // first, take a local count based on our own parcels
+    // (met processors can do this too; their local_result will be 0)
+    local_result = 0;    
+    if ( my_num_parcels > 0 ) {
+              
+       for ( i = 0; i < my_num_parcels; i++ ) {      
+           if ( flagsets[i] & flgs ) {
+              local_result ++;
+           }
+       
+       }
+
+    }
+    
+    // now we have to sum these local results over all processors
+    // in this Swarm's group.
+    
+    my_groot = pgroup->root_id();
+    my_gid = pgroup->id();
+    my_gn = pgroup->size();
+    
+    //std::cerr << "I am processor " << my_gid;
+    //if ( is_met ) {
+    //   std::cerr << " [MET] ";
+    //} else {
+    //   std::cerr << " [TRACING] ";    
+    //}
+    //if ( i_am_root ) {
+    //   std::cerr << "[ROOT] ";
+    //}
+    //std::cerr << ", and my local count is " << local_result<< std::endl;    
+ 
+    
+    // now the root processor queries the other processor
+    // for their local results, which it then totals.
+    sync();   
+    if ( i_am_root ) {       
+       for ( i = 0; i < my_gn; i++ ) {
+           if ( i == my_groot ) {
+              //std::cerr << "I am processor " << my_gid << "<" << i  << ">, adding my local result to the total " << std::endl;    
+              result = result + local_result;  
+           } else {
+              //std::cerr << "I am processor " << my_gid << "<" << i  << ">, receiving a remote result from " << i << std::endl;    
+              pgroup->receive_ints( i, 1, &remote_result, 44 );
+              result = result + remote_result;
+           }
+       }
+       
+    } else {
+           //std::cerr << "I am processor " << my_gid << ", sending local result to " << my_groot << std::endl;    
+           pgroup->send_ints( my_groot, 1, &local_result, 44 );
+    }
+
+    // now the root processor send the final tally to the other processors
+    if ( i_am_root ) {       
+       for ( i = 0; i < my_gn; i++ ) {
+           if ( i != my_groot ) {
+              //std::cerr << "I am processor " << my_gid << ", sending final result to " << i << std::endl;    
+              pgroup->send_ints( i, 1, &result, 45 );
+           }
+       }
+       
+    } else {
+           //std::cerr << "I am processor " << my_gid << ", receiving final result from " << my_groot << std::endl;    
+           pgroup->receive_ints( my_groot, 1, &result, 45 );
+    }
+    
+    if ( negate) {
+       result = num_parcels_total - result;
+    }
+
+    return result;
+}
+
+int Swarm::countStatus( ParcelStatus stat, bool negate )
+{
+    int result;    
+    int local_result;
+    int remote_result;
+    bool i_am_root;
+    int i;
+    ParcelStatus mask;
+    int my_groot;
+    int my_gid;
+    int my_gn;
+ 
+    result = 0;
+     
+    i_am_root = is_root();
+    
+    // first, take a local count based on our own parcels
+    // (met processors can do this too; their local_result will be 0)
+    local_result = 0;    
+    if ( my_num_parcels > 0 ) {
+              
+       for ( i = 0; i < my_num_parcels; i++ ) {      
+           if (statuses[i] & stat ) {
+              local_result ++;
+           }
+       
+       }
+
+    }
+    
+    // now we have to sum these local results over all processors
+    // in this Swarm's group.
+    
+    my_groot = pgroup->root_id();
+    my_gid = pgroup->id();
+    my_gn = pgroup->size();
+    
+    //std::cerr << "I am processor " << my_gid;
+    //if ( is_met ) {
+    //   std::cerr << " [MET] ";
+    //} else {
+    //   std::cerr << " [TRACING] ";    
+    //}
+    //if ( i_am_root ) {
+    //   std::cerr << "[ROOT] ";
+    //}
+    //std::cerr << ", and my local count is " << local_result<< std::endl;    
+ 
+    
+    // now the root processor queries the other processor
+    // for their local results, which it then totals.
+    sync();   
+    if ( i_am_root ) {       
+       for ( i = 0; i < my_gn; i++ ) {
+           if ( i == my_groot ) {
+              //std::cerr << "I am processor " << my_gid << "<" << i  << ">, adding my local result to the total " << std::endl;    
+              result = result + local_result;  
+           } else {
+              //std::cerr << "I am processor " << my_gid << "<" << i  << ">, receiving a remote result from " << i << std::endl;    
+              pgroup->receive_ints( i, 1, &remote_result, 54 );
+              result = result + remote_result;
+           }
+       }
+       
+    } else {
+           //std::cerr << "I am processor " << my_gid << ", sending local result to " << my_groot << std::endl;    
+           pgroup->send_ints( my_groot, 1, &local_result, 54 );
+    }
+
+    // now the root processor send the final tally to the other processors
+    if ( i_am_root ) {       
+       for ( i = 0; i < my_gn; i++ ) {
+           if ( i != my_groot ) {
+              //std::cerr << "I am processor " << my_gid << ", sending final result to " << i << std::endl;    
+              pgroup->send_ints( i, 1, &result, 55 );
+           }
+       }
+       
+    } else {
+           //std::cerr << "I am processor " << my_gid << ", receiving final result from " << my_groot << std::endl;    
+           pgroup->receive_ints( my_groot, 1, &result, 55 );
+    }
+    
+    if ( negate) {
+       result = num_parcels_total - result;
+    }
+
+    return result;
+}
+
 
 void Swarm::sync()
 {

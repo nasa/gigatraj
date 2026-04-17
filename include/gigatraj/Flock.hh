@@ -151,6 +151,7 @@ class Flock {
      */
      ~Flock();
 
+
      /// returns whether the current processor is the root processor
      /*! This method determines whether the current processor 
          is the root processor for this flock. In a multi-processing environment,
@@ -445,7 +446,7 @@ class Flock {
 
 
      /// returns the total number of parcels in the flock
-     /*! This method returns the total number of Parcle in the Flock.
+     /*! This method returns the total number of Parcels in the Flock.
 
          Note that this is the total number of all Parcels summed
          across all processors, not the number of Parcles handled by any 
@@ -469,7 +470,7 @@ class Flock {
      */   
      void set( const int n, const Parcel& p, const int mode=0);
      
-     ///  returns a parcel in this Flock
+     ///  returns a parcel from this Flock
      /*! This method returns a pointer to a specific Parcel in the Flock.
      
           \param n the index of the parcel to be replaced.  (This is relative
@@ -489,7 +490,7 @@ class Flock {
      */
      Parcel* parcel( const int n, const int mode=0 ) const;
      
-     /// returns a parcel in this Flock 
+     /// returns a parcel from this Flock 
      /*! This method returns a reference to a specific Parcel in the Flock.
          It exists for convenience only, and merely calls the parcel() method.
      
@@ -550,6 +551,31 @@ class Flock {
      */
      int advance( double dt );
      
+     /// count the number of Parcels with one or more ParcelFlag values set. 
+     /*! This methods counts the number of parcels in the Flock 
+         whose flags settings match a query.
+      
+         \param flgs a bitwise ORing of possible ParcelFlag settings.
+         \param negate set to true if a count is desired of the Parcels whose flags are NOT set
+         
+         \return the count.
+         
+     */
+     int countFlags( ParcelFlag flgs=0, bool negate=false );
+     
+     /// count the number of Parcels with one or more ParcelStatus values set. 
+     /*! This methods counts the number of parcels in the Flock 
+         whose status settings match a query.
+      
+         \param stat a bitwise ORing of possible ParcelStatus settings.
+         \param negate set to true if a count is desired of the Parcels whose status settings are NOT set
+         
+         \return the count.
+         
+     */
+     int countStatus( ParcelStatus stat=0, bool negate=false );
+     
+     
      
      /// synchronizes the Flock's processors
      /*! This method synchronizes the Flock's processors.
@@ -597,7 +623,7 @@ class Flock {
      
      /// holds the processor groups for this flock
      /*!
-         As noted above, the prgoup is split into multiple processor
+         As noted above, the pgroup is split into multiple processor
          groups. This vector holds the objects for those (sub)groups.
      */
      std::vector<ProcessGrp*> subgroups;
@@ -641,6 +667,7 @@ class Flock {
          the current local processor.
      */
      int my_parcel_start;
+
      /// the number of parcels handled by this process
      /*!
         This holds the number of this Flock's Parcels that are handled by the
@@ -692,7 +719,7 @@ class Flock {
      
      /// universal constructor routine
      /*!
-        This is an internal method used by all the constructors to initialized the Flock.
+        This is an internal method used by all the constructors to initialize the Flock.
      */
      void setup( const Parcel &p, ProcessGrp* pgrp, int n, int r);
 
