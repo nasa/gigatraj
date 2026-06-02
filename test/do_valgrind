@@ -61,6 +61,12 @@ test_GridLatLonFieldSfc
 test_GridLatLonField3D
 test_GridLatLonFieldSfc_serial
 test_GridLatLonField3D_serial
+test_GridFieldDim
+test_GridFieldDimLon
+test_GridFieldDimLon_serial
+test_GridFieldDim_serial
+test_GridFieldProfile
+test_GridFieldProfile_serial
 test_LinearVinterp
 test_LogLinearVinterp
 test_BilinearHinterp
@@ -78,7 +84,6 @@ test_MetSBRot
 test_MetSBRot_serial
 test_MetGridSBRot
 test_MetGridSBRot_serial
-test_MetMERRA
 test_MetMERRA2
 test_MetGEOSfpFcast
 test_MetGEOSfpAssim
@@ -91,8 +96,11 @@ test_StreamPrint
 test_FlockSerial
 test_SwarmSerial
 test_ChangeVertical
-test_NetcdfIn
 test_NetcdfOut
+test_Filter_Null
+test_Filter_Trop
+test_CountFlags
+test_NetcdfIn
 test_PGenRep
 test_PGenGrid
 test_PGenRnd
@@ -144,28 +152,43 @@ do
 
    TSTCC="${TSTPROG}.cc"
    if [ ! -f "${TSTCC}" ] ; then
-      TSTCC="${TST}Serial.cc"
+   
+      GotSrc="N"
+      for STag in Serial _serial
+      do
       
-      if echo "${TSTCC}" | fgrep 'Serial.cc' > /dev/null ; then
-         # strip off the "Serial"
-         TSTCC=`echo "${TSTCC}" | sed -e 's/_\{0,1\}Serial\.cc/.cc/'`
-      fi
-      
+          #TSTCC="${TST}${STag}.cc"
+          TSTCC="${TSTPROG}.cc"
+
+#echo "checking for tentative source <<${TSTCC}>>"      
+          if echo "${TSTCC}" | fgrep "${STag}.cc" > /dev/null ; then
+             # strip off the STag
+             TSTCC=`echo "${TSTCC}" | sed -e 's/_\{0,1\}'"${STag}"'\.cc/.cc/'`
+             if [ -s "${TSTCC}" ] ; then
+#echo "Found Source ${TSTCC}" 
+                GotSrc="Y"
+                break
+             fi
+          fi
+       done
+         
+   else
+       GotSrc="Y"
    fi
    echo "=== ${TSTCC} -> ${TSTPROG}"
 
-      if [ "x${COMPILE}" = "xY" ] ; then
-         if [ -s "${TSTCC}" ] ; then
-               touch ${TSTCC} && make ${TSTPROG} >/dev/null 2>&1
-               if [ $? != 0 ] ; then
-                  echo "${TST} Compile failed"
-                  exit 1
-               fi
-         else
-            echo "nothing to compile" 
-            continue
-         fi
+   if [ "x${COMPILE}" = "xY" ] ; then
+      if [ "x${GotSrc}" = "xY" ] ; then
+            touch ${TSTCC} && make ${TSTPROG} >/dev/null 2>&1
+            if [ $? != 0 ] ; then
+               echo "${TST} Compile failed"
+               exit 1
+            fi
+      else
+         echo "nothing to compile" 
+         continue
       fi
+   fi
 
 
    LOG="valgrind_${TST}.log"
@@ -194,7 +217,7 @@ do
        
           # How many times was valgrid run from the program?
           # This will be 1 for a single compiled executable,
-          # but it moight be more than 1 for a shell script that calls executables.
+          # but it might be more than 1 for a shell script that calls executables.
           NR=`fgrep -c 'Memcheck, a memory error detector' "${LOG}" `
        
          # fgrep 'definitely lost' valgrind_*.log
@@ -203,7 +226,7 @@ do
           if [ ${NOK1} -eq ${NR} ] ; then
              OK1=""
           fi
-          OK2="unfreed heap bocks;"
+          OK2="unfreed heap blocks;"
           NOK2=`fgrep -c 'All heap blocks were freed -- no leaks are possible' "${LOG}" `
           if [ ${NOK2} -eq ${NR} ] ; then
              OK2=""
@@ -213,7 +236,15 @@ do
           if [ ${NOK3} -eq ${NR} ] ; then
              OK3=""
           fi
+          NOK3=`fgrep -c 'FILE DESCRIPTORS: 3 open (3 inherited) at exit.' "${LOG}"`
+          if [ ${NOK3} -eq ${NR} ] ; then
+             OK3=""
+          fi
 
+#echo "OK1=${OK1}"
+#echo "OK2=${OK2}"
+#echo "OK3=${OK3}"
+#echo "RMLOG=${RMLOG}"
 
           if [ "x${OK1}" = "x" -a "x${OK3}" = "x" ] ; then
              if [ ${STATUS} = 0 ] ; then
@@ -244,6 +275,7 @@ do
    else
       echo "[skipped]"
    fi
+   
 done
 
 
