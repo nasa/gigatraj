@@ -382,7 +382,8 @@ void IntegRK4a :: go( int n, real *lons, real *lats, real *zs, int *flags, doubl
            yhold[i] = yhold[i] + 2.0*dlat2;
            zhold[i] = zhold[i] + 2.0*dz2;
            
-           tmpz =  pzs[ii] + dz2/2.0;
+           //tmpz =  zs[ii] + dz2/2.0;
+           tmpz =  pzs[i] + dz2/2.0;
         } else {
            dlon2 = RNAN(nanstr);
            dlat2 = RNAN(nanstr);
