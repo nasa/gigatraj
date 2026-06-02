@@ -289,6 +289,7 @@ int main()
        cerr << "Bad trop z value: " << tropz << " vs. " << val << endl;
        exit(1);  
     } 
+
     real tropp = 205.002; //from local GSFC ACD IDL wmo_trop() routine
     val = metsrc->getData( "tropp", 0.0, 0.0, 45.0, 0.0 );
     if ( mismatch(tropp, val, 1.5) ) {
@@ -296,9 +297,9 @@ int main()
        exit(1);  
     } 
     
-    
-    // tropopause
-    
+
+    //------------------------------------------------------------------
+
 
     //=============  time interpolation (testing caching)
     metsrc->set_period(3.5);
