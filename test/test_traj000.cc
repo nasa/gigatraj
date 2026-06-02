@@ -82,6 +82,7 @@ int main()
     //flat = olat;
     //e.deltaxy( &flon, &flat, 40.0, 0.0, duration/1000.0, -1 );
     flon = 40.0 * ( time*86400.0) /1000.0 /(2.0*PI*e.radius())*360.0;
+    flat = lat;
     while ( flon > 180.0 ) 
     {
        flon -= 360.0;
