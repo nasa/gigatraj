@@ -273,6 +273,7 @@ Flock* PGenRnd :: create_Flock(const Parcel& p, int n
      Flock::iterator ip;         
      real lon,lat,z;
      int status = 0;
+     real rno;
 
      if ( n <= 0 ) {
         throw (ParcelGenerator :: badparcelcount());
@@ -292,7 +293,8 @@ Flock* PGenRnd :: create_Flock(const Parcel& p, int n
             try {
                // generate a random position
                lon = rnd.uniform(lon0, lon1);
-               lat = ASIN( rnd.uniform(slat0, slat1) ) /RCONV;
+               rno = rnd.uniform(slat0, slat1);
+               lat = ASIN( rno ) /RCONV;
                //lon = rnd.uniform(0.0, 359.9999);
                //lat = ASIN( rnd.uniform(-1.0, 1.0) ) /RCONV;
                // load the parcel location into the parcel
