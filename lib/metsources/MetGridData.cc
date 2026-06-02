@@ -28,7 +28,7 @@ using namespace gigatraj;
 MetGridData::MetGridData() : MetData() 
 {
       vWindStuff vw;
-            
+
       vquant = "none";
       vuu = "N/A";
       vMKSscale = 1.0;
@@ -97,6 +97,8 @@ MetGridData::~MetGridData()
      flush_cache();
 
      // get rid of the (empty) wind caches
+     // that were just now created by flush_cache()
+     // to replace the caches it deleted. 
      delete us;
      delete vs;
      delete ws;
@@ -163,9 +165,10 @@ void MetGridData::assign( const MetGridData& src )
 
       flush_cache();
       
-      us = new MetCache3D(wind_ew_name, maxsnaps);
-      vs = new MetCache3D(wind_ns_name, maxsnaps);
-      ws = new MetCache3D(wind_vert_name, maxsnaps);
+      // flush_cache() already does this
+      //us = new MetCache3D(wind_ew_name, maxsnaps);
+      //vs = new MetCache3D(wind_ns_name, maxsnaps);
+      //ws = new MetCache3D(wind_vert_name, maxsnaps);
       
       if ( src.diskcachedir != NULLPTR ) {
          if ( diskcachedir == NULLPTR ) {
@@ -1122,7 +1125,7 @@ GridFieldSfc* MetGridData::new_mgmtGridSfc( const std::string& quantity, const s
           if ( dbug >= 1 ) {
             std::cerr << "MetGridData::new_mgmtGridSfc:  (met client) grid created and received metadata from met processor" << std::endl;
           }    
-          // but we do want to save this in memeory cache
+          // but we do want to save this in memory cache
           if ( grid != NULLPTR ) {
              // add it to the in-memory cache
              if ( dbug >= 1 ) {

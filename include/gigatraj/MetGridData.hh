@@ -1326,7 +1326,6 @@ class MetGridData : public MetData {
       FilePath* diskcachedir;
       /// flag: are we caching?
       bool diskcaching;
-      
 
 };
 }
