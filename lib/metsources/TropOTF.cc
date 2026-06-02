@@ -574,7 +574,8 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
     } 
 
     // the input quantities must be correct
-    if ( t.quantity() != tname || alts_arg_is == -1 ) {
+//    if ( t.quantity() != tname || alts_arg_is == -1 ) {
+    if ( t.quantity() != tname ) {
        throw (badprofile());
     }  
     // and the two input grids must be compatible
@@ -596,8 +597,6 @@ GridFieldSfc* TropOTF::wmo( const GridField3D& t, const GridField3D& alt, int fl
     tbad = t.fillval(); 
     abad = alt.fillval();
 
-int cnt;
-cnt = 0;
     // for each horizontal gridpoint...
     for (prof=t.profileBegin(), aprof=alt.profileBegin(), pnt=tropsfc->begin(); 
          prof!=t.profileEnd(); 
@@ -618,9 +617,6 @@ cnt = 0;
         j = 0;
         
         // convert t to SI units, assembling vectors of t and alt with no bad points
-if ( cnt == 51840 ){
-   value = 0.0;
-}   
         
         for ( int i=0; i<n; i++ ) {
             // current values at this level
@@ -680,9 +676,6 @@ if ( cnt == 51840 ){
         }
 
         // find the trop
-if ( cnt == 51840 ){
-   value = 0.0;
-}   
         value = wmo( dat, alts, debug ); 
         
         if ( FINITE(value) ) {
@@ -732,15 +725,14 @@ if ( cnt == 51840 ){
         
         delete tp;
         delete ap;
-cnt++;
 
     }
-    if ( alts_arg_is == 1 ) {
-       delete alts3d;
-       tmp2d = tropsfc;
-       tropsfc = palt.clac( *tmp2d );
-       delete tmp2d;
-    }   
+//    if ( alts_arg_is == 1 ) {
+//       delete alts3d;
+//       tmp2d = tropsfc;
+//       tropsfc = palt.clac( *tmp2d );
+//       delete tmp2d;
+//    }   
 
     if ( flags & OTF_MKS ) {
        switch (vcoord) {
