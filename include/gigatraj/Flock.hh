@@ -99,6 +99,18 @@ class Flock {
      /*! This is a Flock constructor that assigns N parcels. Note: this will result
          in a Flock that uses the SerialGrp class to simulate/bypass parallel
          processing, and the Parcel class as its parcel.
+         
+         A serial processing process group will automatically be assigned to the Flock.
+
+         Note that the meteorological data source shared by all the parcels
+         will have its process group replaced by a process (sub)group that is
+         associated with this Flock. The original process group will be
+         remembered and restored when this Flock is destroyed. In this way, PGroups
+         are managed automatically in most common use cases. But when using multiple
+         Parcel containers simultaneously, pgroups must be managed carefully with the
+         getPGroup(), setPGroup(), rememberPGroup(), and restorePGroup() methods.  
+      
+         
          \param n  the number of parcels to put into the flock initially. 
      */
      Flock( int n=0 );
@@ -108,6 +120,15 @@ class Flock {
       potentially several processors, using a ProcessGrp object.
       Note: this will result in a Flock that uses the Parcel class 
       as its parcel.
+      
+         Note that the meteorological data source shared by all the parcels
+         will have its process group replaced by a process (sub)group that is
+         associated with this Flock. The original process group will be
+         remembered and restored when this Flock is destroyed. In this way, PGroups
+         are managed automatically in most common use cases. But when using multiple
+         Parcel containers simultaneously, pgroups must be managed carefully with the
+         getPGroup(), setPGroup(), rememberPGroup(), and restorePGroup() methods.  
+      
          \param pgrp a process-group object that is used for parallel processing
          \param n    the number of parcels to put into the flock initially. Note that 
                      this is used only by the root processor in the process-group; all 
@@ -123,6 +144,18 @@ class Flock {
      /*! This Flock constructor assigns N parcels by copying a user-supplied Parcel object. 
          Note: this will result in a Flock that uses the SerialGrp class to simulate/bypass parallel
          processing.
+         
+         A serial processing process group will automatically be assigned to the Flock.
+
+         Note that the meteorological data source shared by all the parcels
+         will have its process group replaced by a process (sub)group that is
+         associated with this Flock. The original process group will be
+         remembered and restored when this Flock is destroyed. In this way, PGroups
+         are managed automatically in most common use cases. But when using multiple
+         Parcel containers simultaneously, pgroups must be managed carefully with the
+         getPGroup(), setPGroup(), rememberPGroup(), and restorePGroup() methods.  
+
+
          \param p the input parcel object with whose copies this Flock will be populated
          \param n  the number of parcels to put into the flock initially
      */
@@ -132,6 +165,16 @@ class Flock {
      /*! This flock constructor assigns N parcels by copying a user-supplied Parcel object.  
          It distributes the N parcels among
          potentially several processors, using a ProcessGrp object.
+
+         Note that the meteorological data source shared by all the parcels
+         will have its process group replaced by a process (sub)group that is
+         associated with this Flock. The original process group will be
+         remembered and restored when this Flock is destroyed. In this way, PGroups
+         are managed automatically in most common use cases. But when using multiple
+         Parcel containers simultaneously, pgroups must be managed carefully with the
+         getPGroup(), setPGroup(), rememberPGroup(), and restorePGroup() methods.  
+
+
          \param p the input parcel object with whose copies this Flock will be populated
          \param pgrp a process-group object that is used for parallel processing
          \param n  the number of parcels to put into the flock initially. Note that 
@@ -147,7 +190,11 @@ class Flock {
 
      /// The destructor
      /*! 
-        This is the destructor method for Flock objects
+        This is the destructor method for Flock objects.
+        
+        (This has the side effect of restoring the process group
+        used by the meteorological data source shared by all Parcels.)
+        
      */
      ~Flock();
 
@@ -189,6 +236,128 @@ class Flock {
      {
          return pgroup->type();
      }
+
+     /// returns the met processing (sub)group that should be used by this Flock instance 
+     /*!  This method returns the process (sub)group that will be used by 
+          the meteorological data source as this instance of the Flock does its work.
+
+          When a Flock is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Flock. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Flock.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+
+           \param id a pointer to an integer to hold the ID of a processor
+                  within the processor group that is dedicated to 
+                  managing meteorological data. 
+           
+           \return a pointer to the ProcessGrp to which the processor belongs       
+      */
+     ProcessGrp* getPGroup( int* id = NULLPTR ) const;
+     
+     /// sets the met processing group that should be used by this Flock instance 
+     /*! This method sets the process group that will be used by 
+          the meteorological data source as this instance of the Flock does its work.
+
+          When a Flock is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Flock. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Flock.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+
+        \param pg a pointer to the process group to be used
+        \param id the processor ID within process group pg, that indicates a dedicated meteorological data processor.  
+                   An ID of -1 indicates that no dedicated met processor is to be used.
+  
+     */
+     void setPGroup( ProcessGrp *pg, int id = -1 );
+     
+     /// returns the met processing group that should be restored when this Flock instance is destroyed
+     /*!  This method returns the process group that was used by 
+          the meteorological data source before this instance of the Flock was created.
+
+          When a Flock is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Flock. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Flock.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+
+           \param id a pointer to an integer to hold the ID of a processor
+                  within the processor group that is dedicated to 
+                  managing meteorological data. 
+           
+           \return a pointer to the ProcessGrp to which the processor belongs       
+      */
+     ProcessGrp* fetchRememberedPGroup( int* id = NULLPTR ) const;
+
+     /// sets the met processing group that should be restored when this Flock instance is destroyed
+     /*! This method sets the process group that is to be used by 
+          the meteorological data source after this instance of the Flock is destroyed.
+
+          When a Flock is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Flock. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Flock.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+
+        \param pg a pointer to the process group to be used. If NULLPTR, then the current
+                  process group and id will be obtained form the met data source. 
+        \param id the processor ID within process group pg, that indicates a dedicated meteorological data processor.  
+                   An ID of -1 indicates that no dedicated met processor is to be used.
+  
+     */
+     void rememberPGroup( ProcessGrp* pg=NULLPTR, int id = -1 );
+     
+     /// restores the met processing group to the one that should be used after the Flock instance is destroyed
+     /*! This method sets the processor group of the meteorologicla data source 
+         to the one that should be used after this Flock instance is destroyed.
+         
+          When a Flock is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Flock. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Flock.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+     
+     */
+     void restorePGroup();
+
+     /// sets the met processing group to the one that should be used by this flock instance
+     /*! This method sets the processor group of the meteorologicla data source 
+         to the one that should be used by this Flock instance.
+         
+          When a Flock is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Flock. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Flock.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+     
+     */
+     void unRestorePGroup();
+
 
 
      class iterator;
@@ -411,7 +580,7 @@ class Flock {
 
      /// changes the meteorological data source
      /*!
-        This method changes the ,eteorological data source used to 
+        This method changes the meteorological data source used to 
         obtain the winds used to trace the path of Parcels in the Flock.
         
         The default meteorological data source is MetSBRot, or
@@ -575,7 +744,34 @@ class Flock {
      */
      int countStatus( ParcelStatus stat=0, bool negate=false );
      
+     /// clears the Flock so that is has no Parcels
+     /*! This method empties the Flock of its Parcels.
      
+         As a side effect, it also restores the Pgroup of the 
+         current Parcels' met data source, and it destroyes its
+         internal PGroups.
+     
+     */
+     void clear();
+     
+     /// allocates space in the Flock for Parcels
+     /*! This method clears the flock and then
+         allocates the required number of Parcels.
+         
+         In a multiprocessing environment, it also
+         allocates Parcles to each processor and sets up PGroups to
+         handle them.
+         
+         \param n the number of parcels
+         \param pgrp a process-group object that is used for parallel processing. If NULLPTR,
+                  then the Flock's current PGroup is used.
+         \param p a pointer to a sample Parcel used to populate the Flock. If NULLPTR,
+                  then a standard Parcel is created for this.
+         \param r  the ratio of meteorological-data processors ot tracing processors.
+                  (For example, if r=3 then there will be one met processor for
+                  every 3 parcel-tracing processors) 
+     */
+     void allocate( int n, ProcessGrp* pgrp, const Parcel* p=NULLPTR, int r=0 );     
      
      /// synchronizes the Flock's processors
      /*! This method synchronizes the Flock's processors.
@@ -620,6 +816,15 @@ class Flock {
          to handle meteorological data.
      */    
      ProcessGrp *pgroup;
+     
+     /// The met data source's pgroup that it had before this Flock was created
+     ProcessGrp *preserved_met_pgroup;
+     /// The met data source's processor id that it had before this Flock was created
+     int preserved_met_pid;
+     /// This flock's instance's pgroup, which is what the met data source's pgroup is set to when using this Flock
+     ProcessGrp *preserved_flock_pgroup;
+     /// This flock's instance's processor id, which is what the met data source's pgroup is set to when using this Flock
+     int preserved_flock_pid;
      
      /// holds the processor groups for this flock
      /*!
@@ -720,6 +925,9 @@ class Flock {
      /// universal constructor routine
      /*!
         This is an internal method used by all the constructors to initialize the Flock.
+        
+        It allocates Parcels to each processor and sets up Process groups to handle them.
+        
      */
      void setup( const Parcel &p, ProcessGrp* pgrp, int n, int r);
 

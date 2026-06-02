@@ -92,6 +92,17 @@ class Swarm {
      /*! This is a Swarm constructor that assigns N parcels. Note: this will result
          in a Swarm that uses the SerialGrp class to simulate/bypass parallel
          processing, and the Parcel class as its parcel.
+         
+         A serial processing process group will automatically be assigned to the Swarm.
+
+         Note that the meteorological data source shared by all the parcels
+         will have its process group replaced by a process (sub)group that is
+         associated with this Swarm. The original process group will be
+         remembered and restored when this Swarm is destroyed. In this way, PGroups
+         are managed automatically in most common use cases. But when using multiple
+         Parcel containers simultaneously, pgroups must be managed carefully with the
+         getPGroup(), setPGroup(), rememberPGroup(), and restorePGroup() methods.  
+
          \param n  the number of parcels to put into the Swarm initially. 
      */
      Swarm( int n=0 );
@@ -101,6 +112,15 @@ class Swarm {
       potentially several processors, using a ProcessGrp object.
       Note: this will result in a Swarm that uses the Parcel class 
       as its parcel.
+      
+         Note that the meteorological data source shared by all the parcels
+         will have its process group replaced by a process (sub)group that is
+         associated with this Swarm. The original process group will be
+         remembered and restored when this Swarm is destroyed. In this way, PGroups
+         are managed automatically in most common use cases. But when using multiple
+         Parcel containers simultaneously, pgroups must be managed carefully with the
+         getPGroup(), setPGroup(), rememberPGroup(), and restorePGroup() methods.  
+      
          \param pgrp a process-group object that is used for parallel processing
          \param n    the number of parcels to put into the Swarm initially. Note that 
                      this is used only by the root processor in the process-group; all 
@@ -116,6 +136,17 @@ class Swarm {
      /*! This Swarm constructor assigns N parcels by copying a user-supplied Parcel object. 
          Note: this will result in a Swarm that uses the SerialGrp class to simulate/bypass parallel
          processing.
+         
+         A serial processing process group will automatically be assigned to the Swarm.
+
+         Note that the meteorological data source shared by all the parcels
+         will have its process group replaced by a process (sub)group that is
+         associated with this Swarm. The original process group will be
+         remembered and restored when this Swarm is destroyed. In this way, PGroups
+         are managed automatically in most common use cases. But when using multiple
+         Parcel containers simultaneously, pgroups must be managed carefully with the
+         getPGroup(), setPGroup(), rememberPGroup(), and restorePGroup() methods.  
+
          \param p the input parcel object with whose copies this Swarm will be populated
          \param n  the number of parcels to put into the Swarm initially
      */
@@ -125,6 +156,15 @@ class Swarm {
      /*! This Swarm constructor assigns N parcels by copying a user-supplied Parcel object.  
          It distributes the N parcels among
          potentially several processors, using a ProcessGrp object.
+
+         Note that the meteorological data source shared by all the parcels
+         will have its process group replaced by a process (sub)group that is
+         associated with this Swarm. The original process group will be
+         remembered and restored when this Swarm is destroyed. In this way, PGroups
+         are managed automatically in most common use cases. But when using multiple
+         Parcel containers simultaneously, pgroups must be managed carefully with the
+         getPGroup(), setPGroup(), rememberPGroup(), and restorePGroup() methods.  
+
          \param p the input parcel object with whose copies this Swarm will be populated
          \param pgrp a process-group object that is used for parallel processing
          \param n  the number of parcels to put into the Swarm initially. Note that 
@@ -141,6 +181,10 @@ class Swarm {
      /// The destructor
      /*! 
         This is the destructor method for Swarm objects
+        
+        (This has the side effect of restoring the process group
+        used by the meteorological data source shared by all Parcels.)
+        
      */
      ~Swarm();
 
@@ -181,6 +225,133 @@ class Swarm {
      {
          return pgroup->type();
      }
+
+
+     /// returns the met processing (sub)group that should be used by this Swarm instance 
+     /*!  This method returns the process (sub)group that will be used by 
+          the meteorological data source as this instance of the Swarm does its work.
+
+          When a Swarm is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Swarm. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Swarm.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+
+           \param id a pointer to an integer to hold the ID of a processor
+                  within the processor group that is dedicated to 
+                  managing meteorological data. 
+           
+           \return a pointer to the ProcessGrp to which the processor belongs       
+      */
+     ProcessGrp* getPGroup( int* id = NULLPTR ) const;
+     
+     /// sets the met processing group that should be used by this Swarm instance 
+     /*! This method sets the process group that will be used by 
+          the meteorological data source as this instance of the Swarm does its work.
+
+          When a Swarm is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Swarm. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Swarm.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+
+        \param pg a pointer to the process group to be used
+        \param id the processor ID within process group pg, that indicates a dedicated meteorological data processor.  
+                   An ID of -1 indicates that no dedicated met processor is to be used.
+  
+     */
+     void setPGroup( ProcessGrp *pg, int id = -1 );
+     
+     /// returns the met processing group that should be restored when this Swarm instance is destroyed
+     /*!  This method returns the process group that was used by 
+          the meteorological data source before this instance of the Swarm was created.
+
+          When a Swarm is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Swarm. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Swarm.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+
+           \param id a pointer to an integer to hold the ID of a processor
+                  within the processor group that is dedicated to 
+                  managing meteorological data. 
+           
+           \return a pointer to the ProcessGrp to which the processor belongs       
+      */
+     ProcessGrp* fetchRememberedPGroup( int* id = NULLPTR ) const;
+
+     /// sets the met processing group that should be restored when this Swarm instance is destroyed
+     /*! This method sets the process group that is to be used by 
+          the meteorological data source after this instance of the Swarm is destroyed.
+
+          When a Swarm is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Swarm. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Swarm.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+
+        \param pg a pointer to the process group to be used. If NULLPTR, then the current
+                  process group and id will be obtained form the met data source. 
+        \param id the processor ID within process group pg, that indicates a dedicated meteorological data processor.  
+                   An ID of -1 indicates that no dedicated met processor is to be used.
+  
+     */
+     void rememberPGroup( ProcessGrp* pg=NULLPTR, int id = -1 );
+     
+     /// restores the met processing group to the one that should be used after the Swarm instance is destroyed
+     /*! This method sets the processor group of the meteorologicla data source 
+         to the one that should be used after this Swarm instance is destroyed.
+         
+          When a Swarm is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Swarm. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Swarm.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+     
+     */
+     void restorePGroup();
+
+     /// sets the met processing group to the one that should be used by this flock instance
+     /*! This method sets the processor group of the meteorologicla data source 
+         to the one that should be used by this Swarm instance.
+         
+          When a Swarm is created, it has a process group that is divided into
+          subgroups, one for each collection of Parcels handled by a given processor
+          running an instance of the Swarm. The meteorological data source that
+          is shared by all of the Parcels running on that processor, will have
+          its process group set to one of those process subgroups created by the Swarm.
+          In this way, meteorological data-handling can be done in a parallel
+          processing context. But the process group that the meteorological data source
+          had before the flock was created, should be remembered and restored
+          when the flock is destroyed. 
+     
+     */
+     void unRestorePGroup();
+
+
+
+
+
 
      class iterator;
      friend class iterator;
@@ -236,6 +407,7 @@ class Swarm {
                and the version that is normally used.
                Using this version of the constructor requires initialization
                with  Swarm::begin() or Swarm::end(). 
+      
            */
            iterator();
 
@@ -419,7 +591,7 @@ class Swarm {
      void setNav( PlanetNav& newnav );
      
      /// Returns the current planetary navigation object
-     /*! This method returns a pointer to the naviagational object
+     /*! This method returns a pointer to the navigational object
          currently being used in this Swarm. Unless has been set to
          something else, this will be the default spherical Earth navigation
          object.
@@ -596,6 +768,36 @@ class Swarm {
      */
      int countStatus( ParcelStatus stat=0, bool negate=false );
      
+     /// clears the Swarm so that is has no Parcels
+     /*! This method empties the Swarm of its Parcels.
+     
+         As a side effect, it also restores the Pgroup of the 
+         current Parcels' met data source, and it destroyes its
+         internal PGroups.
+     
+     */
+     void clear();
+     
+     /// allocates space in the Swarm for Parcels
+     /*! This method clears the flock and then
+         allocates the required number of Parcels.
+         
+         In a multiprocessing environment, it also
+         allocates Parcles to each processor and sets up PGroups to
+         handle them.
+         
+         \param n the number of parcels
+         \param pgrp a process-group object that is used for parallel processing. If NULLPTR,
+                  then the Swarm's current PGroup is used.
+         \param p a pointer to a sample Parcel used to populate the Swarm. If NULLPTR,
+                  then a standard Parcel is created for this.
+         \param r  the ratio of meteorological-data processors ot tracing processors.
+                  (For example, if r=3 then there will be one met processor for
+                  every 3 parcel-tracing processors) 
+     */
+     void allocate( int n, ProcessGrp* pgrp, const Parcel* p=NULLPTR, int r=0 );     
+     
+     
      
      
      /// synchronizes the Swarm's processors
@@ -645,6 +847,15 @@ class Swarm {
          to handle meteorological data.
      */    
      ProcessGrp *pgroup;
+     
+     /// The met data source's pgroup that it had before this Flock was created
+     ProcessGrp *preserved_met_pgroup;
+     /// The met data source's processor id that it had before this Flock was created
+     int preserved_met_pid;
+     /// This flock's instance's pgroup, which is what the met data source's pgroup is set to when using this Flock
+     ProcessGrp *preserved_flock_pgroup;
+     /// This flock's instance's processor id, which is what the met data source's pgroup is set to when using this Flock
+     int preserved_flock_pid;
      
      /// holds the processor groups for this Swarm
      /*!

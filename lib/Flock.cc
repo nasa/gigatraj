@@ -31,20 +31,10 @@ Flock::Flock( int n )
 {
 
    Parcel p;
-   int i;
-   ProcessGrp* pg;
+
+   pgroup = NULLPTR;
    
-   if ( n >= 0 ) {
-
-      // we will do serial processing
-      pg = new SerialGrp();
-   
-      this->setup(p,pg,n,0);
-
-   } else {
-      throw (badparcelcount());
-   }           
-
+   allocate( n, NULLPTR, &p, 0 );
 
 };
 
@@ -56,22 +46,9 @@ Flock::Flock( ProcessGrp *pgrp, int n, int r)
    Parcel p;
    ProcessGrp* pg;
    
-   if ( n >= 0 ) {
-
-      if ( pgrp != NULLPTR ) {
-         // We make our own copy of the given process group,
-         // so that we can delete it ourselves later, in our own destructor
-         // (This has the overhead of creating a new MPI process group and communicator.) 
-         pg  = pgrp->copy();
-      } else {
-         pg = new SerialGrp();
-      }   
-
-      this->setup(p,pg,n,r);
-
-   } else {
-      throw (badparcelcount());
-   }           
+   pgroup = NULLPTR;
+   
+   allocate( n, pgrp, &p, r );
 
 };
 
@@ -82,16 +59,9 @@ Flock::Flock( const Parcel &p, int n)
    int i;
    ProcessGrp* pg;
    
-   if ( n >= 0 ) {
-
-      // No processor group was given, so we will do serial processing
-      pg = new SerialGrp();
+   pgroup = NULLPTR;
    
-      this->setup(p,pg,n,0);
-
-   } else {
-      throw (badparcelcount());
-   }           
+   allocate( n, NULLPTR, &p, 0 );
 
 };
 
@@ -99,16 +69,10 @@ Flock::Flock( const Parcel &p, ProcessGrp* pgrp, int n, int r)
 {
     ProcessGrp* pg;
    
-    if ( pgrp != NULLPTR ) {
-       // We make our own copy of the given process group,
-       // so that we can delete it ourselves later, in our own destructor
-       // (This has the overhead of creating a new MPI process group and communicator.) 
-       pg  = pgrp->copy();
-    } else {
-       pg = new SerialGrp();
-    }   
-
-    this->setup(p,pg,n,r);
+    pgroup = NULLPTR;
+    
+    allocate( n, pgrp, &p, r );
+   
 }
 
 std::string Flock::make_proc_id ( const std::string& tag, int i ) const
@@ -145,7 +109,7 @@ std::string Flock::make_proc_id ( const std::string& tag, int i ) const
 
 }
 
-// this is an in11ternal function used by constructors to set up and initialize the Flock 
+// this is an internal function used by constructors to set up and initialize the Flock 
 void Flock::setup( const Parcel &p, ProcessGrp* pgrp, int n, int r)
 {
    // the number of processors in this group
@@ -215,7 +179,9 @@ void Flock::setup( const Parcel &p, ProcessGrp* pgrp, int n, int r)
 
    blocksize = 0;
    
-   pgroup = pgrp;
+   if ( pgrp != NULLPTR ) {
+      pgroup = pgrp;
+   }
       
    // how many processors do we have to work with?
    numprocs = pgroup->size();
@@ -568,7 +534,19 @@ void Flock::setup( const Parcel &p, ProcessGrp* pgrp, int n, int r)
              my_met = 1; // rank within the (sub)group of the met-handler for the (sub)group
           }
           
-          metsrc->setPgroup( subgroups[i] , my_met );
+          
+          
+          /**** WARNING *****/
+          // This sets the process group of the met data source for ALL parcels,
+          // whether they are part of this Flock or not!
+          // This is fine and necessary if only this flock is being
+          // used to trace parcels. Otherwise, extreme caution should be used!
+          // Save the met source's pgroup before creating this Flock, 
+          // and restore the met source's pgroup after deleting the Flock.
+          
+          rememberPGroup(); 
+          setPGroup( subgroups[i], my_met );
+          unRestorePGroup();          
 
        }
          
@@ -586,35 +564,9 @@ void Flock::setup( const Parcel &p, ProcessGrp* pgrp, int n, int r)
 
 Flock::~Flock()
 {
-   int i;
-   std::vector<ProcessGrp*>::iterator pi;
-   MetData *metdata;
 
-   // sync with all other processors
-   //pgroup->sync("Flock destructor sync");
-   pgroup->sync();
+   clear();
    
-   // unset the met process group for this processor
-   metdata = parcels[0]->getMet();
-   metdata->setPgroup( NULLPTR, -1 );
-
-   // destroy all sub-groups
-   for ( pi=subgroups.begin(); pi != subgroups.end(); pi++ )
-   {
-       delete *pi;
-   }
-   
-   // destroy all parcels
-   if ( my_num_parcels > 0 ) {
-      // parcel-tracer: destroy all parcels
-      for (i=0; i < my_num_parcels; i++ ) {
-          delete parcels[i];
-      }
-   } else {
-      // and even met-readers have a sample parcel
-      delete parcels[0];
-   }
-
    // destroy the process group
    delete pgroup;
    
@@ -625,6 +577,77 @@ bool Flock::is_root() const
 {
    return pgroup->is_root();
 }
+
+ProcessGrp* Flock::getPGroup( int* id  ) const
+{
+
+    if ( id != NULLPTR ) {
+       *id = preserved_flock_pid;
+    }
+    
+    return preserved_flock_pgroup;
+}
+
+void Flock::setPGroup( ProcessGrp *pg, int id )
+{
+      preserved_flock_pgroup = pg;
+      preserved_flock_pid = id;
+}
+
+ProcessGrp* Flock::fetchRememberedPGroup( int* id ) const
+{
+
+    if ( id != NULLPTR ) {
+       *id = preserved_met_pid;
+    }
+    
+    return preserved_met_pgroup;
+}
+
+void Flock::rememberPGroup( ProcessGrp *pg, int id )
+{
+    MetData* metsrc;
+    
+    if ( pg != NULLPTR ) {
+       preserved_met_pgroup = pg;
+       preserved_met_pid = id;
+    } else {
+       metsrc = NULLPTR;
+       if ( size() > 0 ) {
+          metsrc = parcels[0]->getMet();
+       } 
+       if ( metsrc != NULLPTR ) {
+          preserved_met_pgroup = metsrc->getPgroup( &preserved_met_pid );
+       }
+    }   
+}
+
+void Flock::restorePGroup()
+{
+     MetData* metsrc;
+
+     metsrc = NULLPTR;
+     if ( size() > 0 ) {
+        metsrc = parcels[0]->getMet();
+     } 
+     if ( (preserved_met_pgroup != NULLPTR) && (metsrc != NULLPTR) ) {
+        metsrc->setPgroup( preserved_met_pgroup, preserved_met_pid );      
+     }
+}
+
+void Flock::unRestorePGroup()
+{
+     MetData* metsrc;
+
+     metsrc = NULLPTR;
+     if ( size() > 0 ) {
+        metsrc = parcels[0]->getMet();
+     } 
+     if ( (preserved_flock_pgroup != NULLPTR) && (metsrc != NULLPTR) ) {
+        metsrc->setPgroup( preserved_flock_pgroup, preserved_flock_pid );  
+     }
+}
+
 
 
 Flock::iterator::iterator() 
@@ -1490,6 +1513,92 @@ int Flock::countStatus( ParcelStatus stat, bool negate )
 
     return result;
 }
+
+
+void Flock::clear()
+{
+     int i;
+     std::vector<ProcessGrp*>::iterator pi;
+
+     if ( pgroup != NULLPTR ) {
+        // sync with all other processors
+        pgroup->sync();
+   
+        // restore the met data source's settings 
+        restorePGroup();
+     
+        // destroy all this Flock's sub-groups
+        for ( pi=subgroups.begin(); pi != subgroups.end(); pi++ )
+        {
+            delete *pi;
+        }
+   
+        // destroy all parcels
+        if ( my_num_parcels > 0 ) {
+           // parcel-tracer: destroy all parcels
+           for (i=0; i < my_num_parcels; i++ ) {
+               delete parcels[i];
+           }
+        } else {
+           // and even met-readers have a sample parcel
+           delete parcels[0];
+        }
+     }
+
+     parcels.clear();
+     
+     my_num_parcels = 0;
+     my_parcel_start = 0;
+     num_parcels_total = 0;
+     
+     preserved_met_pgroup = NULLPTR;
+     preserved_met_pid = -1;
+     preserved_flock_pgroup = NULLPTR;
+     preserved_flock_pid = -1;
+}
+
+void Flock::allocate( int n, ProcessGrp* pgrp, const Parcel* p, int r )
+{
+    ProcessGrp* pg;
+    bool genParcel;
+   
+    clear();
+   
+    if ( pgrp != NULLPTR ) {
+       // We make our own copy of the given process group,
+       // so that we can delete it ourselves later, in our own destructor
+       // (This has the overhead of creating a new MPI process group and communicator.) 
+       pg  = pgrp->copy();
+       
+       // delete our current one
+       if ( pgroup != NULLPTR ) {
+          delete pgroup;
+       }
+       
+    } else {
+       if ( pgroup != NULLPTR ) {
+          pg = pgroup;
+       } else {
+          pg = new SerialGrp();
+       }
+    }
+    
+    genParcel = ( p == NULLPTR );
+    if ( genParcel ) {
+       p = new Parcel;
+    }
+    
+    if ( n >= 0 ) {
+       this->setup(*p,pg,n,r);
+    } else {
+       throw (badparcelcount());
+    }           
+
+    if ( genParcel ) {
+       delete p;
+    }
+
+}     
 
 void Flock::sync()
 {

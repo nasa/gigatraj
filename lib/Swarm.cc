@@ -33,10 +33,12 @@ Swarm::Swarm( int n )
    Parcel p;
    int i;
    ProcessGrp* pg;
-   
+
    nav = NULLPTR;
    metsrc = NULLPTR;
    integ = NULLPTR;
+   
+   pgroup = NULLPTR;
    
    lons = NULLPTR;
    lats = NULLPTR;
@@ -48,21 +50,9 @@ Swarm::Swarm( int n )
    ids = NULLPTR;
    
    sample_p = NULLPTR;
+      
+   allocate( n, NULLPTR, &p, 0 );
    
-   info_size = 0;
-   info_inc = 100;
-   
-   if ( n >= 0 ) {
-
-      // we will do serial processing
-      pg = new SerialGrp();
-   
-      this->setup(p,pg,n,0);
-
-   } else {
-      throw (badparcelcount());
-   }           
-
 
 };
 
@@ -73,10 +63,12 @@ Swarm::Swarm( ProcessGrp *pgrp, int n, int r)
    int i;
    Parcel p;
    ProcessGrp* pg;
-   
+
    nav = NULLPTR;
    metsrc = NULLPTR;
    integ = NULLPTR;
+
+   pgroup = NULLPTR;
    
    lons = NULLPTR;
    lats = NULLPTR;
@@ -89,25 +81,8 @@ Swarm::Swarm( ProcessGrp *pgrp, int n, int r)
    
    sample_p = NULLPTR;
    
-   info_size = 0;
-   info_inc = 100;
-   
-   if ( n >= 0 ) {
-
-      if ( pgrp != NULLPTR ) {
-         // We make our own copy of the given process group,
-         // so that we can delete it ourselves later, in our own destructor
-         // (This has the overhead of creating a new MPI process group and communicator.) 
-         pg  = pgrp->copy();
-      } else {
-         pg = new SerialGrp();
-      }   
-
-      this->setup(p,pg,n,r);
-
-   } else {
-      throw (badparcelcount());
-   }           
+      
+   allocate( n, pgrp, &p, r );
 
 };
 
@@ -121,6 +96,8 @@ Swarm::Swarm( const Parcel &p, int n)
    nav = NULLPTR;
    metsrc = NULLPTR;
    integ = NULLPTR;
+
+   pgroup = NULLPTR;
    
    lons = NULLPTR;
    lats = NULLPTR;
@@ -133,20 +110,7 @@ Swarm::Swarm( const Parcel &p, int n)
    
    sample_p = NULLPTR;
    
-   info_size = 0;
-   info_inc = 100;
-   
-   if ( n >= 0 ) {
-
-      // No processor group was given, so we will do serial processing
-      pg = new SerialGrp();
-   
-      this->setup(p,pg,n,0);
-
-   } else {
-      throw (badparcelcount());
-   }           
-   
+   allocate( n, NULLPTR, &p, 0 );
 
 };
 
@@ -154,9 +118,11 @@ Swarm::Swarm( const Parcel &p, ProcessGrp* pgrp, int n, int r)
 {
     ProcessGrp* pg;
 
-   nav = NULLPTR;
-   metsrc = NULLPTR;
-   integ = NULLPTR;
+    nav = NULLPTR;
+    metsrc = NULLPTR;
+    integ = NULLPTR;
+
+    pgroup = NULLPTR;
    
     lons = NULLPTR;
     lats = NULLPTR;
@@ -165,23 +131,12 @@ Swarm::Swarm( const Parcel &p, ProcessGrp* pgrp, int n, int r)
     tgs = NULLPTR;
     flagsets = NULLPTR;
     statuses = NULLPTR;
-   ids = NULLPTR;
+    ids = NULLPTR;
    
-   sample_p = NULLPTR;
+    sample_p = NULLPTR;
    
-   info_size = 0;
-   info_inc = 100;
-   
-    if ( pgrp != NULLPTR ) {
-       // We make our own copy of the given process group,
-       // so that we can delete it ourselves later, in our own destructor
-       // (This has the overhead of creating a new MPI process group and communicator.) 
-       pg  = pgrp->copy();
-    } else {
-       pg = new SerialGrp();
-    }   
+    allocate( n, pgrp, &p, r );
 
-    this->setup(p,pg,n,r);
 }
 
 std::string Swarm::make_proc_id ( const std::string& tag, int i ) const
@@ -655,7 +610,17 @@ void Swarm::setup( const Parcel &p, ProcessGrp* pgrp, int n, int r)
              my_met = 1; // rank within the (sub)group of the met-handler for the (sub)group
           }
           
-          metsrc->setPgroup( subgroups[i] , my_met );
+          /**** WARNING *****/
+          // This sets the process group of the met data source for ALL parcels,
+          // whether they are part of this Swarm or not!
+          // This is fine and necessary if only this flock is being
+          // used to trace parcels. Otherwise, extreme caution should be used!
+          // Save the met source's pgroup before creating this Swarm, 
+          // and restore the met source's pgroup after deleting the Swarm.
+          
+          rememberPGroup(); 
+          setPGroup( subgroups[i], my_met );
+          unRestorePGroup();          
 
        }
          
@@ -673,55 +638,12 @@ void Swarm::setup( const Parcel &p, ProcessGrp* pgrp, int n, int r)
 
 Swarm::~Swarm()
 {
-   int i;
-   std::vector<ProcessGrp*>::iterator pi;
 
-   // sync with all other processors
-   //pgroup->sync("Swarm destructor sync");
-   pgroup->sync();
-   
-   // unset the met process group for this processor
-   if ( metsrc != NULLPTR ) {
-      metsrc->setPgroup( NULLPTR, -1 );
-   }
-   
-   // destroy all sub-groups
-   for ( pi=subgroups.begin(); pi != subgroups.end(); pi++ )
-   {
-       delete *pi;
-   }
+   clear();
    
    // destroy the process group
    delete pgroup;
    
-   // destroy all parcels
-   if ( lons != NULLPTR ) {
-      delete[] lons;
-   }
-   if ( lats != NULLPTR ) {
-      delete[] lats;
-   }
-   if ( zs != NULLPTR ) {
-      delete[] zs;
-   }
-   if ( ts != NULLPTR ) {
-      delete[] ts;
-   }
-   if ( tgs != NULLPTR ) {
-      delete[] tgs;
-   }
-   if ( flagsets != NULLPTR ) {
-      delete[] flagsets;
-   }
-   if ( statuses != NULLPTR ) {
-      delete[] statuses;
-   }
-   if ( ids != NULLPTR ) {
-      delete[] ids;
-   }
-   if ( sample_p != NULLPTR ) {
-      delete sample_p;
-   }
    
 };
 
@@ -729,6 +651,67 @@ bool Swarm::is_root() const
 {
    return pgroup->is_root();
 }
+
+
+ProcessGrp* Swarm::getPGroup( int* id  ) const
+{
+
+    if ( id != NULLPTR ) {
+       *id = preserved_flock_pid;
+    }
+    
+    return preserved_flock_pgroup;
+}
+
+void Swarm::setPGroup( ProcessGrp *pg, int id )
+{
+      preserved_flock_pgroup = pg;
+      preserved_flock_pid = id;
+}
+
+ProcessGrp* Swarm::fetchRememberedPGroup( int* id ) const
+{
+
+    if ( id != NULLPTR ) {
+       *id = preserved_met_pid;
+    }
+    
+    return preserved_met_pgroup;
+}
+
+void Swarm::rememberPGroup( ProcessGrp *pg, int id )
+{
+    
+    if ( pg != NULLPTR ) {
+       preserved_met_pgroup = pg;
+       preserved_met_pid = id;
+    } else {
+       if ( metsrc != NULLPTR ) {
+          preserved_met_pgroup = metsrc->getPgroup( &preserved_met_pid );
+       }
+    }   
+}
+
+void Swarm::restorePGroup()
+{
+
+     if ( (preserved_met_pgroup != NULLPTR) && (metsrc != NULLPTR) ) {
+        metsrc->setPgroup( preserved_met_pgroup, preserved_met_pid );      
+     }
+}
+
+void Swarm::unRestorePGroup()
+{
+
+     if ( (preserved_flock_pgroup != NULLPTR) && (metsrc != NULLPTR) ) {
+        metsrc->setPgroup( preserved_flock_pgroup, preserved_flock_pid );  
+     }
+}
+
+
+
+
+
 
 // iterators: (must be forward-only!)
 //     on begin:
@@ -1042,7 +1025,21 @@ PlanetNav* Swarm::getNav()
 
 void Swarm::setMet( MetData& newmet ) 
 {
-    metsrc = &newmet;
+    if ( metsrc != &newmet ) {
+      
+       if ( metsrc != NULLPTR ) {
+          // restore the old pgroup to the old met source
+          restorePGroup(); 
+       }
+       
+       // switch to the new met source
+       metsrc = &newmet;
+       // remember the new met source's pgroup
+       rememberPGroup();   
+       // set the new met source's prgoup to the Swarm's
+       unRestorePGroup();
+    
+    }
 };
 
 MetData* Swarm::getMet() 
@@ -1799,6 +1796,113 @@ int Swarm::countStatus( ParcelStatus stat, bool negate )
 
     return result;
 }
+
+
+void Swarm::clear()
+{
+     int i;
+     std::vector<ProcessGrp*>::iterator pi;
+
+     if ( pgroup != NULLPTR ) {
+        // sync with all other processors
+        pgroup->sync();
+   
+        // restore the met data source's settings 
+        restorePGroup();
+     
+        // destroy all this Swarm's sub-groups
+        for ( pi=subgroups.begin(); pi != subgroups.end(); pi++ )
+        {
+            delete *pi;
+        }
+   
+     }
+
+   
+     // destroy all parcels
+     if ( lons != NULLPTR ) {
+        delete[] lons;
+     }
+     if ( lats != NULLPTR ) {
+        delete[] lats;
+     }
+     if ( zs != NULLPTR ) {
+        delete[] zs;
+     }
+     if ( ts != NULLPTR ) {
+        delete[] ts;
+     }
+     if ( tgs != NULLPTR ) {
+        delete[] tgs;
+     }
+     if ( flagsets != NULLPTR ) {
+        delete[] flagsets;
+     }
+     if ( statuses != NULLPTR ) {
+        delete[] statuses;
+     }
+     if ( ids != NULLPTR ) {
+        delete[] ids;
+     }
+     if ( sample_p != NULLPTR ) {
+        delete sample_p;
+     }
+
+    info_size = 0;
+    info_inc = 100;
+      
+     my_num_parcels = 0;
+     my_parcel_start = 0;
+     num_parcels_total = 0;
+     
+     preserved_met_pgroup = NULLPTR;
+     preserved_met_pid = -1;
+     preserved_flock_pgroup = NULLPTR;
+     preserved_flock_pid = -1;
+}
+
+void Swarm::allocate( int n, ProcessGrp* pgrp, const Parcel* p, int r )
+{
+    ProcessGrp* pg;
+    bool genParcel;
+   
+    clear();
+   
+    if ( pgrp != NULLPTR ) {
+       // We make our own copy of the given process group,
+       // so that we can delete it ourselves later, in our own destructor
+       // (This has the overhead of creating a new MPI process group and communicator.) 
+       pg  = pgrp->copy();
+       
+       // delete our current one
+       if ( pgroup != NULLPTR ) {
+          delete pgroup;
+       }
+       
+    } else {
+       if ( pgroup != NULLPTR ) {
+          pg = pgroup;
+       } else {
+          pg = new SerialGrp();
+       }
+    }
+    
+    genParcel = ( p == NULLPTR );
+    if ( genParcel ) {
+       p = new Parcel;
+    }
+    
+    if ( n >= 0 ) {
+       this->setup(*p,pg,n,r);
+    } else {
+       throw (badparcelcount());
+    }           
+
+    if ( genParcel ) {
+       delete p;
+    }
+
+}     
 
 
 void Swarm::sync()
