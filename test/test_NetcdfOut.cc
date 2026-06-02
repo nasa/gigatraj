@@ -138,7 +138,6 @@ int main()
        exit(1);
     }
     
-    
     out->open();
     for ( it=0; it<11; it++ ) {
         time = it*0.15;
@@ -242,7 +241,6 @@ int main()
         }
     }
     
-
 
 
 
@@ -561,7 +559,7 @@ int main()
        cerr << "bad-value should be -9999.99 but it " << out->bad() << endl;
        exit(1);   
     }
-      
+
     // try reading it again
     in = new NetcdfIn();
     in->setTimeTransform( 24.0, -1000.0 );

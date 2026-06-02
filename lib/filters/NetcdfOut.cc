@@ -39,6 +39,7 @@ NetcdfOut::NetcdfOut(const NetcdfOut& src) : ParcelReporter(src)
     dbug = src.dbug;
     
     restore = src.restore;
+    paranoyd = src.paranoyd;
     
     maxchunk = src.maxchunk;
     
@@ -116,6 +117,7 @@ void NetcdfOut::assign( const NetcdfOut& src)
     dbug = src.dbug;
     
     restore = src.restore;
+    paranoyd = src.paranoyd;
     
     maxchunk = src.maxchunk;
     
@@ -195,9 +197,18 @@ void NetcdfOut::resuming( bool res )
      restore = res;
 }
 
-bool NetcdfOut::resuming()
+bool NetcdfOut::resuming() const
 {
     return restore;
+}
+void NetcdfOut::paranoid( bool par )
+{
+     paranoyd = par;
+}
+
+bool NetcdfOut::paranoid() const
+{
+     return paranoyd;
 }
 
 void NetcdfOut::si( bool value )
@@ -318,10 +329,19 @@ bool NetcdfOut::writeTag()
      return do_tag;
 }
 
+bool NetcdfOut::metaFixed() const
+{
+     bool result;
+
+     result = is_open;
+
+     return result;
+}                  
+
 void NetcdfOut::addQuantity(  const std::string& quantity, const std::string& units, const std::string& desc  )
 {
 
-    if ( ! is_open ) {
+    if ( ! metaFixed() ) {
     
        if ( quantity == vcoord ) {
           // we will not add this quantity if it's already going to be written
@@ -355,7 +375,7 @@ void NetcdfOut::delQuantity( std::string quantity )
     std::vector<std::string>::iterator uidx;
     std::vector<std::string>::iterator didx;
      
-    if ( ! is_open ) {
+    if ( ! metaFixed() ) {
     
        for ( qidx = other.begin(), uidx = other_units.begin(), didx=other_desc.begin(); 
              qidx != other.end(); 
@@ -387,7 +407,7 @@ void NetcdfOut::delQuantity( std::string quantity )
 
 void NetcdfOut::contents( std::string desc )
 {
-    if ( ! is_open ) {
+    if ( ! metaFixed() ) {
        hdr_contents = desc;
     } else {
        throw new badNetcdfTooLate();
@@ -402,7 +422,7 @@ std::string& NetcdfOut::contents()
 
 void NetcdfOut::contact( std::string addr )
 {
-    if ( ! is_open ) {
+    if ( ! metaFixed() ) {
        hdr_contact = addr;
     } else {
        throw new badNetcdfTooLate();
@@ -417,7 +437,7 @@ std::string& NetcdfOut::contact()
 
 void NetcdfOut::writeTimestamp( bool mode )
 {
-    if ( ! is_open ) {
+    if ( ! metaFixed() ) {
        do_tstamp = mode;
     } else {
        throw new badNetcdfTooLate();
@@ -455,7 +475,7 @@ int NetcdfOut::maxSequence()
 
 void NetcdfOut::direction( int mode )
 {
-    if ( ! is_open ) {
+    if ( ! metaFixed() ) {
        if ( ( mode == -1) || (mode == 1) ) {
           dir = mode;
        }
@@ -472,7 +492,7 @@ int NetcdfOut::direction()
 
 void NetcdfOut::bad( real value )
 {
-    if ( ! is_open ) {
+    if ( ! metaFixed() ) {
        badval = value;
        if ( FINITE(value) ) {
           dbadval = value;
@@ -508,7 +528,7 @@ bool NetcdfOut::is_root()
 
 void NetcdfOut::clear()
 {
-    if ( ! is_open ) {
+    if ( ! metaFixed() ) {
        do_flags = false;
        do_status = false;
        do_tag = false;
@@ -536,6 +556,7 @@ void NetcdfOut::reset()
     dbug = 0;
     
     restore = false;
+    paranoyd = false;
     
     maxchunk = 1000;
     
@@ -558,10 +579,11 @@ void NetcdfOut::reset()
     
     t0 = 0.0;
     tstamp = "";
-    tyme = t0;
     pnum = 0;
     ip = 0;
+    remember_ip = 0;
     tnum = 0;
+    remember_tnum = 0;
     do_status = false;
     do_flags = false;
     do_tag = false;
@@ -581,6 +603,7 @@ void NetcdfOut::reset()
     dbadval = dNaN;
     
     tyme = dNaN;
+    remember_tyme = t0;
 
     vid_lon = -1;
     vtyp_lon = NC_REEL;
@@ -848,7 +871,7 @@ void NetcdfOut::init( Parcel *p, unsigned int n)
 
 void NetcdfOut::init( MetData *metsrc, unsigned int n)
 {
-    if ( ! is_open ) {
+    if ( ! metaFixed() ) {
     
        tyme = dNaN;
        tnum = 0;
@@ -883,7 +906,7 @@ void NetcdfOut::init( MetData *metsrc, unsigned int n)
 
 void NetcdfOut::setTimeTransform( double scale, double offset )
 {
-    if ( ! is_open ) {
+    if ( ! metaFixed() ) {
        ts = scale;
        to = offset;
     } else {
@@ -948,9 +971,20 @@ std::string NetcdfOut::tunits()
 void NetcdfOut::open( std::string file, Parcel* p, unsigned int n )
 {
      if ( ! restore ) {
+        // we create a new file, overwriting any old file,
+        // if we are not restoring.
         newopen( file, p, n );
      } else {
-        reopen( file, p, n );     
+        // we are restoing, but we open the file here
+        // only if we are not being paranoid.
+        // if we are paranoid, then
+        // we will reopen and close for each apply().
+        if ( ! paranoyd ) {
+           reopen( file, p, n );
+        } else {
+           // we will need to remember file, p, and n for later.
+           fakeReopen( file, p, n );
+        }    
      }
 
 }
@@ -1121,6 +1155,9 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
            throw(badNetcdfError(err));
         }
      }
+     if ( dbug > 50 ) {
+        std::cerr << "defined time variable w/ id = " << vid_time << std::endl;
+     }
      // write long_name time attribute
      aname = "long_name";
      //val = tunits(); 
@@ -1154,37 +1191,6 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
         }
      }
      
-     /// define the timestamp variable
-     if ( do_tstamp ) {
-        val = "timestamp";
-        if ( i_am_root ) {
-           err = nc_def_var( ncid, val.c_str(), NC_STRING, 1, &did_time, &vid_tstamp );
-           if ( err != NC_NOERR ) {
-              throw(badNetcdfError(err));
-           }
-        }
-        // write long_name time attribute
-        aname = "long_name";
-        val = "Date + time"; 
-        aval = val.c_str();
-        if ( i_am_root ) {
-           err = nc_put_att_string( ncid, vid_tstamp, aname.c_str(), 1, &aval );
-           if ( err != NC_NOERR ) {
-              throw(badNetcdfError(err));
-           }
-        }
-        // write units time attrbiute
-        aname = "units";
-        val = ""; 
-        aval = val.c_str();
-        if ( i_am_root ) {
-           err = nc_put_att_string( ncid, vid_tstamp, aname.c_str(), 1, &aval );
-           if ( err != NC_NOERR ) {
-              throw(badNetcdfError(err));
-           }
-        }
-     }
-     
      
      //// define id variable
      val = "id";
@@ -1193,6 +1199,9 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
         if ( err != NC_NOERR ) {
            throw(badNetcdfError(err));
         }
+     }
+     if ( dbug > 50 ) {
+        std::cerr << "defined id variable w/ id = " << vid_id << std::endl;
      }
      // write long_name id attribute
      aname = "long_name";
@@ -1226,6 +1235,9 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
         if ( err != NC_NOERR ) {
            throw(badNetcdfError(err));
         }
+     }
+     if ( dbug > 50 ) {
+        std::cerr << "defined lon variable w/ id = " << vid_lon << std::endl;
      }
      // define missing_value attribute
      if ( i_am_root ) {
@@ -1286,6 +1298,9 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
            throw(badNetcdfError(err));
         }
      }
+     if ( dbug > 50 ) {
+        std::cerr << "defined lat variable w/ id = " << vid_lat << std::endl;
+     }
      // define missing_value attribute
      if ( i_am_root ) {
         err = nc_def_var_fill( ncid, vid_lat, NC_FILL, &badval );
@@ -1344,6 +1359,9 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
         if ( err != NC_NOERR ) {
            throw(badNetcdfError(err));
         }
+     }
+     if ( dbug > 50 ) {
+        std::cerr << "defined vcoord variable w/ id = " << vid_z << std::endl;
      }
      // define missing_value attribute
      if ( i_am_root ) {
@@ -1424,6 +1442,40 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
      }
      
      
+     /// define the timestamp variable
+     if ( do_tstamp ) {
+        val = "timestamp";
+        if ( i_am_root ) {
+           err = nc_def_var( ncid, val.c_str(), NC_STRING, 1, &did_time, &vid_tstamp );
+           if ( err != NC_NOERR ) {
+              throw(badNetcdfError(err));
+           }
+        }
+        if ( dbug > 50 ) {
+           std::cerr << "defined timestamp variable w/ id = " << vid_tstamp << std::endl;
+        }
+        // write long_name time attribute
+        aname = "long_name";
+        val = "Date + time"; 
+        aval = val.c_str();
+        if ( i_am_root ) {
+           err = nc_put_att_string( ncid, vid_tstamp, aname.c_str(), 1, &aval );
+           if ( err != NC_NOERR ) {
+              throw(badNetcdfError(err));
+           }
+        }
+        // write units time attrbiute
+        aname = "units";
+        val = ""; 
+        aval = val.c_str();
+        if ( i_am_root ) {
+           err = nc_put_att_string( ncid, vid_tstamp, aname.c_str(), 1, &aval );
+           if ( err != NC_NOERR ) {
+              throw(badNetcdfError(err));
+           }
+        }
+     }
+     
      
      if ( do_status ) {
         //// define status variable
@@ -1433,6 +1485,9 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
            if ( err != NC_NOERR ) {
               throw(badNetcdfError(err));
            }
+        }
+        if ( dbug > 50 ) {
+           std::cerr << "defined status variable w/ id = " << vid_status << std::endl;
         }
         // define long_name attribute
         aname = "long_name";
@@ -1465,6 +1520,9 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
               throw(badNetcdfError(err));
            }
         }
+        if ( dbug > 50 ) {
+           std::cerr << "defined flags variable w/ id = " << vid_flags << std::endl;
+        }
         // define long_name attribute
         aname = "long_name";
         val = "parcel bitwise flags"; 
@@ -1495,6 +1553,9 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
            if ( err != NC_NOERR ) {
               throw(badNetcdfError(err));
            }
+        }
+        if ( dbug > 50 ) {
+           std::cerr << "defined tag variable w/ id = " << vid_tag << std::endl;
         }
         // define missing_value attribute       
         if ( i_am_root ) {
@@ -1689,6 +1750,9 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
         std::cerr << "NetcdfOut::newopen: " << fname << " is opened." << std::endl;
      }
 
+     if ( paranoyd ) {
+        rclose();
+     }
 
 }    
 
@@ -1745,6 +1809,7 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
      real badlat;
      real badvert;
      int vtype;
+     double t0x;
 
      if ( is_open ) {
         close();
@@ -1860,9 +1925,20 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
            }
            // todo: handle the case where the timestamp is a char array
         }
-        if ( (tstamp == "") && (met != NULLPTR) ) {
-           tstamp = met->time2Cal( t0 );
+        t0x = dNaN;
+        if (met != NULLPTR) {
+           if ( tstamp == "" ) {
+              tstamp = met->time2Cal( t0 );
+           }
+           if ( traj_start != "" ) {
+              t0x = met->cal2Time( traj_start );
+           }
         }
+        if ( dbug > 1 ) {
+           std::cerr << "NetcdfOut::reopen: current t0=" << t0 << "(" << tstamp << ")"
+                     << "; file t0 = " << t0x << " (" << traj_start << ")" << std::endl;
+        }
+        
         // get the trajectory direction and ensure we are working in the same direction
         aname = "Trajectory_direction";
         attr_name = aname.c_str();
@@ -1902,14 +1978,13 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
         }
      
      
-     
         // do the initial inquiries to get basic sizes and shapes
         err = nc_inq(ncid, &ndimens, &nvars, &ngatts, &unlimdim_idx);
         if ( err != NC_NOERR ) {
            throw(badNetcdfError(err));
         }
         if ( dbug > 2 ) {
-           std::cerr << "NetcdfIn::reopen: initial inq: " << ndimens << ", " << nvars << ", " << ngatts << ", " << unlimdim_idx << std::endl;
+           std::cerr << "NetcdfOut::reopen: initial inq: " << ndimens << ", " << nvars << ", " << ngatts << ", " << unlimdim_idx << std::endl;
         }
 
         // get the dimensional IDs for time and id
@@ -1929,7 +2004,7 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
            throw(badNetcdfError(err));
         }
         if ( dbug > 10 ) {
-           std::cerr << "NetcdfIn::open: There are " << ntimes << " times" << std::endl;
+           std::cerr << "NetcdfOut::open: There are " << ntimes << " times" << std::endl;
         }   
      
         err = nc_inq_dimid( ncid, "id", &did_id);
@@ -1955,6 +2030,9 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
         } else if ( err != NC_NOERR ) {
            throw(badNetcdfError(err));
         }
+        if ( dbug > 50 ) {
+           std::cerr << "read time variable w/ id = " << vid_time << std::endl;
+        }
 
         err = nc_inq_var( ncid, vid_time, NULL, &var_type, &var_ndims, var_dims, &var_natts);
         if ( err != NC_NOERR ) {
@@ -1975,40 +2053,70 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
 
         time_idx = 0;
         icount = 1;
-        err = nc_get_vara_double( ncid, vid_time, &time_idx, &icount, &tt0 );
-        if ( err != NC_NOERR ) {
-           throw(badNetcdfError(err));
-        }
-        file_t0 = tconv( tt0 );
-        if ( dbug > 1 ) {
-           std::cerr << "NetcdfOut::reopen: 0th Parcel time is " << file_t0 << std::endl;
-        }
-        time_idx = ntimes - 1;
-        icount = 1;
-        err = nc_get_vara_double( ncid, vid_time, &time_idx, &icount, &tt0 );
-        if ( err != NC_NOERR ) {
-           throw(badNetcdfError(err));
-        }
-        file_t1 = tconv( tt0 );
-        if ( dbug > 1 ) {
-           std::cerr << "NetcdfOut::reopen: final Parcel time is " << file_t1 << std::endl;
+        if ( ntimes > 0 ) {
+           // get the first time from the file
+           err = nc_get_vara_double( ncid, vid_time, &time_idx, &icount, &tt0 );
+           if ( err == NC_NOERR ) {
+              file_t0 = tvnoc( tt0 );
+              if ( dbug > 1 ) {
+                 std::cerr << "NetcdfOut::reopen: 0th Parcel time is " << file_t0 << std::endl;
+              }
+              // get the last time from the file
+              time_idx = ntimes - 1;
+              icount = 1;
+              err = nc_get_vara_double( ncid, vid_time, &time_idx, &icount, &tt0 );
+              if ( err != NC_NOERR ) {
+                 throw(badNetcdfError(err));
+              }
+              file_t1 = tvnoc( tt0 );
+              if ( dbug > 1 ) {
+                 std::cerr << "NetcdfOut::reopen: final Parcel time is " << file_t1 << std::endl;
+              }
+              // now check whether the starting time stamps match
+//              my_traj_start = met->time2Cal( t0 + file_t0 );
+//              if ( my_traj_start != traj_start ) {
+//                 std::cerr << "NetcdfOut::reopen: WARNING: reopened file's start time " << traj_start 
+//                 << " and the given start time " << my_traj_start << " do not match!" 
+//                 << " This could also be a symptom of the zero time of the former run not matching the current zero time."
+//                 << std::endl;
+//              }
+              
+              if ( ! paranoyd ) {
+                 tyme = file_t1;
+                 tnum = ntimes;
+              } else {
+                 tyme = file_t1;
+                 tnum = ntimes;
+              }   
+              
+              // we could put a number of other time checks in here as well.
+
+           } else {
+              throw(badNetcdfError(err));              
+           }
+        } else {
+           // no time values have been written
+           if ( ! paranoyd ) {
+              tyme = t0;
+              tnum = 0;
+           } else {
+              tyme = remember_tyme;
+              tnum = remember_tnum;
+           }   
+           if ( dbug > 1 ) {
+              std::cerr << "NetcdfOut::reopen: no time values are in the file " << std::endl;
+           }
         }
 
-        // now check whether the starting time stamps match
-        my_traj_start = met->time2Cal( t0 + file_t0 );
-        if ( my_traj_start != traj_start ) {
-           std::cerr << "NetcdfOut::reopen: WARNING: reopened file's start time " << traj_start 
-           << " and the given start time " << my_traj_start << " do not match!" 
-           << " This could also be a symptom of the zero time of the former run not matching the current zaero time."
-           << std::endl;
-        }
-        // we could put a number of other time checks in here as well.
      
      
         // now find out about parcels (mainly, how many there are)
         name = "id";
         var_name = name.c_str(); 
         err = nc_inq_varid( ncid, var_name, &vid_id );
+        if ( dbug > 50 ) {
+           std::cerr << "read id variable w/ id = " << vid_id << std::endl;
+        }
         if ( err == NC_EBADDIM ) {
            std::cerr << name << " variable does not exist" << std::endl;
            throw(badFileConventions());
@@ -2027,13 +2135,17 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
            throw(badNetcdfReOpenMismatch());
         }
 
-        // start with the zeroeth parcel
-        ip = 0;   
+        // start with the zeroeth parcel, unless we are reopening from the last write.
+        if ( ! paranoyd ) {
+           ip = 0;
+        } else {   
+           ip = remember_ip;
+        }
 
         // get longitude variable id
         vid_lon = get_var_id( "lon", true, "", &vtyp_lon );
         if ( dbug > 1 ) {
-           std::cerr << "NetcdfOut::reopen: Got the id for the 'lon' coordinate." <<  std::endl;
+           std::cerr << "NetcdfOut::reopen: Got the id for the 'lon' coordinate: " <<  vid_lon << std::endl;
         }
         // get the bad-value flag for longitudes
 #ifdef USE_DOUBLE
@@ -2059,7 +2171,7 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
         // get latitude variable id
         vid_lat = get_var_id( "lat", true, "", &vtyp_lat );
         if ( dbug > 1 ) {
-           std::cerr << "NetcdfOut::reopen: Got the id for the 'lat' coordinate." <<  std::endl;
+           std::cerr << "NetcdfOut::reopen: Got the id for the 'lat' coordinate: " <<  vid_lat << std::endl;
         }
         // get the bad-value flag for latitudes
 #ifdef USE_DOUBLE
@@ -2085,6 +2197,9 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
         // get the vertical coordinate variable id
         val = vcoord;
         vid_z = get_var_id( vcoord, true, "vertical_coordinate", &vtyp_z );
+        if ( dbug > 1 ) {
+           std::cerr << "NetcdfOut::reopen: Got the id for the vert coordinate " << vcoord << ": " << vid_z << std::endl;
+        }
 #ifdef USE_DOUBLE
         err = nc_get_att_double( ncid, vid_z, "missing_value", &badvert);
 #else
@@ -2106,10 +2221,24 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
            throw(badNetcdfReOpenMismatch());     
         }
      
+        // try timestamp
+        vid_tstamp = get_var_id( "timestamp", false, "", &vtyp_tstamp );
+        if ( dbug > 50 ) {
+           std::cerr << "NetcdfOut::reopen: vid_tstamp = " << vid_status << ", doing status = " << do_tstamp << std::endl;
+        }
+        if (  ((vid_tstamp >= 0) && (! do_tstamp) )
+           || ((vid_tstamp < 0) && (do_tstamp) ) ) {
+           std::cerr << " reopened file and our output do not match with respect to outputting tstamp values " << std::endl;
+           throw(badNetcdfReOpenMismatch());     
+        }
+     
         // try status
         vid_status = get_var_id( "status", false, "", &vtyp_status );
-        if (  ((vid_status >= 0) && ( ! do_flags) )
-           || ((vid_status < 0) && (do_flags) ) ) {
+        if ( dbug > 50 ) {
+           std::cerr << "NetcdfOut::reopen: vid_status = " << vid_status << ", doing status = " << do_status << std::endl;
+        }
+        if (  ((vid_status >= 0) && ( ! do_status) )
+           || ((vid_status < 0) && (do_status) ) ) {
            std::cerr << " reopened file and our output do not match with respect to outputting status " << std::endl;
            throw(badNetcdfReOpenMismatch());     
         }
@@ -2127,14 +2256,6 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
         if (  ((vid_tag >= 0) && (! do_tag) )
            || ((vid_tag < 0) && (do_tag) ) ) {
            std::cerr << " reopened file and our output do not match with respect to outputting tag values " << std::endl;
-           throw(badNetcdfReOpenMismatch());     
-        }
-     
-        // try timestamp
-        vid_tstamp = get_var_id( "tstamp", false, "", &vtyp_tstamp );
-        if (  ((vid_tstamp >= 0) && (! do_tstamp) )
-           || ((vid_tstamp < 0) && (do_tstamp) ) ) {
-           std::cerr << " reopened file and our output do not match with respect to outputting tstamp values " << std::endl;
            throw(badNetcdfReOpenMismatch());     
         }
      
@@ -2157,7 +2278,7 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
             }
         }
 
-// test file's traj_start against our tstamp
+// test file's traj_start against our tstamp?
      
      }     
 
@@ -2165,8 +2286,98 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
         std::cerr << "NetcdfOut::reopen: " << fname << " is opened." << std::endl;
      }
 
+}    
+
+
+
+void NetcdfOut::fakeReopen( std::string file, Parcel* p, unsigned int n )
+{
+     int err;
+     std::string aname;
+     std::string val;
+     char *cval;
+     const char *attr_name;
+     const char *var_name;
+     std::string name;
+     nc_type attr_type;
+     size_t  attr_size;
+     int attr_id;
+     int var_id;
+     const char *aval;
+     nc_type var_type;
+     int var_ndims;
+     int var_dims[NC_MAX_VAR_DIMS];
+     int  var_natts;
+     time_t t;
+     int dims[2];
+     float fval;
+     double dval;
+     int ival;
+     const char* nanstr = "";
+     int vid;
+     size_t put_count;
+     size_t put_start;
+     ptrdiff_t put_stride;
+     char *xstamp;
+     struct tm *tm;
+     std::string *tst1;
+     ProcessGrp *pgrp;
+     std::string traj_start;
+     std::string my_traj_start;
+     bool i_am_root;
+     int ndimens;
+     int unlimdim_idx;
+     size_t ntimes;
+     int time_index;
+     size_t istart;
+     size_t icount;
+     double file_t0;
+     double file_t1;
+     double tt0;
+     size_t time_idx;
+     size_t file_pnum;
+     int dim_id;
+     int file_direction;
+     real badlon;
+     real badlat;
+     real badvert;
+     int vtype;
+
+
+     if ( is_open ) {
+        close();
+     }
+
+     if ( file != "" ) {
+        filename( file );
+     }
+
+     if ( dbug > 1 ) {
+        std::cerr << "NetcdfOut::fakeReopen: Trying to fake-open " << fname <<  std::endl;
+     }
+
+     i_am_root = is_root();
+     
+     
+     is_open = false;
+
+     
+     if ( p != NULLPTR ) {
+        init(p);
+     }
+
+     if ( n > 0 ) {
+        pnum = n;
+     }
+     
+
+     if ( dbug > 1 ) {
+        std::cerr << "NetcdfOut::fakeReopen: " << fname << " is fake-opened." << std::endl;
+     }
 
 }    
+
+
 
 void NetcdfOut::close()
 {
@@ -2182,6 +2393,12 @@ void NetcdfOut::close()
            if ( err != NC_NOERR ) {
               throw(badNetcdfError(err));
            }
+        }
+
+        if ( paranoyd ) {
+           remember_tyme = dNaN;
+           remember_ip = 0;
+           remember_tnum = 0;
         }
 
         is_open = false;
@@ -2205,6 +2422,37 @@ void NetcdfOut::close()
      
 }
 
+void NetcdfOut::rclose()
+{
+     
+     if ( is_open ) {
+
+        close();
+        
+        if ( paranoyd ) {
+           remember_tyme = tyme;
+           remember_ip = ip;
+           remember_tnum = tnum;
+        }
+
+        if ( dbug > 1 ) {
+           std::cerr << "NetcdfOut::rclose: " << fname << " is closed." << std::endl;
+        }
+
+     }
+     
+     vid_lon = -1;
+     vid_lat = -1;
+     vid_z = -1;
+     vid_status = -1;
+     vid_flags = -1;
+     vid_tag = -1;
+     vid_tstamp = -1;
+     for ( int i=0; i < other.size(); i++ ) {
+         vid_other[i] = -1;
+     }
+     
+}
 
 int NetcdfOut::get_var_id( const std::string &varname, bool required, const std::string &flag, int*vtype )
 {
@@ -2308,14 +2556,14 @@ int NetcdfOut::get_var_id( const std::string &varname, bool required, const std:
      }
      
      
-     // if we found the variable, then do a little anity checking
+     // if we found the variable, then do a little sanity checking
      if ( result >= 0 ) {
         err = nc_inq_var( ncid, result, NULL, &var_type, &var_ndims, var_dims, &natts);
         if ( err != NC_NOERR ) {
            throw(badNetcdfError(err));
         }
      
-        if ( var_ndims != 2 ) {
+        if ( var_ndims != 2 && varname != "timestamp" ) {
            std::cerr << "variable " << varname << " has " << var_ndims << " dimensions instead of 2 " << std::endl;
            throw(badFileConventions());
         }
@@ -2355,6 +2603,15 @@ void NetcdfOut::writeout( double t, unsigned int n, real *lons, real *lats, real
    real* znew;
    real* newstuff;
 
+
+   if ( ! paranoyd ) {
+      if ( ! is_open ) {
+         open();
+      }
+   } else {
+      reopen();
+   }
+
    i_am_root = is_root();
 
 
@@ -2378,7 +2635,7 @@ void NetcdfOut::writeout( double t, unsigned int n, real *lons, real *lats, real
       if ( (dir == 0) && isfinite(tyme) ) {
          if ( tyme < t ) {
             dir = 1;
-         } else {
+         } else if ( tyme > t ) {
             dir = -1;
          }
          if ( dbug > 10 ) {
@@ -2395,7 +2652,7 @@ void NetcdfOut::writeout( double t, unsigned int n, real *lons, real *lats, real
                   throw(badNetcdfError(err));
                }        
             }        
-         } else {
+         } else if ( dir < 0 ) {
             aname = "Trajectory_direction";
             val = "bck";
             aval = val.c_str();
@@ -2558,6 +2815,9 @@ void NetcdfOut::writeout( double t, unsigned int n, real *lons, real *lats, real
       throw(badNetcdfBadNumberParcels());
    } 
    
+   if ( paranoyd ) {
+      rclose();
+   }
    
 }
 

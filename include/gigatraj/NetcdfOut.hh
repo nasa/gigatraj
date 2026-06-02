@@ -144,10 +144,33 @@ class NetcdfOut : public ParcelReporter {
       /*! This method returns the internal flags that indicates whether an existing
           netcdf file is to be opened and appended to.
           
-          \return ture if the file is opened for appending, alfse if it is to be created fresh
+          \return true if the file is opened for appending, false if it is to be created fresh
           
       */
-      bool resuming();     
+      bool resuming() const;     
+
+      /// sets whether we are closing the netcdf output file after each write
+      /*! This method sets an internal flag that indicates whether the netcdf
+          file is be be closed after each write.
+          This takes more time, but it is safer if the model crashes.
+          
+          
+          \param par set to true to be paranoid about preserving output in a crash, false otherwise
+           
+      */
+      void paranoid( bool par=true );     
+
+      /// resturns whether we are adding to an older netcdf output file
+      /*! This method returns the internal flags that indicates whether the netcdf
+          file is be be closed after each write.
+          This takes more time, but it is safer if the model crashes.
+           
+          
+          
+          \return true if we are being paranoid about preserving output in a crash , false otherwise
+          
+      */
+      bool paranoid() const;     
           
 
       /// sets the vertical quantity to use
@@ -688,6 +711,18 @@ class NetcdfOut : public ParcelReporter {
       /// says whether we are re-opening an old file (true) or starting new (false)
       bool restore;
       
+      /// says whether we are to be paranoid about keeping the output
+      /// netcdf file salvageable in the event of a crash, but 
+      /// opening it and closing it each time we write to it.
+      bool paranoyd;
+      /// a piece of state we need to rmemeber from write to write, if we are bing paranoid
+      double remember_tyme;
+      /// a piece of state we need to rmemeber from write to write, if we are bing paranoid
+      size_t remember_ip;
+      /// a piece of state we need to rmemeber from write to write, if we are bing paranoid
+      size_t remember_tnum;
+      
+      
       /// the vertical coordinate being used
       std::string vcoord;
       /// the vertical coordinate units
@@ -858,7 +893,20 @@ class NetcdfOut : public ParcelReporter {
      /*! This method resets all of the object's settings to those of a newly-create object,
          just after closing any open file.
      */
-     void reset();     
+     void reset();   
+     
+     /// Is the output file metadata considered complete?
+     /*! This method returns whether the file metedata must be considered complete
+         and immutable.
+         
+         This is true if all of the metadata has been written to the file
+         already, and data are now being written. Once data have been written,
+         no new metadata, dimensions, or variables should be added.  
+     
+         \return true if the metadata and file structure 9dimensions and variables definitions)
+                      are complete, false otherwise
+     */
+     bool metaFixed() const;                  
      
      /// convert model time to netcdf time
      /*! This method converts model time to netcdf time
@@ -870,7 +918,25 @@ class NetcdfOut : public ParcelReporter {
      { 
           return t*ts + to;
      }    
+
+     /// convert netcdf time to  modeltime
+     /*! This method converts netcdf time to model time
      
+         \param t the netcdf time
+         \return the model time
+     */
+     inline double tvnoc( double t )
+     { 
+          return (t - to)/ts;
+     }    
+     
+     /// closes the output file while retaining the time and parcel id
+     /*! This method is a wrapper arund the close() method.
+         
+         If running in paranoid mode, it remembers the parcel id and tyme
+         for the next write.
+     */    
+     void rclose();
      
      /// get the units of the netcdf time
      /*! This method returns a string that describes the units used by
@@ -927,12 +993,8 @@ class NetcdfOut : public ParcelReporter {
           This can be useful when continuing a previous trajectory run.
       
           Sanity checks are done to verify that the old file is
-          compartible with the output that we want to do.
+          compatible with the output that we want to do.
       
-          Note that, ordinarily, the calling routine will not call open() directly
-          but will simply starting calling apply() after calling any setup methods.
-          the apply() methods will call open() if the file is not already open.
-   
           \param file the name of the file to open
           
           \param p a pointer to a Parcel object that is typical of thsoe to be used.
@@ -943,6 +1005,24 @@ class NetcdfOut : public ParcelReporter {
       */
       void reopen( std::string file="", Parcel* p=NULLPTR, unsigned int n=0 );    
 
+
+      /// PRetend to reopen an old netcdf file for output
+      /*! This method pretends to open a pre-existing netcdf file for output.
+          It does not actually open the file, but it remebers the information that
+          will be needed to reopen the file for later, such as the file name. 
+
+          This can be useful when operating in paranoid mode.
+      
+   
+          \param file the name of the file to open
+          
+          \param p a pointer to a Parcel object that is typical of thsoe to be used.
+                   If given, then the meteorological data source for the NetcdfOout object is taken from this Parcel.
+          
+          \param n the number of parcels to be written
+                   
+      */
+      void fakeReopen( std::string file="", Parcel* p=NULLPTR, unsigned int n=0 );    
 };
 }
 
