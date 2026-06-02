@@ -124,6 +124,7 @@ void PGenRndDisc :: init( Seq<Parcel>* seq
 {
      PlanetNav *nav;
      real lon, lat, z;
+     real rno;
      
      if ( seq->size() <= 0 ) {
         throw  (ParcelGenerator :: badparcelcount());
@@ -137,7 +138,8 @@ void PGenRndDisc :: init( Seq<Parcel>* seq
              
              nav = it->getNav();
              
-             r = rad * SQRT( rnd.uniform(0.0,1.0) );
+             rno =  rnd.uniform(0.0,1.0);
+             r = rad * SQRT( rno );
              ang =  360.0*rnd.uniform(0.0, 360.0);
              nav->displace( lon0,lat0, r,ang, lon,lat);
              
@@ -161,6 +163,7 @@ Parcel * PGenRndDisc :: create_array(Parcel parcel, int n
 {
     Parcel* pa;
     PlanetNav *nav;
+    real rno;
      
     
     if ( n <= 0 ) {
@@ -175,8 +178,9 @@ Parcel * PGenRndDisc :: create_array(Parcel parcel, int n
        // initialize the parcel value
        for (int i=0; i<n; i++ ) {
           real lon, lat, z, r, ang;
-
-          r = rad * SQRT( rnd.uniform(0.0,1.0) );
+ 
+          rno = rnd.uniform(0.0,1.0);
+          r = rad * SQRT( rno );
           ang =  360.0*rnd.uniform(0.0, 360.0);
           nav->displace( lon0,lat0, r,ang, lon,lat);
           
