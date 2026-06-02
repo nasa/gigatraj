@@ -798,7 +798,10 @@ GridLatLonFieldSfc* MetGridSBRot::new_directGridSfc( const std::string quantity,
           remove( desired3D );
           remove( desiredsfc );
        } else {
+          delete gridsfc;
           gridsfc = desiredsfc;
+          gridsfc->set_surface(sfcname);
+          gridsfc->setPgroup( my_pgroup, my_metproc );
        }
        remove( grid3D );
     } else if ( sfcname == "sfc" ) { 
