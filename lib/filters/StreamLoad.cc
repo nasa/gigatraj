@@ -418,6 +418,8 @@ void StreamLoad :: apply( Flock& p )
           throw (StreamLoad::badinitstream());          
        }
     } else {
+       // binary input
+       
        is->read(  reinterpret_cast<char *>(&n0), static_cast<std::streamsize>(sizeof(int)) );
        if ( n0 <= n ) {
           is->read(  reinterpret_cast<char *>(&bn), static_cast<std::streamsize>(sizeof(int)) );
