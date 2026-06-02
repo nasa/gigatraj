@@ -274,7 +274,8 @@ void StreamDump :: apply( Flock& p )
     
     i_am_root = p.is_root();
 
-    output = NULL;
+    output = NULLPTR;
+    bn = -1;
 
     if ( mode == 0 ) {
        *(os) << n; 
@@ -282,12 +283,22 @@ void StreamDump :: apply( Flock& p )
        os->write( reinterpret_cast<char *>(&n), static_cast<std::streamsize>(sizeof(int)) );
        p.sync();
        px =  p.parcel( 0, 1 );
+       bn = px->bsize();
        if ( ( px != NULLPTR ) && i_am_root ) {
-          bn = px->bsize();
           output = new char[bn];
           sn = static_cast<std::streamsize>( bn*sizeof(char) );
           os->write( reinterpret_cast<char *>(&bn), static_cast<std::streamsize>(sizeof(int)) );
        }
+    }
+    
+    if ( (mode != 0) && (bn < 0) ) {
+       std::cerr << " Bad parcel size " << std::endl;
+       std::cerr << " mode = " << mode << " , bn = " << bn << std::endl;
+       throw (StreamDump::badstreamdump());
+    }
+    if ( (mode != 0) && (output == NULLPTR) && i_am_root ) {
+       std::cerr << " Bad output stream " << std::endl;
+       throw (StreamDump::badstreamdump());
     }
     
     for ( int i=0; i<n; i++ ) {
