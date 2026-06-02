@@ -94,6 +94,7 @@ unsigned int RandomSrc::genSeed()
        r.get(cc, sizeof(saw));
        r.close();
        // play with pointers to transfer the bytes just read to the seed
+       saw = 0;
        char *cin = cc;
        char *cout = (char *)(&saw);
        for (int i=0; i<sizeof(saw); i++ ) {
