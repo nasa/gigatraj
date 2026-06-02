@@ -358,14 +358,18 @@ std::ostream& operator<<( std::ostream& os, const Parcel& p)
 int Parcel::bsize() 
 {
    int n;
-   
-   n = sizeof(real) 
-      + sizeof(real)
-      + sizeof(real)
-      + sizeof(double)
-      + sizeof(double)
-      + sizeof(ParcelFlag) 
-      + sizeof(ParcelStatus);
+
+   n = sizeof(real) // lon
+      + sizeof(real) // lat
+      + sizeof(real) // z
+      + sizeof(double)  // t
+      + sizeof(double)  // tg
+      + sizeof(ParcelFlag) // flagset
+      + sizeof(ParcelStatus); // statuses
+/*   
+
+   n = sizeof(*this);
+*/
 
    return n;
 }
@@ -498,32 +502,23 @@ void Parcel:: bdeserialize( char *content, int n )
                     }
                     start += sz;
      
-                    bp = reinterpret_cast<char *>(&(this->tg));
-                    sz = sizeof(double);
-                    if ( (start + sz ) <= n ) {
-                       for ( i=0; i<sz; i++ ) {
-                           bp[i] = content[i + start];
-                       }
-                       start += sz;
+                    bp = reinterpret_cast<char *>(&(this->flagset));       
+                    sz = sizeof(ParcelFlag);                               
+                    if ( (start + sz ) <= n ) {                            
+                       for ( i=0; i<sz; i++ ) {                            
+                           bp[i] = content[i + start];                     
+                       }                                                   
+                       start += sz;                                        
 
-                       bp = reinterpret_cast<char *>(&(this->flagset));
-                       sz = sizeof(ParcelFlag);
-                       if ( (start + sz ) <= n ) {
-                          for ( i=0; i<sz; i++ ) {
-                              bp[i] = content[i + start];
-                          }
-                          start += sz;
-
-                          bp = reinterpret_cast<char *>(&(this->statuses));
-                          sz = sizeof(ParcelStatus);
-                          if ( (start + sz ) <= n ) {
-                             for ( i=0; i<sz; i++ ) {
-                                 bp[i] = content[i + start];
-                             }
-                             start += sz;
-                          
-                          }
-                       }
+                       bp = reinterpret_cast<char *>(&(this->statuses));   
+                       sz = sizeof(ParcelStatus);                          
+                       if ( (start + sz ) <= n ) {                         
+                          for ( i=0; i<sz; i++ ) {                         
+                              bp[i] = content[i + start];                  
+                          }                                                
+                          start += sz;                                     
+                                                                           
+                       }                                                   
                     }
                  }
               }
