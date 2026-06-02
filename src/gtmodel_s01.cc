@@ -512,7 +512,7 @@ int getconfig(int argc, char * const argv[], Configuration& conf, MetSelector &m
     return status;
 }
 
-Flock* restore( Parcel &pcl, std::string &restore_file, ProcessGrp *pgrp, int mcsr, double *time, double *accumul_time )
+Flock* restore( Parcel &pcl, const std::string &restore_file, ProcessGrp *pgrp, int mcsr, double *time, double *accumul_time )
 {
     Flock* result;
     std::ifstream input;
@@ -550,7 +550,7 @@ Flock* restore( Parcel &pcl, std::string &restore_file, ProcessGrp *pgrp, int mc
     return result;
 }
 
-void save( std::string &save_file, double time, double accumul_time, Flock*  flock )
+void save( const std::string &save_file, double time, double accumul_time, Flock*  flock )
 {
     int id;
     int np;
@@ -1334,7 +1334,9 @@ int main( int argc, char * argv[] )
 #ifdef USE_NETCDF
        if ( ! outNetcdf ) {
 #endif
-          Out << *flock;
+          if ( ! do_restore ) {
+             Out << *flock;
+          }
 #ifdef USE_NETCDF
        } else {
           out_netcdf = new NetcdfOut();
@@ -1349,11 +1351,16 @@ int main( int argc, char * argv[] )
           }
           out_netcdf->format( fmt );
           out_netcdf->init( &pcl, flock->size() );
+          if ( do_save ) {
+             out_netcdf->paranoid( true );
+          }
           if ( do_restore ) {
              out_netcdf->resuming( true );
           }
           out_netcdf->open();
-          out_netcdf->apply( *flock );
+          if ( ! do_restore ) {
+             out_netcdf->apply( *flock );
+          }
           set_last_gasp();
        }
 #endif

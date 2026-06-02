@@ -509,7 +509,7 @@ int getconfig(int argc, char * const argv[], Configuration& conf, MetSelector &m
     return status;
 }
 
-Swarm* restore( Parcel &pcl, std::string &restore_file, ProcessGrp *pgrp, int mcsr, double *time, double *accumul_time )
+Swarm* restore( Parcel &pcl, const std::string &restore_file, ProcessGrp *pgrp, int mcsr, double *time, double *accumul_time )
 {
     Swarm* result;
     std::ifstream input;
@@ -548,7 +548,7 @@ Swarm* restore( Parcel &pcl, std::string &restore_file, ProcessGrp *pgrp, int mc
 }
 
 
-void save( std::string &save_file, double time, double accumul_time, Swarm*  swarm )
+void save( const std::string &save_file, double time, double accumul_time, Swarm*  swarm )
 {
     int id;
     int np;
@@ -1332,7 +1332,9 @@ int main( int argc, char * argv[] )
 #ifdef USE_NETCDF
        if ( ! outNetcdf ) {
 #endif
-          Out << *swarm;
+          if ( ! do_restore ) {
+             Out << *swarm;
+          }
 #ifdef USE_NETCDF
        } else {
           out_netcdf = new NetcdfOut();
@@ -1346,11 +1348,16 @@ int main( int argc, char * argv[] )
           }
           out_netcdf->format( fmt );
           out_netcdf->init( &pcl, swarm->size() );
+          if ( do_save ) {
+             out_netcdf->paranoid( true );
+          }
           if ( do_restore ) {
              out_netcdf->resuming( true );
           }
           out_netcdf->open();
-          out_netcdf->apply( *swarm );
+          if ( ! do_restore ) {
+             out_netcdf->apply( *swarm );
+          }
           set_last_gasp();
        }
 #endif
