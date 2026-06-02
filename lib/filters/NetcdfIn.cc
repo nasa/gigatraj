@@ -377,6 +377,7 @@ std::string NetcdfIn::findVunits( int vid )
                           err = nc_get_att_string( ncid, vid, c_aname, &c_avalue );
                           if ( err == NC_NOERR ) {
                              result = std::string(c_avalue);
+                             nc_free_string( 1, &c_avalue );
                              break;
                           }
                        } else if ( atype == NC_CHAR ) {
