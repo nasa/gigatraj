@@ -157,6 +157,8 @@ int main()
           }
           exit(1);
        }
+       
+       delete vbunch;
    
        delete Lbunch;
 
@@ -204,6 +206,7 @@ int main()
           exit(1);
        }
    
+       delete vbunch;
        delete Dbunch;
 
 
@@ -251,6 +254,7 @@ int main()
           exit(1);
        }
    
+       delete vbunch;
        delete Fbunch;
 
 
@@ -298,6 +302,7 @@ int main()
           exit(1);
        }
    
+       delete vbunch;
        delete Sbunch;
 
        /////////////////////////////////////////////////////////////////////////
