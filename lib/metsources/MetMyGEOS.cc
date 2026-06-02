@@ -529,24 +529,26 @@ void MetMyGEOS::delay()
 
     // we have to be multiprocessing, and the current file 
     // (opened or about to be opened) has to be a URL
-    if ( my_pgroup->id() >= 0 && is_url ) {
-        
-       c1 = my_pgroup->numberOfProcessors() ;
-       
-       // assume a max of three concurrent connections to an opendap server
-       // allow about 6 seconds for each
-       if ( c1 > 3 ) {
-          wayt =   ( c1/3.0*6.0 );
-       
-          w = ( my_pgroup->random()*wayt + 0.5);
+    if ( my_pgroup != NULLPTR ) {
+       if ( my_pgroup->id() >= 0 && is_url ) {
+           
+          c1 = my_pgroup->numberOfProcessors() ;
           
-          if ( dbug > 5 ) {
-             std::cerr << "MetMyGEOS::delay: sleeping for " << w 
-                       << " sec from a max of " << wayt 
-                       << " w/ " << c1 <<  " processors"
-                       << std::endl;
+          // assume a max of three concurrent connections to an opendap server
+          // allow about 6 seconds for each
+          if ( c1 > 3 ) {
+             wayt =   ( c1/3.0*6.0 );
+          
+             w = ( my_pgroup->random()*wayt + 0.5);
+             
+             if ( dbug > 5 ) {
+                std::cerr << "MetMyGEOS::delay: sleeping for " << w 
+                          << " sec from a max of " << wayt 
+                          << " w/ " << c1 <<  " processors"
+                          << std::endl;
+             }
+             (void) sleep( w );          
           }
-          (void) sleep( w );          
        }
     }
 
@@ -2376,9 +2378,9 @@ bool  MetMyGEOS::dsInit( const std::string& quantity, const std::string& time )
      
         result = catlog.query( quant, dayt, ds, modelrun );
         if ( result ) {
-           test_dsrc = 0;
-           opened_dsrc = -1;
            // TODO: check if the ds is the same as one currently opened, so we don't have to close and re-open?
+           Source_close();
+           test_dsrc = 0;
         }
      } else {
         // no need for any new query
@@ -2776,13 +2778,28 @@ void MetMyGEOS::Source_open( bool pre, int index )
         std::cerr << "MetMyGEOS::Source_open: starting" << std::endl;
      }
 
+          
+     ds_size = ds.size();
+     
+     // sanity check
+     if ( (test_dsrc < 0) || (test_dsrc >= ds_size) ) {
+        test_dsrc = 0;
+     }
+     if ( is_open && (opened_dsrc < 0 || opened_dsrc >= ds_size ) ) {
+        std::cerr << "MetMyGEOS::Source_open: open_dscr has an impossible vlaue for an open url: " << opened_dsrc << std::endl;
+        throw (badImpossible());
+     }
+     
      // if the index into the dat sources (dS) is not valid,
      // set it to the current data source's index
      if ( index < 0 ) {
         index = test_dsrc;
      }
-          
-     ds_size = ds.size();
+     // sanity check
+     if ( (index < 0) || (index >= ds_size) ) {
+        index = 0;
+     }
+     
      
      // index into ds of a known-unsuccessful url
      // As far as we know at this point,

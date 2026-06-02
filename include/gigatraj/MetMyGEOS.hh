@@ -75,6 +75,9 @@ class MetMyGEOS : public MetGridLatLonData {
       /// an exception for missing or bad Catalog config file
       class badConfig {};
 
+      /// an exception for things that should never happen
+      class badImpossible {};
+
       /// An exception for failing to open the GEOS netcdf file
       class badNetcdfOpen {
          public:
