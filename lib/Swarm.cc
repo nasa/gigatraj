@@ -1588,7 +1588,7 @@ int Swarm::advance( double dt )
                     || ( flagsets[jj] & NoTrace ) 
                     || ( (flagsets[jj] & SyncTrace) && (ts[jj] >= tyme) )
                   ) {
-                     traceflags[j] = 1;
+                     traceflags[jj] = 1;
                   }
               }
                   

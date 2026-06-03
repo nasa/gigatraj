@@ -1268,7 +1268,6 @@ int Flock::advance( double dt )
               }   
               
               int nn = jmax - i + 1;
-              
               for ( int j = i; j <= jmax; j++ ) {
 
                   p = parcels[j];              
@@ -1285,10 +1284,10 @@ int Flock::advance( double dt )
                     || ( flags[j] & NoTrace ) 
                     || ( (flags[j] & SyncTrace) && (p->t >= tyme) )
                   ) {
-                     traceflags[i] = 1;
+                     traceflags[j] = 1;
                   }
               }
-              
+
               integ->go( nn, lons, lats, zs, traceflags, tyme, met, nav, dt ); 
           
               for ( int j = i; j <= jmax; j++ ) {
