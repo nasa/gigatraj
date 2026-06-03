@@ -158,7 +158,7 @@ void Filter_Trop::apply( Parcel& p )
      real zu;
      real zl;
 
-     // we only test Parcels that are bieng traced
+     // we only test Parcels that are being traced
      if ( ! p.queryNoTrace() ) {
 
         metsrc = p.getMet();
@@ -314,11 +314,10 @@ void Filter_Trop::apply( std::deque<Parcel>& p )
 void Filter_Trop::apply( Flock& p )
 {
     Flock::iterator iter;
-
     for ( iter=p.begin(); iter != p.end(); iter++ ) {
         apply( *iter );
     }
-    
+        
 }
 
 void Filter_Trop::apply( Swarm& p )
