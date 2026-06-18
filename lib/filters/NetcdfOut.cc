@@ -3537,6 +3537,9 @@ void NetcdfOut::apply( Flock& p )
    
    n = p.size();
    
+   // initialize the parcel time to NaN
+   tt = dNaN;
+   
    if ( n > 0 )  { 
    
       // allocate the space for this chunk
@@ -3573,7 +3576,7 @@ void NetcdfOut::apply( Flock& p )
       // processor find the time for all of its share of the parcels.
       // then have the root processor select the best time from the other processors.)
       
-      // initialize the parcle time to NaN
+      // initialize the parcel time to NaN
       tt = dNaN;
       // Assume that none of the parcels is valid
       anytrace = false;
