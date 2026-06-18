@@ -34,6 +34,8 @@ Flock::Flock( int n )
 
    pgroup = NULLPTR;
    
+   exemplar = NULLPTR;
+   
    allocate( n, NULLPTR, &p, 0 );
 
 };
@@ -48,6 +50,8 @@ Flock::Flock( ProcessGrp *pgrp, int n, int r)
    
    pgroup = NULLPTR;
    
+   exemplar = NULLPTR;
+   
    allocate( n, pgrp, &p, r );
 
 };
@@ -61,6 +65,8 @@ Flock::Flock( const Parcel &p, int n)
    
    pgroup = NULLPTR;
    
+   exemplar = NULLPTR;
+   
    allocate( n, NULLPTR, &p, 0 );
 
 };
@@ -71,6 +77,8 @@ Flock::Flock( const Parcel &p, ProcessGrp* pgrp, int n, int r)
    
     pgroup = NULLPTR;
     
+    exemplar = NULLPTR;
+   
     allocate( n, pgrp, &p, r );
    
 }
@@ -176,6 +184,11 @@ void Flock::setup( const Parcel &p, ProcessGrp* pgrp, int n, int r)
 
    // grab the met data source from the Parcel
    metsrc = p.getMet();
+   
+   if ( exemplar != NULLPTR ) {
+      delete exemplar;
+   }
+   exemplar = p.copy();
 
    blocksize = 0;
    
@@ -1012,6 +1025,7 @@ void Flock::set( const int n,  const Parcel& p, const int mode)
 Parcel* Flock::parcel( int n, int flag ) const
 {
    Parcel* p;
+   Parcel* pp;
    int pid;
    bool found;
    int parcel_proc;
@@ -1019,7 +1033,12 @@ Parcel* Flock::parcel( int n, int flag ) const
    int i;
    int valid_parcel = 0;
    
+   if ( pgroup == NULLPTR ) {
+      // safety 
+      return NULLPTR;
+   }
    if ( pgroup->type() == ProcessGrp::PGrpRole_MetReader ) {
+      // met processors do not handle parcels
       return NULLPTR;
    }
    
@@ -1031,82 +1050,98 @@ Parcel* Flock::parcel( int n, int flag ) const
    // find the processor to which this parcel index belongs
    parcel_proc = this->belongs(n);
 
+   // and who am I?
    my_proc = pgroup->id();
 
-   // is this the parcel's owner?
+   // am I this parcel's owner?
    if ( my_proc == parcel_proc ) {
    
-      // get it
+      // get the parcel
       p = parcels[ n - my_parcel_start ];
+
       valid_parcel = 1;
 
       // If we are the root processor...
       if ( my_proc == 0 ) {
 
          //std::cerr << "Flock::parcel: root proc: my parcel " << n << std::endl;         
-         // send it out to the other processors?
+
+         // send this out to the other processors?
          if ( flag == 0 ) {
          
+            // for each processor in our group, aside from the root...
             for ( i = 1; i<pgroup->size(); i++ ) {
                 // (don't try to send to met-reading processors)
                 if ( pclstarts[i] >= 0 ) {
                    p->send(pgroup, i);
-                }   
+                }
             }
          }
          
       } else {
+         // we are the owner, but not the root processor
+
          //std::cerr << "Flock::parcel: non-root proc: sending parcel " << n << std::endl;         
-         // the owner is not the root processor
-         // So send the parcel to the root processor
+
+         // send the parcel to the root processor
          p->send(pgroup, 0);
+
       }
 
    } else {
    
-      // we do not own the parcel
-      // so create a new one by copying the first parcel
-      // that we own (so that the parcels really are all the same type)
-      p = (parcels[0])->copy();
+      // we do not own the parcel, so 
+      // either we return a NULLPTR (if flag == 1)
+      // or we receive this parcel
+      // from its owner (if we are root) or from
+      // root (if we are neither the owner nor root)
+
+      // use the sample parcel, so that the calling
+      // routine does not have to worry about deleting it
+      p = exemplar;
 
       
       // are we the root processor?
       if ( my_proc == 0 ) {
+
          // then receive the parcel from its owner
+
          //std::cerr << "Flock::parcel: root proc: receiving parcel " << n << std::endl;         
          p->receive(pgroup, parcel_proc);
          valid_parcel = 1;
-         
-         // and send it out to the other parcels, if desired
+            
          if ( flag == 0 ) {
-         
+
+            // send it out to the other parcels, if desired
             for ( i = 1; i<pgroup->size(); i++ ) {
-                // but don't try to send to ourself, or to met-reading processors
+                // but don't try to send to its owner, or to met-reading processors
                 if ( i != parcel_proc && pclstarts[i] >= 0 ) {
                    p->send(pgroup, i);
                 }   
             }
          }
-      
+             
       } else {
+         // we are neither the owner nor the root processor
       
          //std::cerr << "Flock::parcel: non-root proc: ignoring parcel " << n << std::endl;         
-         // we are neither the owner nor the root processor
-         // nor are we the met-reader
-         if ( ! is_met ) {
-            if ( flag == 0 ) {
+
+         if ( flag == 0 ) {
+            // we must not be the met-reader either
+            if ( ! is_met ) {
                // receive the parcel from the root processor
                p->receive(pgroup,0);
                valid_parcel = 1;
-            }         
+            }
+         } else {
+            p = NULLPTR;
+            valid_parcel = 0;
          }
       }       
-         
-   
+
    }
    
-   if ( valid_parcel == 0 ) {
-      delete p;
+   if ( valid_parcel == 0 && p != NULLPTR ) {
       p = NULLPTR;
    }
       
@@ -1128,8 +1163,12 @@ Parcel& Flock::get( int n, int flag ) const
 
 Parcel& Flock::operator[]( int n )
 {
-   
-   return this->get(n);
+   /* Note that we need to return a reference
+      to the actual Flock parcel, not
+      to a copy. Otherwise, assignments
+      like "F[i] = px" will not work as expected.
+   */   
+   return this->get(n, 0);
    
 }
 
@@ -1545,6 +1584,10 @@ void Flock::clear()
      }
 
      parcels.clear();
+     if ( exemplar != NULLPTR ) {
+        delete exemplar;
+        exemplar = NULLPTR;
+     }
      
      my_num_parcels = 0;
      my_parcel_start = 0;

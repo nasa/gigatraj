@@ -639,7 +639,7 @@ class Flock {
      */   
      void set( const int n, const Parcel& p, const int mode=0);
      
-     ///  returns a parcel from this Flock
+     ///  returns a a pointer to a parcel from this Flock
      /*! This method returns a pointer to a specific Parcel in the Flock.
      
           \param n the index of the parcel to be replaced.  (This is relative
@@ -648,13 +648,21 @@ class Flock {
           \param mode if mode==0 (the default), then the parcel gets propagated to 
                      every processor, so that on every processor the 
                      return value has the correct value.  This may take some time.
+                     
                      If mode==1, then only the root processor of the Flock's
                      main processor group will return a valid value.
                      All other processors return a NULLPTR.
                      Regardless of mode setting, all met-reading processors
-                     will return a NULL pointer from this method.
+                     will return a NULLPTR pointer from this method.
 
-          \return a pointer to the desired Parcel. or NULL (see mode, above)
+          \return a pointer to the desired Parcel. or NULLPTR (see mode, above).
+                  If not NULLPTR, and the Parcel is local to this processor,
+                  then it points to the actual Parcel in the Flock.
+                  If not NULLPTR, and the Parcel is not local to this processor,
+                  then it points to a copy of the Parcel that has been obtained from
+                  the Parcel's owner processor. (The copy is owned by the Flock
+                  and should NOT be deleted).
+                 
                   
      */
      Parcel* parcel( const int n, const int mode=0 ) const;
@@ -816,6 +824,9 @@ class Flock {
          to handle meteorological data.
      */    
      ProcessGrp *pgroup;
+     
+     /// a sample parcel that we can use for references
+     Parcel *exemplar;
      
      /// The met data source's pgroup that it had before this Flock was created
      ProcessGrp *preserved_met_pgroup;
