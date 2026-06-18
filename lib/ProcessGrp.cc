@@ -26,6 +26,8 @@ ProcessGrp::ProcessGrp()
 {
    
    mytag = "";
+   
+   role = PGrpRole_Unknown;
 
    // create a source for random numbers, in case we need to desynchronize
    // processors to avoid 
