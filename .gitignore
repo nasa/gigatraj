@@ -151,6 +151,10 @@ test/test_NetcdfInMPI
 test/test_NetcdfOut
 test/test_Filter_Null
 test/test_CountFlags
+test/test_CountFlagsMPI
+test/test_CountFlagsSerial
+test/test_Filter_AddMPI
+test/test_Filter_AddSerial
 test/valgrind*.log
 gigatraj*.tar.gz
 *.zip

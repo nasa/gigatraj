@@ -169,7 +169,8 @@ TESTS += test_Parcel \
         test_StreamPrint \
         test_FlockSerial \
         test_SwarmSerial \
-        test_CountFlags \
+        test_CountFlagsSerial \
+        test_Filter_AddSerial \
         test_ChangeVertical
 check_PROGRAMS += test_Parcel \
         test_Filter_Null \
@@ -178,7 +179,8 @@ check_PROGRAMS += test_Parcel \
         test_StreamPrint \
         test_FlockSerial \
         test_SwarmSerial \
-        test_CountFlags \
+        test_CountFlagsSerial \
+        test_Filter_AddSerial \
         test_ChangeVertical
 EXTRA_DIST += parcels_test00.dat 
 
@@ -193,6 +195,10 @@ if MPI
    check_PROGRAMS += test_FlockMPI  
    TESTS += test_SwarmMPI.sh 
    check_PROGRAMS += test_SwarmMPI  
+   TESTS += test_CountFlagsMPI.sh 
+   check_PROGRAMS += test_CountFlagsMPI  
+   TESTS += test_Filter_AddMPI.sh 
+   check_PROGRAMS += test_Filter_AddMPI  
    TESTS += test_StreamPrintMPI.sh
    check_PROGRAMS += test_StreamPrintMPI 
    TESTS += test_StreamReadMPI.sh
@@ -206,6 +212,8 @@ endif
 endif   
 EXTRA_DIST += test_FlockMPI.sh \
               test_SwarmMPI.sh \
+              test_CountFlagsMPI.sh \
+              test_Filter_AddMPI.sh \
               test_StreamPrintMPI.sh \
               test_StreamReadMPI.sh \
               test_NetcdfInMPI.sh \
@@ -471,8 +479,17 @@ test_Filter_Null_DEPENDENCIES = ../lib/libgigatraj.a
 test_Filter_Trop_SOURCES = test_Filter_Trop.cc test_utils.cc test_utils.hh
 test_Filter_Trop_DEPENDENCIES = ../lib/libgigatraj.a
 
-test_CountFlags_SOURCES = test_CountFlags.cc test_utils.cc test_utils.hh
-test_CountFlags_DEPENDENCIES = ../lib/libgigatraj.a
+test_CountFlagsSerial_SOURCES = test_CountFlagsSerial.cc test_utils.cc test_utils.hh
+test_CountFlagsSerial_DEPENDENCIES = ../lib/libgigatraj.a
+
+test_CountFlagsMPI_SOURCES = test_CountFlagsMPI.cc test_utils.cc test_utils.hh
+test_CountFlagsMPI_DEPENDENCIES = ../lib/libgigatraj.a
+
+test_Filter_AddSerial_SOURCES = test_Filter_AddSerial.cc test_utils.cc test_utils.hh
+test_Filter_AddSerial_DEPENDENCIES = ../lib/libgigatraj.a
+
+test_Filter_AddMPI_SOURCES = test_Filter_AddMPI.cc test_utils.cc test_utils.hh
+test_Filter_AddMPI_DEPENDENCIES = ../lib/libgigatraj.a
 
 test_traj000_SOURCES = test_traj000.cc test_utils.cc test_utils.hh
 test_traj000_DEPENDENCIES = ../lib/libgigatraj.a

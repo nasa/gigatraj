@@ -109,5 +109,6 @@ pkginclude_HEADERS += \
                     NetcdfOut.hh \
                     Filter_Trop.hh \
                     Filter_Null.hh \
-                    CountFlags.hh 
+                    CountFlags.hh \
+                    Filter_Add.hh 
                      
