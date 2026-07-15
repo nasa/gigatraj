@@ -824,7 +824,16 @@ class Swarm {
      */    
      void dump() const;
 
-
+          
+     /// processor ID
+     /*! This method returns the ID of the processor (with respect to the Swarm's main processor group)
+         which handles the parcel whose index is n
+         
+         \param n the index of the parcel whose ownership is to be determined
+     
+         \return the index of the processor in the Swarm's main processor group
+     */    
+     int belongs(const int n) const;
 
 
 
@@ -1008,16 +1017,6 @@ class Swarm {
      */
      Integrator *integ;
 
-     
-     /// processor ID
-     /*! This method returns the ID of the processor (with respect to the Swarm's main processor group)
-         which handles the parcel whose index is n
-         
-         \param n the index of the parcel whose ownership is to be determined
-     
-         \return the index of the processor in the Swarm's main processor group
-     */    
-     int belongs(const int n) const;
      
      /// universal constructor routine
      /*!

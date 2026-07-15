@@ -805,6 +805,17 @@ class Flock {
      */    
      void dump() const;
 
+         
+     /// processor ID of a Flock's Parcel
+     /*! This method returns the ID of the processor (with respect to the Flock's main processor group)
+         which handles the parcel whose index is n
+         
+         \param n the index of the parcel whose ownership is to be determined
+     
+         \return the index of the processor in the Flock's main processor group
+     */    
+     int belongs(const int n) const;
+
    private:
    
      /// the number of parcels in this flock
@@ -922,16 +933,6 @@ class Flock {
          local to this processor will be processed as a single block.
      */
      int blocksize;
-     
-     /// processor ID
-     /*! This method returns the ID of the processor (with respect to the Flock's main processor group)
-         which handles the parcel whose index is n
-         
-         \param n the index of the parcel whose ownership is to be determined
-     
-         \return the index of the processor in the Flock's main processor group
-     */    
-     int belongs(const int n) const;
      
      /// universal constructor routine
      /*!
