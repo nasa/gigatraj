@@ -221,7 +221,7 @@ void Parcel :: send( const ProcessGrp* pgroup, const int id) const
 {
     real loc[3];
     int info[2];
-    double tt;
+    double tt[2];
     
     // put the Parcel's data into Arrays, according to type
     loc[0] = lat;
@@ -232,9 +232,10 @@ void Parcel :: send( const ProcessGrp* pgroup, const int id) const
     info[1] = statuses;
     
     // send the information to the process group
-    tt = t;
+    tt[0] = t;
+    tt[1] = tg;
     pgroup->send_reals(id, 3, loc, 1);
-    pgroup->send_doubles(id, 1, &tt, 1);
+    pgroup->send_doubles(id, 2, tt, 1);
     pgroup->send_ints(id, 2, info, 1);
 
 }
@@ -243,6 +244,7 @@ void Parcel :: receive( const ProcessGrp* pgroup, const int id)
 {
     real loc[3];
     int info[2];
+    double tt[2];
     
     // in case the receive does nothing (e.g., serial processing)
     loc[0] = lat;
@@ -250,10 +252,12 @@ void Parcel :: receive( const ProcessGrp* pgroup, const int id)
     loc[2] = z;
     info[0] = flagset;
     info[1] = statuses;
+    tt[0] = t;
+    tt[1] = tg;
     
     // receive the information from the process group
     pgroup->receive_reals(id, 3, loc, 1);
-    pgroup->receive_doubles(id, 1, &t, 1);
+    pgroup->receive_doubles(id, 2, tt, 1);
     pgroup->receive_ints(id, 2, info, 1);
 
     // unpack the information received
@@ -263,6 +267,9 @@ void Parcel :: receive( const ProcessGrp* pgroup, const int id)
     
     flagset  = info[0];
     statuses = info[1];
+    
+    t = tt[0];
+    tg = tt[1];
     
 }
 
