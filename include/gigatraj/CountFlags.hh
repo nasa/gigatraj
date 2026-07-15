@@ -1,5 +1,5 @@
-#ifndef GIGATRAJ_FILTER_NULL
-#define GIGATRAJ_FILTER_NULL
+#ifndef GIGATRAJ_COUNTFLAGS
+#define GIGATRAJ_COUNTFLAGS
 
 
 #include "gigatraj/gigatraj.hh"
@@ -11,7 +11,7 @@ namespace gigatraj {
 
 \ingroup parcelfilters
 
-\brief a null filter for Parcles that does nothing
+\brief a filter for counting Parcels with certain flag and/or status settings
 
 The CountFlags class is a ParcelFilter that enables 
 counting the number of Parcels that have their flags
@@ -65,14 +65,14 @@ class CountFlags : public ParcelFilter {
       /// return the useless parameter
       /*! This method returns the flags to test against
       
-           returns the value of the useless parameter
+           \return the value of the useless parameter
       */      
       ParcelFlag flagset() const;
       
       /// set the useless parameter
       /*! This method sets the flags ot test against
       
-          param value a bitwise combination of ParcelFlag values
+          \param value a bitwise combination of ParcelFlag values
                  against which Parcel flags will be tested
       */    
       void flagset( ParcelFlag value );
@@ -80,14 +80,14 @@ class CountFlags : public ParcelFilter {
       /// return whether the sense of the test is to be negated
       /*! This method returns whether the sense of the test is to be negated
       
-           returns true if the test is to be negated, false otherwise
+           \return true if the test is to be negated, false otherwise
       */      
       bool negation() const;
       
       /// set whether the sense of the test is to be negated
       /*! This method sets whether the sense of the test is to be negated.
       
-          param value if true, the sense of the flags tests will be negated
+          \param value if true, the sense of the flags tests will be negated
       */    
       void negation( bool value );
 
