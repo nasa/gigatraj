@@ -11,7 +11,7 @@ namespace gigatraj {
 
 \ingroup parcelfilters
 
-\brief a null filter for Parcles that does nothing
+\brief a null filter for Parcels that does nothing
 
 The Filter_Null class provides an example of a ParcelFilter subclass
 implementation. It illustrates the mechanisms used by ParcelFilters,
