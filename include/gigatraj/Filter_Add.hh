@@ -11,7 +11,7 @@ namespace gigatraj {
 
 \ingroup parcelfilters
 
-\brief a null filter for Parcles that does nothing
+\brief a adds new Parcels to a collection of Parcels
 
 The Filter_Add class is a ParcelFilter that adds new Parcels
 to a collection of Parcels by replacing existing Parcels
@@ -66,15 +66,16 @@ class Filter_Add : public ParcelFilter {
 
 
 
-      /// return the useless parameter
+      /// return the flags set
       /*! This method returns the flags to test against
       
-           \return the value of the useless parameter
+           \return the bitwise combination of ParcelFlag values
+                 against which Parcel flags will be tested
       */      
       ParcelFlag flagset() const;
       
-      /// set the useless parameter
-      /*! This method sets the flags ot test against
+      /// set the flags set
+      /*! This method sets the flags to test against
       
           \param value a bitwise combination of ParcelFlag values
                  against which Parcel flags will be tested
@@ -107,7 +108,7 @@ class Filter_Add : public ParcelFilter {
       std::vector<Parcel>* source() const;
       
       /// sets the source of new Parcels
-      /*! This method sets the source of new Parcels ot be added.
+      /*! This method sets the source of new Parcels to be added.
       
           \param src a pointer to a vector of Parcels that will be used as the
           source of Parcels in the apply() methods. The calling routine is responsible
