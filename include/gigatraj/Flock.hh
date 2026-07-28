@@ -632,10 +632,10 @@ class Flock {
                   to the entire flock, not just one processor's subset.)
           \param p the parcel of which a copy will be put into the Flock. 
           \param mode if mode==0 (the default), then the input parcel p is taken
-                     from the root processor's copy only.  In a multiprocrssor
+                     from the root processor's copy only.  In a multiprocessor
                      environment, this will incur interprocrssor communication.
                      If mode==1, then the processor that owns the parcel 
-                     will uses its own local value for the input parcel.
+                     will use its own local value for the input parcel.
      */   
      void set( const int n, const Parcel& p, const int mode=0);
      
