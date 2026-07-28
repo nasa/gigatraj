@@ -235,6 +235,8 @@ endif
 TESTS += test_Filter_Trop
 check_PROGRAMS += test_Filter_Trop
 
+TESTS += test_Filter_Advance
+check_PROGRAMS += test_Filter_Advance
 
 TESTS += test_traj000 test_traj001 test_traj010
 check_PROGRAMS += test_traj000 test_traj001 test_traj010
@@ -493,6 +495,9 @@ test_Filter_AddMPI_DEPENDENCIES = ../lib/libgigatraj.a
 
 test_traj000_SOURCES = test_traj000.cc test_utils.cc test_utils.hh
 test_traj000_DEPENDENCIES = ../lib/libgigatraj.a
+
+test_Filter_Advance_SOURCES = test_Filter_Advance.cc test_utils.cc test_utils.hh
+test_Filter_Advance_DEPENDENCIES = ../lib/libgigatraj.a
 
 test_traj001_SOURCES = test_traj001.cc test_utils.cc test_utils.hh
 test_traj001_DEPENDENCIES = ../lib/libgigatraj.a

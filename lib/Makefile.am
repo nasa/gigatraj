@@ -124,6 +124,7 @@ libgigatraj_a_SOURCES += ../include/gigatraj/Parcel.hh           Parcel.cc \
                          ../include/gigatraj/Filter_Null.hh      filters/Filter_Null.cc \
                          ../include/gigatraj/CountFlags.hh       filters/CountFlags.cc \
                          ../include/gigatraj/Filter_Add.hh       filters/Filter_Add.cc \
+                         ../include/gigatraj/Filter_Advance.hh       filters/Filter_Advance.cc \
                          ../include/gigatraj/ChangeVertical.hh   filters/ChangeVertical.cc
 
 if NETCDF

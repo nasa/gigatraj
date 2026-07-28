@@ -110,5 +110,6 @@ pkginclude_HEADERS += \
                     Filter_Trop.hh \
                     Filter_Null.hh \
                     CountFlags.hh \
-                    Filter_Add.hh 
+                    Filter_Add.hh \
+                    Filter_Advance.hh 
                      

@@ -155,6 +155,7 @@ test/test_CountFlagsMPI
 test/test_CountFlagsSerial
 test/test_Filter_AddMPI
 test/test_Filter_AddSerial
+test/test_Filter_Advance
 test/valgrind*.log
 gigatraj*.tar.gz
 *.zip
