@@ -70,6 +70,7 @@ NetcdfOut::NetcdfOut(const NetcdfOut& src) : ParcelReporter(src)
     do_flags = src.do_flags;
     do_tag = src.do_tag;
     do_tstamp = src.do_tstamp;
+    do_fstamp = src.do_fstamp;
     
     // time is not transformed
     to = src.to;
@@ -148,6 +149,7 @@ void NetcdfOut::assign( const NetcdfOut& src)
     do_flags = src.do_flags;
     do_tag = src.do_tag;
     do_tstamp = src.do_tstamp;
+    do_fstamp = src.do_fstamp;
     
     // time is not transformed
     to = src.to;
@@ -450,6 +452,20 @@ bool NetcdfOut::writeTimestamp()
 }
 
 
+void NetcdfOut::writeForecaststamp( bool mode )
+{
+    if ( ! metaFixed() ) {
+       do_fstamp = mode;
+    } else {
+       throw new badNetcdfTooLate();
+    }
+}
+
+bool NetcdfOut::writeForecaststamp()
+{
+   return do_fstamp;
+}
+
 std::string& NetcdfOut::cal()
 {
     return tstamp;
@@ -533,6 +549,7 @@ void NetcdfOut::clear()
        do_status = false;
        do_tag = false;
        do_tstamp = false;
+       do_fstamp = false;
        other.clear();
        other_units.clear();
        other_desc.clear();
@@ -588,6 +605,7 @@ void NetcdfOut::reset()
     do_flags = false;
     do_tag = false;
     do_tstamp = false;
+    do_fstamp = false;
     
     // time is not transformed
     to = 0.0;
@@ -626,6 +644,8 @@ void NetcdfOut::reset()
     vid_tstamp = -1;
     vtyp_tstamp = NC_STRING;
     
+    vid_fstamp = -1;
+    vtyp_fstamp = NC_DOUBLE;
 }
 
 void NetcdfOut::format( std::string fmt )
@@ -675,6 +695,13 @@ void NetcdfOut::format( std::string fmt )
                } else if ( ch == "T" ) {
                
                   do_tstamp = true;
+                  
+                  // reset the state to 0  
+                  state = 0;             
+
+               } else if ( ch == "F" ) {
+               
+                  do_fstamp = true;
                   
                   // reset the state to 0  
                   state = 0;             
@@ -741,6 +768,13 @@ void NetcdfOut::format( std::string fmt )
             } else if ( ch == "T" ) {
             
                do_tstamp = true;
+               
+               // reset the state to 0  
+               state = 0;             
+
+            } else if ( ch == "F" ) {
+            
+               do_fstamp = true;
                
                // reset the state to 0  
                state = 0;             
@@ -1476,6 +1510,40 @@ void NetcdfOut::newopen( std::string file, Parcel* p, unsigned int n )
         }
      }
      
+     
+     /// define the forecast lead time variable
+     if ( do_fstamp ) {
+        val = "forecast";
+        if ( i_am_root ) {
+           err = nc_def_var( ncid, val.c_str(), NC_DOUBLE, 1, &did_time, &vid_fstamp );
+           if ( err != NC_NOERR ) {
+              throw(badNetcdfError(err));
+           }
+        }
+        if ( dbug > 50 ) {
+           std::cerr << "defined forecast variable w/ id = " << vid_fstamp << std::endl;
+        }
+        // write long_name time attribute
+        aname = "long_name";
+        val = "Forecast lead time"; 
+        aval = val.c_str();
+        if ( i_am_root ) {
+           err = nc_put_att_string( ncid, vid_fstamp, aname.c_str(), 1, &aval );
+           if ( err != NC_NOERR ) {
+              throw(badNetcdfError(err));
+           }
+        }
+        // write units time attrbiute
+        aname = "units";
+        val = tunits();  
+        aval = val.c_str();
+        if ( i_am_root ) {
+           err = nc_put_att_string( ncid, vid_fstamp, aname.c_str(), 1, &aval );
+           if ( err != NC_NOERR ) {
+              throw(badNetcdfError(err));
+           }
+        }
+     }
      
      if ( do_status ) {
         //// define status variable
@@ -2232,6 +2300,17 @@ void NetcdfOut::reopen( std::string file, Parcel* p, unsigned int n )
            throw(badNetcdfReOpenMismatch());     
         }
      
+        // try forecast
+        vid_fstamp = get_var_id( "forecast", false, "", &vtyp_fstamp );
+        if ( dbug > 50 ) {
+           std::cerr << "NetcdfOut::reopen: vid_fstamp = " << vid_status << ", doing status = " << do_fstamp << std::endl;
+        }
+        if (  ((vid_fstamp >= 0) && (! do_fstamp) )
+           || ((vid_fstamp < 0) && (do_fstamp) ) ) {
+           std::cerr << " reopened file and our output do not match with respect to outputting fstamp values " << std::endl;
+           throw(badNetcdfReOpenMismatch());     
+        }
+     
         // try status
         vid_status = get_var_id( "status", false, "", &vtyp_status );
         if ( dbug > 50 ) {
@@ -2416,6 +2495,7 @@ void NetcdfOut::close()
      vid_flags = -1;
      vid_tag = -1;
      vid_tstamp = -1;
+     vid_fstamp = -1;
      for ( int i=0; i < other.size(); i++ ) {
          vid_other[i] = -1;
      }
@@ -2448,6 +2528,7 @@ void NetcdfOut::rclose()
      vid_flags = -1;
      vid_tag = -1;
      vid_tstamp = -1;
+     vid_fstamp = -1;
      for ( int i=0; i < other.size(); i++ ) {
          vid_other[i] = -1;
      }
@@ -2681,6 +2762,16 @@ void NetcdfOut::writeout( double t, unsigned int n, real *lons, real *lats, real
          const char *tsc = ts.c_str();
          if ( i_am_root ) {
             err = nc_put_vars_string( ncid, vid_tstamp, &t_start, &t_count, &t_stride, &tsc );
+            if ( err != NC_NOERR ) {
+               throw(badNetcdfError(err));
+            }
+         }
+      }
+      if ( do_fstamp ) {
+         netcdf_time = met->forecastLeadTime( t );
+         // netcdf_time = tconv( netcdf_time );
+         if ( i_am_root ) {
+            err = nc_put_vars_double( ncid, vid_fstamp, &t_start, &t_count, &t_stride, &netcdf_time );
             if ( err != NC_NOERR ) {
                throw(badNetcdfError(err));
             }

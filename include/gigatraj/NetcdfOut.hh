@@ -256,7 +256,7 @@ class NetcdfOut : public ParcelReporter {
       bool writeTag( );
 
       /// sets whether timestamps are to be written 
-      /*! This method determines whether the Parcel time is to be translated into a user-=readable timestamp string
+      /*! This method determines whether the Parcel time is to be translated into a user-readable timestamp string
           and written to the file in the one-dimensional "timestamp" variable..
           
           This method cannot be called after the file has been opened.
@@ -266,12 +266,30 @@ class NetcdfOut : public ParcelReporter {
       void writeTimestamp( bool mode );
       
       /// returns whether timestamps are to be wirtten
-      /*! This method returns a flag that indicates whether Parcel time is to be translated into a user-=readable timestamp string
+      /*! This method returns a flag that indicates whether Parcel time is to be translated into a user-readable timestamp string
           and written to the file in the one-dimensional "timestamp" variable..
           
           \return true if the timestamps are to be written, false otherwise.
       */
       bool writeTimestamp();
+
+      /// sets whether forecast lead times are to be written 
+      /*! This method determines whether the forecast lead time of the meteorological data source for the current parcel position
+          is to be written to the file in the one-dimensional "forecast" variable..
+          
+          This method cannot be called after the file has been opened.
+          
+          \param mode true if the forecast lead times are to be written, false otherwise.
+      */
+      void writeForecaststamp( bool mode );
+      
+      /// returns whether forecast lead times are to be wirtten
+      /*! This method returns a flag that indicates whether the forecast lead time of the meteorological data source for the current parcel position
+          is to be written to the file in the one-dimensional "forecast" variable..
+          
+          \return true if the forecast lead times are to be written, false otherwise.
+      */
+      bool writeForecaststamp();
       
       /// sets the Contents global attribute for the netcdf file
       /*! This method sets the "Contents" global attribute for the netcdf file.
@@ -568,14 +586,23 @@ class NetcdfOut : public ParcelReporter {
           * "%t" is the parcel's model time, This is effectively ignored, as the time is output regardless of
             whether this is present or not.
           
+          * "%F" inserts the parcel's forecast time, as internal model time (not converted to a calendar time).
+            A number can be inserted in front of the "t" to specify the total length of the output.
+            If two numbers separated by a period are inserted, the first is an overall length
+            and the second is the number of decimal places. A "-" inserted just after the "%" indicates
+            left-alignment. Values greater than zero indicate the trajectory was traced using forecast products
+            with the displayed lead time. Values equal to zero indicate an analysis or assimilation.
+            Values less than zero indicate a free-running model not tied to the outside world. 
+            A value of NaN (not a Number) indicates that the information is not available.
+          
           * "%o" is the parcel's longitude. This is effectively ignored, as the longitude is output
-             regardless of whether this is presetn or not.
+             regardless of whether this is present or not.
              
           * "%a" is the parcel's latitude. This is effectively ignored, as the latitude is output
-             regardless of whether this is presetn or not.
+             regardless of whether this is present or not.
              
           * "%v" is the parcel's vertical coordinate. This is effectively ignored, as the the vertical coordinate is output
-             regardless of whether this is presetn or not.
+             regardless of whether this is present or not.
           
           * "%g" causes the parcel's  tag value to be written to the file in the variable "tag".
           
@@ -776,6 +803,9 @@ class NetcdfOut : public ParcelReporter {
       
       /// should we be writing timestamps?
       bool do_tstamp;
+      
+      /// should be be wrintg the forecast lead time/
+      bool do_fstamp;
            
       /// the name of the tag quantity
       std::string tagquant;
@@ -844,6 +874,8 @@ class NetcdfOut : public ParcelReporter {
       std::vector<int> vid_other;
       /// the var id of the timestamp variable
       int vid_tstamp;
+      /// the var id of the forecast variable
+      int vid_fstamp;
 
       /// the var type of the parcel longitudes
       int vtyp_lon;
@@ -861,6 +893,8 @@ class NetcdfOut : public ParcelReporter {
       std::vector<int> vtyp_other;
       /// the var type of the timestamp variable
       int vtyp_tstamp;
+      /// the var type of the forecast variable
+      int vtyp_fstamp;
    
       /// writes out arrays of parcel data to the netcdef file
       /*! This method write out arrays of parcle information to the netcdf file.

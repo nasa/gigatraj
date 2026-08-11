@@ -248,17 +248,18 @@ int main()
     np = 14;
     out->maxSequence(10);
     out->init( &p, np );
-    out->format("%T %g %f %s"); // testing formats, too
-    if ( out->format() != "%T %g %f %s" ) {
+    out->format("%T %g %f %s %F"); // testing formats, too
+    if ( out->format() != "%T %g %f %s %F" ) {
        cerr << "Format was not set: " << out->format() << endl;
     }
     if ( (! out->writeFlags()) || ( ! out->writeStatus()) || ( ! out->writeTag())
-      || ( ! out->writeTimestamp() ) ) {
+      || ( ! out->writeTimestamp() ) || ( ! out->writeForecaststamp() ) ) {
        cerr << "format set did not set the appropriate flags" << endl;
        cerr << "     flags: " << out->writeFlags() << endl;
        cerr << "    status: " << out->writeStatus() << endl;
        cerr << "       tag: " << out->writeTag() << endl;
        cerr << " timestamp: " << out->writeTimestamp() << endl;
+       cerr << " fcststamp: " << out->writeForecaststamp() << endl;
        exit(1);
     }
     out->open();
