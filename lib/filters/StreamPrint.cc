@@ -177,6 +177,16 @@ void StreamPrint::FmtSpec::defaults( std::string type0, int start0, int len0, in
              fract0 = 0;
           }
        }
+    } else if ( type0== "F" ) {
+       if ( len0 < 0 ) {
+          len0 = 8;
+       }
+       if ( fract0 < 0 ) {
+          fract0 = len0 - 5;
+          if ( fract0 < 0 ) {
+             fract0 = 0;
+          }
+       }
     } else if ( type0== "o" ) {
        if ( len0 < 0 ) {
           len0 = 8;
@@ -375,7 +385,7 @@ void StreamPrint::format( const std::string fmtstr )
             
             // are we terminating the sequence already with 
             // a recognized format character?
-            if ( ch == "T" || ch == "t" || ch == "o" || ch == "a" || ch == "v" 
+            if ( ch == "T" || ch == "t" || ch == "F" || ch == "o" || ch == "a" || ch == "v" 
               || ch == "i" || ch == "f" || ch == "s" || ch == "c" || ch == "x" || ch == "g" ) {
                
                // set it up with defaults
@@ -454,7 +464,7 @@ void StreamPrint::format( const std::string fmtstr )
             // reset the number string in anticipation of the second in the pair
             numbr = "";
          
-         } else if ( ch == "T" || ch == "t" || ch == "o" || ch == "a" || ch == "v" 
+         } else if ( ch == "T" || ch == "t" || ch == "F" || ch == "o" || ch == "a" || ch == "v" 
                   || ch == "i" || ch == "f" || ch == "s" || ch == "c" || ch == "x" || ch == "g" ) {
                // termination of a % sequence
                
@@ -607,6 +617,7 @@ std::string StreamPrint::print( const Parcel& p, MetData *metsrc, int index )
     double time;
     real lat, lon, vert;
     real fval;
+    double dval;
     int i;
     std::string  type, fmtx, val;
     int start, len, fract;
@@ -691,12 +702,12 @@ std::string StreamPrint::print( const Parcel& p, MetData *metsrc, int index )
         } else if ( type == "g" ) {
            // parcel tag
 
-           fval = p.tag();
+           dval = p.tag();
 
            oo.setf( std::ios::fixed );
            oo.width( ff->len );
            oo.precision( ff->fract );
-           oo << fval;
+           oo << dval;
            
         } else if ( type == "m" ) {
            // met source field
@@ -710,6 +721,15 @@ std::string StreamPrint::print( const Parcel& p, MetData *metsrc, int index )
            oo.width( ff->len );
            oo.precision( ff->fract );
            oo << fval;
+           
+        } else if ( type == "F" ) {
+           // forecast lead time
+
+           dval = metsrc->forecastLeadTime( p.getTime() );
+           oo.setf( std::ios::fixed );
+           oo.width( ff->len );
+           oo.precision( ff->fract );
+           oo << dval;
            
         } else if ( type == "i" ) {
            // parcel index

@@ -197,6 +197,15 @@ class StreamPrint : public ParcelReporter {
            and the second is the number of decimal places. A "-" inserted just after the "%" indicates
            left-alignment.
           
+         * "%F" inserts the parcel's forecast time, as internal model time (not converted to a calendar time).
+           A number can be inserted in front of the "t" to specify the total length of the output.
+           If two numbers separated by a period are inserted, the first is an overall length
+           and the second is the number of decimal places. A "-" inserted just after the "%" indicates
+           left-alignment. Values greater than zero indicate the trajectory was traced using forecast products
+           with the displayed lead time. Values equal to zero indicate an analysis or assimilation.
+           Values less than zero indicate a free-running model not tied to the outside world. 
+           "NaN" indictated that the information is not available.
+          
          * "%o" inserts the parcel's longitude, in numeric form positive east.
            A number can be inserted in front of the "o" to specify the total length of the output.
            If two numbers separated by a period are inserted, the first is an overall length
