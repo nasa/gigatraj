@@ -382,6 +382,28 @@ MetData *MetMyGEOS::genericCopy()
     return dynamic_cast<MetData*>( result );
 }
 
+double MetMyGEOS::forecastLeadTime( double time )
+{
+      double result;
+      std::string caltime;
+      GridField3D* g3d;
+      
+      result = NaNTime();
+      
+      caltime = time2Cal( time );
+      g3d = new_mgmtGrid3D( wind_ew_name, caltime );
+      if ( g3d != NULLPTR ) {
+         
+         result = g3d->forecastLeadTime();
+      
+         delete g3d;
+      }
+      
+      return result;
+
+}
+
+
 void MetMyGEOS::set_vertical( const std::string quantity, const std::string units )
 {
      set_vertical( quantity, units, NULLPTR );
@@ -3097,6 +3119,45 @@ void MetMyGEOS::Source_open( bool pre, int index )
 
 } 
 
+double MetMyGEOS::get_fcst()
+{
+     double result;
+     std::string tname;
+     std::string fcst;
+     
+     result = NaNTime();
+     
+     if ( test_dsrc >= 0 ) {
+     
+         tname = ds[test_dsrc].target;
+         fcst = catlog.getAttr( tname, "fcast" );
+         if ( fcst != "" ) {
+            result = 0.0;
+            double mult = 1.0;
+            int state = 0;
+            double digit;
+            for ( int i=0; i < fcst.size() ; i++ ) {
+                if ( fcst[i] >= '0' && fcst[i] <= '9' ) {
+                   digit = ( fcst[i] - '0' );
+                   if ( state == 0 ) {
+                      result = result*10.0 + digit;
+                   } else {
+                      mult = mult/10.0;
+                      result = result + digit*mult;
+                   }
+                } else if ( fcst[i] == '.' ) {
+                   state = 1;
+                } else {
+                   break;
+                }
+            
+            }
+         }
+     }
+
+     return result;
+}            
+
 
 bool MetMyGEOS::Source_postOpen( int index ) 
 {
@@ -3118,6 +3179,7 @@ bool MetMyGEOS::Source_postOpen( int index )
      bool result;
 
      result = true;
+
 
      update_hgrid();
      if ( ds[index].dims != 2 ) {
@@ -5013,7 +5075,6 @@ void MetMyGEOS::update_tgrid()
      double t;
      int n;
      std::string tx;
-     const char *nanstr = "";          
 
      start = catTime2metTime( ds[test_dsrc].preStart_t );
      delta = ds[test_dsrc].tDelta;
@@ -5023,7 +5084,7 @@ void MetMyGEOS::update_tgrid()
            t = t + delta*ds[test_dsrc].tN;
         } else {
            // flags this as an all-times-are-in-this-one-URL situation        
-           t = nan(nanstr);  
+           t = NaNTime();  
         }
      }
      next  = catTime2metTime( t );
@@ -5998,12 +6059,15 @@ void MetMyGEOS::Source_getvar(const std::string& quantity, const double time, Gr
            std::cerr << "MetMyGEOS::Source_getvar: (3D)   variable id " <<  var_id << std::endl;
         }
         
+        // set the forecast lead time
+        grid3d->forecastLeadTime( get_fcst() );
         
         // copy global string attributes into the object (in case it gets cached)
         for ( gs_iter=gattr_strings.begin(); gs_iter !=gattr_strings.end(); gs_iter++ ) {
            std::string aname = gs_iter->first;
            std::string aval = gs_iter->second;
            grid3d->set_attribute( aname, aval ); 
+           
         }
         
         // read the variable attributes here, esp. bad-or-missing-data flag
@@ -6017,6 +6081,7 @@ void MetMyGEOS::Source_getvar(const std::string& quantity, const double time, Gr
         if ( tindex == -1 ) {
            throw(badTimeNotFound());
         }
+        
 
          nlons = hgrid.nLons;
          nlats = hgrid.nLats;
@@ -6182,7 +6247,9 @@ void MetMyGEOS::Source_getvar(const std::string& quantity, const double time, Gr
            std::cerr << "MetMyGEOS::Source_getvar: (Sfc) variable id " <<  var_id << std::endl;
         }
         
-        
+        // set the forecast lead time
+        grid2d->forecastLeadTime( get_fcst() );
+                
         // copy global string attributes into the object (in case it gets cached)
         for ( gs_iter=gattr_strings.begin(); gs_iter !=gattr_strings.end(); gs_iter++ ) {
            std::string aname = gs_iter->first;

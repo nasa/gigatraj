@@ -364,6 +364,18 @@ class MetMyGEOS : public MetGridLatLonData {
       */
       MetData *genericCopy();
 
+     /// returns the forecast lead time for the U wind 
+     /*! This method returns the forecast lead time, in hours, for the U wind.
+
+         \param time the model time for which the U wind's forecast lead time is desired.
+         
+         \return The forecast lead time, in hours. If zero, then the data are from an analysis or assimilation.
+                 If less than zero, then the data source is a free-running model for which he concept of
+                 forecast lead time does not apply. If NaN, then the information is not available
+                 from this data source. 
+          
+     */
+     double forecastLeadTime( double time );
 
       /// sets the name of the vertical coordinate used in the data source
       /*! This method forces the meteorological data source object to use a specific vertical coordinate.
@@ -1832,6 +1844,17 @@ class MetMyGEOS : public MetGridLatLonData {
        */    
        void update_tgrid();
        
+       /// updates the forecast lead time, if any
+       /*! This method consults the Catalog entry Target 
+           for an attribute called "FCST". If present, then
+           its numeric value is returned. Otherwise, NaN is returned.
+           
+           \return Returns the forecast lead time, in model time, if greater than zzero.
+                   If equal to zero, then nthe data are analysis or assimilation values.
+                   If NaN, then the information is not available.
+       */
+       double get_fcst();            
+                   
        /// reads the standard set of dimension from an open remote file
        /*! This method reads the time, lon, lat, and (if present) lev dimensions
            from an open remote file.
