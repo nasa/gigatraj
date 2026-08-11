@@ -208,7 +208,7 @@ void Catalog::VarVal::convertType( char newtype )
                  }
                  break;
           case 'D':
-                 break;
+                 // break;
                  switch (newtype) {
                  case 'S':
                     ok = d2String( evalD, evalS );
@@ -3408,7 +3408,7 @@ bool Catalog::query( const std::string& quantity, const std::string& validAt,  s
               // (note: for this it is not necessary for the dbase to have the date right
               // We just need the base time right)
               
-               // set up local variables, so that bracket() is called with the built-in time variabled defined
+               // set up local variables, so that bracket() is called with the built-in time variables defined
                setup_vars( quantity, tyme, tag );
                
                bracket( tyme, preTime, preURLtime, preN, postTime, postURLtime, postN, nt );
@@ -3428,7 +3428,7 @@ bool Catalog::query( const std::string& quantity, const std::string& validAt,  s
                if ( eval( pattern ) ) {
                   s1 = pattern->evalS;
                   if ( dbug > 60 ) {
-                     std::cerr << "*+*+*+*+ Catalog::query: finishd pattern eval: " << s1 << std::endl;
+                     std::cerr << "*+*+*+*+ Catalog::query: finished pattern eval: " << s1 << std::endl;
                   }
                   
                   // get the time characteristics of the target
@@ -3516,6 +3516,42 @@ bool Catalog::query( const std::string& quantity, const std::string& validAt,  s
                   }
                   dd.pre = s1;
                   dd.post = s2;
+                  
+                  // now eval any target attributes that are variable references
+                  setup_vars( quantity, postTime, tag );
+                  Target* tgt;
+                  tgt = targetset.getTarget( tname );
+                  
+                  std::string key;
+                  std::string val;
+
+                  for ( int i=0; i < attrNames.size(); i++ ) {
+                     
+                      key = attrNames[i];
+                      
+                      val = tgt->nom_attrs[ key ];
+                      
+                      if ( val[0] == '$' ) {
+                         VarVal* vv;
+                         vv = new VarVal( val, 'S' );
+                         if ( dbug > 10 ) {
+                            std::cerr << "Catalog::query target attribute " 
+                            << key << " eval " << val << std::endl;
+                            vv->dump();
+                         }
+                         if ( eval( vv ) ) {
+                            val = vv->evalS;
+                            if ( dbug > 10 ) {
+                               std::cerr << "Catalog::query interpolated value='" << val << "'" << std::endl;
+                            }
+                         }
+
+                         
+                     }
+
+                     tgt->attrs[ key ] = val;    
+                  
+                  }
                   
                   dests.push_back( dd );
                }
@@ -3613,11 +3649,15 @@ std::string Catalog::getAttr( const std::string& target, int index )
        load();
     }
     
-     if ( index >= 0 && index < attrNames.size() ) {
+     t = targetset.getTarget( target );
+    
+     if ( t != NULLPTR ) {
+        
+        if ( index >= 0 && index < attrNames.size() ) {
      
-        t = targetset.getTarget( target );
-        if ( t != NULLPTR ) {
-            result = t->getAttr( attr );
+           attr = attrNames[index];
+    
+           result = t->getAttr( attr );
         }
      
      }
@@ -4820,7 +4860,7 @@ Catalog::Target* Catalog::parseTarget( const char* str, size_t& idx ) const
            if ( dbug > 30 ) {
               std::cerr << " target attribute <<" << aname << ">> = <<" << avalue << ">>" << std::endl;
            }
-           result->attrs[aname] = avalue;
+           result->nom_attrs[aname] = avalue;
            
            i = j + 1;
         
@@ -6452,14 +6492,15 @@ bool Catalog::eval( VarVal* val )
            // we have the name
            /// look up its reference value
            found = lookup( name );
-
            ok = ( found != NULLPTR );
            if ( ok ) {
+
               if ( dbug > 50 ) {
                  std::cerr << "Catalog::eval(val): found " << name << std::endl;
                  found->dump();
               }
                // convert it  to our value's type       
+
                found->convertType( val->type );
                // copy its contents to our value, except keep the format
                int fmt1 = val->fmt1;
@@ -6772,16 +6813,32 @@ Catalog::VarVal* Catalog::lookup( const std::string& name )
          }
      
          // check the current target's attributes
-         if ( currentTarget != NULLPTR ) {
-            for (attr = currentTarget->attrs.begin(); attr != currentTarget->attrs.end(); attr++ ) {                   
-                if ( attr->first == name ) {
-                   valstr = attr->second;
-                   ok = true;
-                   if ( dbug > 60 ) {
-                      std::cerr << "Catalog::lookup found target attribute! ";
+         if ( currentTarget != NULLPTR ) {       
+            if ( ! currentTarget->attrs.empty() ) {     
+               attr = currentTarget->attrs.find( name );
+               if ( attr != currentTarget->attrs.end() ) {
+                   if ( attr->first == name ) {
+                      valstr = attr->second;
+                      ok = true;
+                      if ( dbug > 60 ) {
+                         std::cerr << "Catalog::lookup found target attribute! ";
+                      }
                    }
-                   break;
-                }
+               } 
+            }
+            if ( ! ok ) {
+               if ( ! currentTarget->nom_attrs.empty() ) {     
+                  attr = currentTarget->nom_attrs.find( name );
+                  if ( attr != currentTarget->attrs.end() ) {
+                     if ( attr->first == name ) {
+                        valstr = attr->second;
+                        ok = true;
+                        if ( dbug > 60 ) {
+                           std::cerr << "Catalog::lookup found target attribute in nom_attrs! ";
+                        }
+                     }
+                  }
+               }
             }
          }
          // still nothing? check the environment
@@ -7244,7 +7301,7 @@ void Catalog::bracket( double tyme, double& pre_t, double& pre_url_t, int& pre_n
      if ( post_t < post_url_t ) {
      
         // our post time is before the next URL time.
-        // So we won;t have to go to the next URL
+        // So we won't have to go to the next URL
         // We just use the pre URL for post
         post_url_t = pre_url_t;
      }

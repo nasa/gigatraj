@@ -190,7 +190,9 @@ data, might look like this:
 \code
  targ1 := 0.0 ; 3.0; 1X1 ; pres ; inst ; ${QUANTITY}_${YEAR}${MONTH}${DOM}_${FOO}.dat
 \endcode
-
+Normally, the target attribute values are simple strings. But if the string begins with "$",
+it is taken as a variable reference. The value of such a variable reference is resolved
+at when the query() method is called, and the value persists in the target object until the next query() call..
 
 As mentioned above, some variables such as "QUANTITY" and "YEAR" are defined automatically
 when a request is made. Others, such as "FOO" in our example, need to be defined in the configuration file.
@@ -401,7 +403,7 @@ for a configuration line is given by:
        
        <attributeValueList> = <attributeValue>, { [ <whitespace> ], ";", <attributeValue>, [ <whitespace> ] };
         
-       <attributeValue> = { <attributeChar> };       
+       <attributeValue> = { <attributeChar> } | <variableRef>;       
 
        <attributeChar> = <letter> | <digit> | <whitespace> | <quote> | <noSemicolonChar>;
        
@@ -1439,8 +1441,18 @@ class Catalog {
              /// the name of the target
              std::string name;
              
-             /*! the attributes. Attirbute names are defined in the Catalog configuration and apply to all defined Targets.
-                 A Target's attributes are the values that correspond to those names
+             /*! the attribute nominal values. Attribute names are defined in the Catalog configuration and apply to all defined Targets.
+                 A Target's attributes are the values that correspond to those names.
+                 nom_attrs are the attributes as parsed from the config file.
+                 Plain strings will use used as the actual attributes.
+                 Strings that start with "$" are interpreted as variables and evaluated
+                 before copying into the actual attributes.
+             */    
+             std::map< std::string, std::string > nom_attrs;
+
+             /*! the actual attribute valuess. Attirbute names are defined in the Catalog configuration and apply to all defined Targets.
+                 A Target's attributes are the values that correspond to those names.
+                 These are the vlaues that get looked up when a Target attribute is referenced.
              */    
              std::map< std::string, std::string > attrs;
              
@@ -2468,8 +2480,9 @@ class Catalog {
       */
       std::string getAttr( const std::string& target, const std::string& attr );
       
-      /// returns the value of a given attribute of a given Target
-      /*! This method returns the value of an attribute of a given Target
+      /// returns the value of a given attribute of the Target of a given DataSource
+      /*! This method returns the value of an attribute of a Target that is 
+          pointed to be a DataSource.
       
           \param dest the DataSource from the Target being queried
           \param attr the name of the attribute whose value is wanted
@@ -2582,7 +2595,7 @@ class Catalog {
       
       /// a set of desired attributes, which if set will prioritize one matching ddata source over another
       std::map<std::string, std::string> des_attrs;
-      /// a ste of strictness flags, indicating whether the desired attributes *must* match the Targets'
+      /// a set of strictness flags, indicating whether the desired attributes *must* match the Targets'
       std::map<std::string, int> des_priorities;
       
    
