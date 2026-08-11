@@ -17,6 +17,7 @@
 
 #include "config.h"
 #include <time.h>
+#include <math.h>
 
 #include "gigatraj/GridField.hh"
 
@@ -24,6 +25,7 @@ using namespace gigatraj;
 
 // constuctor
 GridField::GridField() {
+   const char *nanstr = "";
 
    quant = "none";
    uu = "N/A";
@@ -39,6 +41,7 @@ GridField::GridField() {
    mksScale = 1.0;
    mksOffset = 0.0;
    expiration = 0;
+   fcast = nan(nanstr);
    
    use_array = false;
    nd = 0;
@@ -81,6 +84,7 @@ GridField::GridField(const GridField& src)
        metaID = src.metaID;
      mksScale = src.mksScale;
     mksOffset = src.mksOffset;
+        fcast = src.fcast;
    expiration = src.expiration;
         attrs = src.attrs;
     use_array = src.use_array;    
@@ -148,6 +152,7 @@ void GridField::assign( const GridField& src)
        metaID = src.metaID;
      mksScale = src.mksScale;
     mksOffset = src.mksOffset;
+        fcast = src.fcast;
    expiration = src.expiration;
         attrs = src.attrs;
     use_array = src.use_array;    
@@ -390,6 +395,7 @@ void GridField::ask_for_meta()
 
 
 void GridField::clear() {
+   const char *nanstr = "";
    
    quant = "none";
    uu = "N/A";
@@ -406,6 +412,7 @@ void GridField::clear() {
    mksScale = 1.0;
    mksOffset = 0.0;
    expiration = 0;
+   fcast = nan(nanstr);
    attrs.clear();
    clearData();  
    
@@ -609,6 +616,25 @@ void GridField::checkLevs( const std::vector<real> levs ) const
     
 }
 
+double GridField::forecastLeadTime() const
+{
+    return fcast;
+}
+
+void GridField::forecastLeadTime( double t )
+{
+     fcast = t;
+     // reset the expiration time
+     expiration = 0.0;
+     if ( finite(fcast) ) {
+        if ( fcast > 0 ) {
+           // set this field to expire one day after the model
+           // init time, which the the model time minus the forecast
+           // lead time
+           expiration = mtime - fcast + 1.0;
+        }
+     }
+}
 
 time_t GridField::expires() const
 {

@@ -543,7 +543,7 @@ class GridField {
       real mksOffset;   
 
       /// indicates whether this object's data are cacheable
-      /*! This method returns a boolean that indicates wether its data
+      /*! This method returns a boolean that indicates whether its data
           may be cached. For example, a gridded wind field from a meteorological 
           analysis may be cached (because it is unlikely to change tomorrow), 
           but a gridded wind field from a forecast model
@@ -588,6 +588,44 @@ class GridField {
       */
       std::string attribute( const std::string key ) const;    
 
+      /// returns the object's forecast lead time
+      /*! A MetData object may hold forecast data. This returns the 
+          GridField object's forecast lead time.
+          
+          \return the forecast lead time, in model time units.
+                  The forecast lead time is the difference between the forecast model initialization
+                  time and the current model time. If this is greater than zero, then
+                  the data in the GridField object are forecast data. If the forecast
+                  lead time is zero, then the data are from an analysis or simulation.
+                  If the forecast lead time is less than zero, then the data
+                  are from a free-running model not connected to the real world.
+                  If the forecast lead time is NaN, then the data sources does not supply
+                  the information.
+      */
+      double forecastLeadTime() const;            
+      
+      /// sets the object's forecast lead time
+      /*! A MetData object may hold forecast data. This sets the 
+          GridField object's forecast lead time.
+          
+          Note that setting the forecast lead time will change the expiration
+          time as well. If the forecast lead time is nonfinite or less than or
+          equal to zero, then the expiration time is set to 0. If the forecast
+          lead time is greater than zero, then the (data source) model initialization time
+          is obtained by subtracting it from the (gigatraj) model time,
+          and then the expiration time is set to the model initialization time plus one day.
+          
+          \param t the forecast lead time, in model time units.
+                  The forecast lead time is the difference between the forecast model initialization
+                  time and the current model time. If this is greater than zero, then
+                  the data in the GridField object are forecast data. If the forecast
+                  lead time is zero, then the data are from an analysis or simulation.
+                  If the forecast lead time is less than zero, then the data
+                  are from a free-running model not connected to the real world.
+                  If the forecast lead time is NaN, then the data sources does not supply
+                  the information.
+      */
+      void forecastLeadTime( double t );
 
       /// returns the object's expiration time
       /*! A MetData object may hold forecast data, in which case its validity should expire
@@ -623,6 +661,9 @@ class GridField {
       
       /// internal model time equivalent of 'time'
       double mtime;
+      
+      /// forecast lead time, in model time
+      double fcast;
       
       /// expiration time
       time_t expiration;
