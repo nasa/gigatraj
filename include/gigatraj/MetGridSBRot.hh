@@ -248,6 +248,21 @@ class MetGridSBRot : public MetGridLatLonData {
       int vIncrease() const;
 
 
+     /// returns the forecast lead time for the U wind 
+     /*! This method returns the forecast lead time, in hours, for the U wind.
+
+         \param time the model time for which the U wind's forecast lead time is desired.
+         
+         \return The forecast lead time, in hours. If zero, then the data are from an analysis or assimilation.
+                 If less than zero, then the data source is a free-running model for which he concept of
+                 forecast lead time does not apply. If NaN, then the information is not available
+                 from this data source. 
+          
+     */
+     inline double forecastLeadTime( double time ) {
+         return -1.0;
+     }
+
       /*! Check that a quantity name is recognized by this data source
           Returns true if recognized, false otherwise
           
