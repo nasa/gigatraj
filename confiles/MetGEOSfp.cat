@@ -2,7 +2,7 @@
 # catalog for GEOSfp (tries assimilation first, then forecast)
 #
 # attributes definitions
-;lonCoord; latCoord; vertCoord
+;fcast; lonCoord; latCoord; vertCoord
 #
 
 >2017-12-01T03:00
@@ -58,92 +58,95 @@ RUNDATE1/D = ${RUNDATE0} + ${OFFSET1}
 OFFSET2/F = 90.0/(60.0*24.0)
 RUNDATE2/D = ${RUNDATE0} + ${OFFSET2}
 
+DTD/D = ${DATETIME}
+FCST/F = ${DTD} - ${RUNDATE0}
+
 #
 # Targets
 # Forecasts
-Fcst_target0:= [${RUNDATE2}];;3;0;LONFP;LATFP;2;${Fcst_BASEURL}/tavg3_2d_aer_Nx/tavg3_2d_aer_Nx.${TAG}
-Fcst_target1:= [${RUNDATE0}];;1;0;LONFP;LATFP;2;${Fcst_BASEURL}/inst1_2d_hwl_Nx/inst1_2d_hwl_Nx.${TAG}
-Fcst_target2:= [${RUNDATE1}];;1;0;LONFP;LATFP;2;${Fcst_BASEURL}/tavg1_2d_lnd_Nx/tavg1_2d_lnd_Nx.${TAG}
-Fcst_target3:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSFP;${Fcst_BASEURL}/inst3_3d_ext_Np/inst3_3d_ext_Np.${TAG}
-Fcst_target4:= [${RUNDATE1}];;1;0;LONFP;LATFP;2;${Fcst_BASEURL}/tavg1_2d_rad_Nx/tavg1_2d_rad_Nx.${TAG}
-Fcst_target5:= [${RUNDATE2}];;3;0;LONFP;LATFP;2;${Fcst_BASEURL}/tavg3_2d_adg_Nx/tavg3_2d_adg_Nx.${TAG}
-Fcst_target6:= [${RUNDATE0}];;1;0;LONFP;LATFP;2;${Fcst_BASEURL}/inst1_2d_smp_Nx/inst1_2d_smp_Nx.${TAG}
-Fcst_target7:= [${RUNDATE1}];;1;0;LONFP;LATFP;2;${Fcst_BASEURL}/tavg1_2d_slv_Nx/tavg1_2d_slv_Nx.${TAG}
-Fcst_target8:= [${RUNDATE2}];;3;0;LONFP;LATFP;2;${Fcst_BASEURL}/tavg3_2d_smp_Nx/tavg3_2d_smp_Nx.${TAG}
-Fcst_target9:= [${RUNDATE0}];;3;0;LONFP;LATFP;LEVFP;${Fcst_BASEURL}/inst3_3d_aer_Nv/inst3_3d_aer_Nv.${TAG}
-Fcst_target10:= [${RUNDATE0}];;3;0;LONFP;LATFP;LEVFP;${Fcst_BASEURL}/inst3_3d_asm_Nv/inst3_3d_asm_Nv.${TAG}
-Fcst_target11:= [${RUNDATE2}];;3;0;LONFP;LATFP;LEVFP;${Fcst_BASEURL}/tavg3_3d_asm_Nv/tavg3_3d_asm_Nv.${TAG}
-Fcst_target12:= [${RUNDATE0}];;3;0;LONFP;LATFP;2;${Fcst_BASEURL}/inst3_2d_met_Nx/inst3_2d_met_Nx.${TAG}
-Fcst_target13:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSFP;${Fcst_BASEURL}/inst3_3d_tag_Np/inst3_3d_tag_Np.${TAG}
-Fcst_target14:= [${RUNDATE0}];;3;0;LONFP;LATFP;2;${Fcst_BASEURL}/inst3_2d_smp_Nx/inst3_2d_smp_Nx.${TAG}
-Fcst_target15:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSFP;${Fcst_BASEURL}/inst3_3d_aer_Np/inst3_3d_aer_Np.${TAG}
-Fcst_target16:= [${RUNDATE1}];;1;0;LONFP;LATFP;2;${Fcst_BASEURL}/tavg1_2d_flx_Nx/tavg1_2d_flx_Nx.${TAG}
-Fcst_target17:= [${RUNDATE1}];;1;0;LONFP;LATFP;2;${Fcst_BASEURL}/tavg1_2d_lfo_Nx/tavg1_2d_lfo_Nx.${TAG}
-Fcst_target18:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSFP;${Fcst_BASEURL}/inst3_3d_asm_Np/inst3_3d_asm_Np.${TAG}
-Fcst_target19:= [${RUNDATE0}];;3;0;LONFPC;LATFPC;PRSFP;${Fcst_BASEURL}/inst3_3d_asm_Cp/inst3_3d_asm_Cp.${TAG}
-Fcst_target20:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSFP;${Fcst_BASEURL}/inst3_3d_chm_Np/inst3_3d_chm_Np.${TAG}
-Fcst_target21:= [${RUNDATE0}];;1;0;LONFP;LATFP;2;${Fcst_BASEURL}/inst1_2d_lfo_Nx/inst1_2d_lfo_Nx.${TAG}
-Fcst_target22:= [${RUNDATE0}];;1;0;LONFP;LATFP;2;${Fcst_BASEURL}/inst1_2d_wwi_Nx/inst1_2d_wwi_Nx.${TAG}
+Fcst_target0:= [${RUNDATE2}];;3;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/tavg3_2d_aer_Nx/tavg3_2d_aer_Nx.${TAG}
+Fcst_target1:= [${RUNDATE0}];;1;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/inst1_2d_hwl_Nx/inst1_2d_hwl_Nx.${TAG}
+Fcst_target2:= [${RUNDATE1}];;1;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/tavg1_2d_lnd_Nx/tavg1_2d_lnd_Nx.${TAG}
+Fcst_target3:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSFP;${Fcst_BASEURL}/inst3_3d_ext_Np/inst3_3d_ext_Np.${TAG}
+Fcst_target4:= [${RUNDATE1}];;1;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/tavg1_2d_rad_Nx/tavg1_2d_rad_Nx.${TAG}
+Fcst_target5:= [${RUNDATE2}];;3;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/tavg3_2d_adg_Nx/tavg3_2d_adg_Nx.${TAG}
+Fcst_target6:= [${RUNDATE0}];;1;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/inst1_2d_smp_Nx/inst1_2d_smp_Nx.${TAG}
+Fcst_target7:= [${RUNDATE1}];;1;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/tavg1_2d_slv_Nx/tavg1_2d_slv_Nx.${TAG}
+Fcst_target8:= [${RUNDATE2}];;3;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/tavg3_2d_smp_Nx/tavg3_2d_smp_Nx.${TAG}
+Fcst_target9:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;LEVFP;${Fcst_BASEURL}/inst3_3d_aer_Nv/inst3_3d_aer_Nv.${TAG}
+Fcst_target10:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;LEVFP;${Fcst_BASEURL}/inst3_3d_asm_Nv/inst3_3d_asm_Nv.${TAG}
+Fcst_target11:= [${RUNDATE2}];;3;0;${FCST};LONFP;LATFP;LEVFP;${Fcst_BASEURL}/tavg3_3d_asm_Nv/tavg3_3d_asm_Nv.${TAG}
+Fcst_target12:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/inst3_2d_met_Nx/inst3_2d_met_Nx.${TAG}
+Fcst_target13:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSFP;${Fcst_BASEURL}/inst3_3d_tag_Np/inst3_3d_tag_Np.${TAG}
+Fcst_target14:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/inst3_2d_smp_Nx/inst3_2d_smp_Nx.${TAG}
+Fcst_target15:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSFP;${Fcst_BASEURL}/inst3_3d_aer_Np/inst3_3d_aer_Np.${TAG}
+Fcst_target16:= [${RUNDATE1}];;1;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/tavg1_2d_flx_Nx/tavg1_2d_flx_Nx.${TAG}
+Fcst_target17:= [${RUNDATE1}];;1;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/tavg1_2d_lfo_Nx/tavg1_2d_lfo_Nx.${TAG}
+Fcst_target18:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSFP;${Fcst_BASEURL}/inst3_3d_asm_Np/inst3_3d_asm_Np.${TAG}
+Fcst_target19:= [${RUNDATE0}];;3;0;${FCST};LONFPC;LATFPC;PRSFP;${Fcst_BASEURL}/inst3_3d_asm_Cp/inst3_3d_asm_Cp.${TAG}
+Fcst_target20:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSFP;${Fcst_BASEURL}/inst3_3d_chm_Np/inst3_3d_chm_Np.${TAG}
+Fcst_target21:= [${RUNDATE0}];;1;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/inst1_2d_lfo_Nx/inst1_2d_lfo_Nx.${TAG}
+Fcst_target22:= [${RUNDATE0}];;1;0;${FCST};LONFP;LATFP;2;${Fcst_BASEURL}/inst1_2d_wwi_Nx/inst1_2d_wwi_Nx.${TAG}
 # Assimilation
-target0:= [${START}T01:30];;3;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_aer_Nx
-target1:= [${START}T01:30];;3;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_cld_Cp
-target2:= [${START}T01:30];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_cld_Nv
-target3:= [${START}T01:30];;3;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_udt_Cp
-target4:= [${START}T01:30];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_udt_Nv
-target5:= [${START}T00:00];;1;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_hwl_Nx
-target6:= [${START}T01:30];;3;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_tag_Nx
-target7:= [${START}T00:30];;1;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_ocn_Nx
-target8:= [${START}T00:30];;1;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_lnd_Nx
-target9:= [${START}T00:30];;1;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_rad_Nx
-target10:= [${START}T01:30];;3;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_adg_Nx
-target11:= [${START}T00:00];;1;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_smp_Nx
-target12:= [${START}T00:00];;3;0;LONFP;LATFP;2;${BASEURL}/inst3_2d_asm_Nx
-target13:= [${START}T00:30];;1;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_slv_Nx
-target14:= [${START}T01:30];;3;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_smp_Nx
-target15:= [${START}T01:30];;3;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_mst_Cp
-target16:= [${START}T01:30];;3;0;LONFP;LATFP;EDGFP;${BASEURL}/tavg3_3d_mst_Ne
-target17:= [${START}T00:00];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_aer_Nv
-target18:= [${START}T00:00];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_asm_Nv
-target19:= [${START}T00:00];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_chm_Nv
-target20:= [${START}T00:00];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_gas_Nv
-target21:= [${START}T00:00];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_tag_Nv
-target22:= [${START}T01:30];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_asm_Nv
-target23:= [${START}T01:30];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_lsf_Nv
-target24:= [${START}T01:30];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_mst_Nv
-target25:= [${START}T01:30];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_odt_Nv
-target26:= [${START}T01:30];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_qdt_Nv
-target27:= [${START}T01:30];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_rad_Nv
-target28:= [${START}T01:30];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_tdt_Nv
-target29:= [${START}T01:30];;3;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_qdt_Cp
-target30:= [${START}T01:30];;3;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_chm_Nx
-target31:= [${START}T00:00];;3;0;LONFP;LATFP;2;${BASEURL}/inst3_2d_smp_Nx
-target32:= [${START}T00:30];;1;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_flx_Nx
-target33:= [${START}T00:30];;1;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_lfo_Nx
-target34:= [${START}T01:30];;3;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_tdt_Cp
-target35:= [${START}T00:00];;3;0;LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_asm_Np
-target36:= [${START}T01:30];;3;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_rad_Cp
-target37:= [${START}T01:30];;3;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_odt_Cp
-target38:= [${START}T01:30];;3;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_trb_Cp
-target39:= [${START}T01:30];;3;0;LONFP;LATFP;EDGFP;${BASEURL}/tavg3_3d_trb_Ne
-target40:= [${START}T00:00];;1;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_lfo_Nx
-target41:= [${START}T00:00];;3;0;LONFP;LATFP;2;${BASEURL}/inst3_2d_gas_Nx
-target42:= [${START}T01:30];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_nav_Nv
-target43:= [${START}T01:30];;3;0;LONFP;LATFP;EDGFP;${BASEURL}/tavg3_3d_lsf_Ne
-target44:= [${START}T01:30];;3;0;LONFP;LATFP;EDGFP;${BASEURL}/tavg3_3d_nav_Ne
-OTFtarget1:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://PressOTF/t
-OTFtarget2:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://ThetaOTF/t/P
-OTFtarget3:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://ThetaDotOTF/dtdttot/t
-OTFtarget4:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://PAltOTF/P
-OTFtarget5:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://PAltDotOTF/omega/P
-OTFtarget6:= [${START}T00:00];;3;0;LONFP;LATFP;P;OTF://SZAOTF/slp
-OTFtarget7:= [${START}T00:00];;3;0;LONFP;LATFP;PRSMR;OTF://TropOTF/t/p
-Fcst_OTFtarget1:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://PressOTF/t
-Fcst_OTFtarget2:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://ThetaOTF/t/P
-Fcst_OTFtarget3:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://ThetaDotOTF/dtdttot/P
-Fcst_OTFtarget4:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://PAltOTF/P
-Fcst_OTFtarget5:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://PAltDotOTF/omega/P
-Fcst_OTFtarget6:= [${RUNDATE0}];;3;0;LONFP;LATFP;P;OTF://SZAOTF/slp
-FCst_OTFtarget7:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://TropOTF/t/p
+target0:= [${START}T01:30];;3;0;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_aer_Nx
+target1:= [${START}T01:30];;3;0;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_cld_Cp
+target2:= [${START}T01:30];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_cld_Nv
+target3:= [${START}T01:30];;3;0;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_udt_Cp
+target4:= [${START}T01:30];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_udt_Nv
+target5:= [${START}T00:00];;1;0;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_hwl_Nx
+target6:= [${START}T01:30];;3;0;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_tag_Nx
+target7:= [${START}T00:30];;1;0;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_ocn_Nx
+target8:= [${START}T00:30];;1;0;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_lnd_Nx
+target9:= [${START}T00:30];;1;0;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_rad_Nx
+target10:= [${START}T01:30];;3;0;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_adg_Nx
+target11:= [${START}T00:00];;1;0;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_smp_Nx
+target12:= [${START}T00:00];;3;0;0;LONFP;LATFP;2;${BASEURL}/inst3_2d_asm_Nx
+target13:= [${START}T00:30];;1;0;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_slv_Nx
+target14:= [${START}T01:30];;3;0;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_smp_Nx
+target15:= [${START}T01:30];;3;0;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_mst_Cp
+target16:= [${START}T01:30];;3;0;0;LONFP;LATFP;EDGFP;${BASEURL}/tavg3_3d_mst_Ne
+target17:= [${START}T00:00];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_aer_Nv
+target18:= [${START}T00:00];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_asm_Nv
+target19:= [${START}T00:00];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_chm_Nv
+target20:= [${START}T00:00];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_gas_Nv
+target21:= [${START}T00:00];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_tag_Nv
+target22:= [${START}T01:30];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_asm_Nv
+target23:= [${START}T01:30];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_lsf_Nv
+target24:= [${START}T01:30];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_mst_Nv
+target25:= [${START}T01:30];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_odt_Nv
+target26:= [${START}T01:30];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_qdt_Nv
+target27:= [${START}T01:30];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_rad_Nv
+target28:= [${START}T01:30];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_tdt_Nv
+target29:= [${START}T01:30];;3;0;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_qdt_Cp
+target30:= [${START}T01:30];;3;0;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_chm_Nx
+target31:= [${START}T00:00];;3;0;0;LONFP;LATFP;2;${BASEURL}/inst3_2d_smp_Nx
+target32:= [${START}T00:30];;1;0;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_flx_Nx
+target33:= [${START}T00:30];;1;0;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_lfo_Nx
+target34:= [${START}T01:30];;3;0;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_tdt_Cp
+target35:= [${START}T00:00];;3;0;0;LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_asm_Np
+target36:= [${START}T01:30];;3;0;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_rad_Cp
+target37:= [${START}T01:30];;3;0;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_odt_Cp
+target38:= [${START}T01:30];;3;0;0;LONFPC;LATFPC;PRSFP;${BASEURL}/tavg3_3d_trb_Cp
+target39:= [${START}T01:30];;3;0;0;LONFP;LATFP;EDGFP;${BASEURL}/tavg3_3d_trb_Ne
+target40:= [${START}T00:00];;1;0;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_lfo_Nx
+target41:= [${START}T00:00];;3;0;0;LONFP;LATFP;2;${BASEURL}/inst3_2d_gas_Nx
+target42:= [${START}T01:30];;3;0;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_nav_Nv
+target43:= [${START}T01:30];;3;0;0;LONFP;LATFP;EDGFP;${BASEURL}/tavg3_3d_lsf_Ne
+target44:= [${START}T01:30];;3;0;0;LONFP;LATFP;EDGFP;${BASEURL}/tavg3_3d_nav_Ne
+OTFtarget1:= [${START}T00:00];;3;0;0;LONFP;LATFP;P;OTF://PressOTF/t
+OTFtarget2:= [${START}T00:00];;3;0;0;LONFP;LATFP;P;OTF://ThetaOTF/t/P
+OTFtarget3:= [${START}T00:00];;3;0;0;LONFP;LATFP;P;OTF://ThetaDotOTF/dtdttot/t
+OTFtarget4:= [${START}T00:00];;3;0;0;LONFP;LATFP;P;OTF://PAltOTF/P
+OTFtarget5:= [${START}T00:00];;3;0;0;LONFP;LATFP;P;OTF://PAltDotOTF/omega/P
+OTFtarget6:= [${START}T00:00];;3;0;0;LONFP;LATFP;P;OTF://SZAOTF/slp
+OTFtarget7:= [${START}T00:00];;3;0;0;LONFP;LATFP;PRSMR;OTF://TropOTF/t/p
+Fcst_OTFtarget1:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;P;OTF://PressOTF/t
+Fcst_OTFtarget2:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;P;OTF://ThetaOTF/t/P
+Fcst_OTFtarget3:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;P;OTF://ThetaDotOTF/dtdttot/P
+Fcst_OTFtarget4:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;P;OTF://PAltOTF/P
+Fcst_OTFtarget5:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;P;OTF://PAltDotOTF/omega/P
+Fcst_OTFtarget6:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;P;OTF://SZAOTF/slp
+FCst_OTFtarget7:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSMR;OTF://TropOTF/t/p
 #
 # Quantities
 # (On-The-Fly quantities)

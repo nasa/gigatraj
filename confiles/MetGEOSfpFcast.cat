@@ -2,7 +2,7 @@
 # This Catalog file has been generated automatically from the script ctg_2_cat.py.
 #
 
-;lonCoord; latCoord; vertCoord
+;fcast; lonCoord; latCoord; vertCoord
 
 
 
@@ -47,38 +47,41 @@ RUNDATE1/D = ${RUNDATE0} + ${OFFSET1}
 OFFSET2/F = 90.0/(60.0*24.0)
 RUNDATE2/D = ${RUNDATE0} + ${OFFSET2}
 
+DTD/D = ${DATETIME}
+FCST/F = ${DTD} - ${RUNDATE0}
+
 
 # Targets
-target0:= [${RUNDATE2}];;3;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_aer_Nx/tavg3_2d_aer_Nx.${TAG}
-target1:= [${RUNDATE0}];;1;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_hwl_Nx/inst1_2d_hwl_Nx.${TAG}
-target2:= [${RUNDATE1}];;1;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_lnd_Nx/tavg1_2d_lnd_Nx.${TAG}
-target3:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_ext_Np/inst3_3d_ext_Np.${TAG}
-target4:= [${RUNDATE1}];;1;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_rad_Nx/tavg1_2d_rad_Nx.${TAG}
-target5:= [${RUNDATE2}];;3;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_adg_Nx/tavg3_2d_adg_Nx.${TAG}
-target6:= [${RUNDATE0}];;1;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_smp_Nx/inst1_2d_smp_Nx.${TAG}
-target7:= [${RUNDATE1}];;1;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_slv_Nx/tavg1_2d_slv_Nx.${TAG}
-target8:= [${RUNDATE2}];;3;0;LONFP;LATFP;2;${BASEURL}/tavg3_2d_smp_Nx/tavg3_2d_smp_Nx.${TAG}
-target9:= [${RUNDATE0}];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_aer_Nv/inst3_3d_aer_Nv.${TAG}
-target10:= [${RUNDATE0}];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_asm_Nv/inst3_3d_asm_Nv.${TAG}
-target11:= [${RUNDATE2}];;3;0;LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_asm_Nv/tavg3_3d_asm_Nv.${TAG}
-target12:= [${RUNDATE0}];;3;0;LONFP;LATFP;2;${BASEURL}/inst3_2d_met_Nx/inst3_2d_met_Nx.${TAG}
-target13:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_tag_Np/inst3_3d_tag_Np.${TAG}
-target14:= [${RUNDATE0}];;3;0;LONFP;LATFP;2;${BASEURL}/inst3_2d_smp_Nx/inst3_2d_smp_Nx.${TAG}
-target15:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_aer_Np/inst3_3d_aer_Np.${TAG}
-target16:= [${RUNDATE1}];;1;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_flx_Nx/tavg1_2d_flx_Nx.${TAG}
-target17:= [${RUNDATE1}];;1;0;LONFP;LATFP;2;${BASEURL}/tavg1_2d_lfo_Nx/tavg1_2d_lfo_Nx.${TAG}
-target18:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_asm_Np/inst3_3d_asm_Np.${TAG}
-target19:= [${RUNDATE0}];;3;0;LONFPC;LATFPC;PRSFP;${BASEURL}/inst3_3d_asm_Cp/inst3_3d_asm_Cp.${TAG}
-target20:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_chm_Np/inst3_3d_chm_Np.${TAG}
-target21:= [${RUNDATE0}];;1;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_lfo_Nx/inst1_2d_lfo_Nx.${TAG}
-target22:= [${RUNDATE0}];;1;0;LONFP;LATFP;2;${BASEURL}/inst1_2d_wwi_Nx/inst1_2d_wwi_Nx.${TAG}
-OTFtarget1:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://PressOTF/t
-OTFtarget2:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://ThetaOTF/t/P
-OTFtarget3:= [${RUNDATE1}];;3;0;LONFP;LATFP;PRSMR;OTF://ThetaDotOTF/dtdttot/t
-OTFtarget4:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://PAltOTF/P
-OTFtarget5:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://PAltDotOTF/omega/P
-OTFtarget6:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://SZAOTF/slp
-OTFtarget7:= [${RUNDATE0}];;3;0;LONFP;LATFP;PRSMR;OTF://TropOTF/t/p
+target0:= [${RUNDATE2}];;3;0;${FCST};LONFP;LATFP;2;${BASEURL}/tavg3_2d_aer_Nx/tavg3_2d_aer_Nx.${TAG}
+target1:= [${RUNDATE0}];;1;0;${FCST};LONFP;LATFP;2;${BASEURL}/inst1_2d_hwl_Nx/inst1_2d_hwl_Nx.${TAG}
+target2:= [${RUNDATE1}];;1;0;${FCST};LONFP;LATFP;2;${BASEURL}/tavg1_2d_lnd_Nx/tavg1_2d_lnd_Nx.${TAG}
+target3:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_ext_Np/inst3_3d_ext_Np.${TAG}
+target4:= [${RUNDATE1}];;1;0;${FCST};LONFP;LATFP;2;${BASEURL}/tavg1_2d_rad_Nx/tavg1_2d_rad_Nx.${TAG}
+target5:= [${RUNDATE2}];;3;0;${FCST};LONFP;LATFP;2;${BASEURL}/tavg3_2d_adg_Nx/tavg3_2d_adg_Nx.${TAG}
+target6:= [${RUNDATE0}];;1;0;${FCST};LONFP;LATFP;2;${BASEURL}/inst1_2d_smp_Nx/inst1_2d_smp_Nx.${TAG}
+target7:= [${RUNDATE1}];;1;0;${FCST};LONFP;LATFP;2;${BASEURL}/tavg1_2d_slv_Nx/tavg1_2d_slv_Nx.${TAG}
+target8:= [${RUNDATE2}];;3;0;${FCST};LONFP;LATFP;2;${BASEURL}/tavg3_2d_smp_Nx/tavg3_2d_smp_Nx.${TAG}
+target9:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_aer_Nv/inst3_3d_aer_Nv.${TAG}
+target10:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;LEVFP;${BASEURL}/inst3_3d_asm_Nv/inst3_3d_asm_Nv.${TAG}
+target11:= [${RUNDATE2}];;3;0;${FCST};LONFP;LATFP;LEVFP;${BASEURL}/tavg3_3d_asm_Nv/tavg3_3d_asm_Nv.${TAG}
+target12:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;2;${BASEURL}/inst3_2d_met_Nx/inst3_2d_met_Nx.${TAG}
+target13:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_tag_Np/inst3_3d_tag_Np.${TAG}
+target14:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;2;${BASEURL}/inst3_2d_smp_Nx/inst3_2d_smp_Nx.${TAG}
+target15:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_aer_Np/inst3_3d_aer_Np.${TAG}
+target16:= [${RUNDATE1}];;1;0;${FCST};LONFP;LATFP;2;${BASEURL}/tavg1_2d_flx_Nx/tavg1_2d_flx_Nx.${TAG}
+target17:= [${RUNDATE1}];;1;0;${FCST};LONFP;LATFP;2;${BASEURL}/tavg1_2d_lfo_Nx/tavg1_2d_lfo_Nx.${TAG}
+target18:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_asm_Np/inst3_3d_asm_Np.${TAG}
+target19:= [${RUNDATE0}];;3;0;${FCST};LONFPC;LATFPC;PRSFP;${BASEURL}/inst3_3d_asm_Cp/inst3_3d_asm_Cp.${TAG}
+target20:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSFP;${BASEURL}/inst3_3d_chm_Np/inst3_3d_chm_Np.${TAG}
+target21:= [${RUNDATE0}];;1;0;${FCST};LONFP;LATFP;2;${BASEURL}/inst1_2d_lfo_Nx/inst1_2d_lfo_Nx.${TAG}
+target22:= [${RUNDATE0}];;1;0;${FCST};LONFP;LATFP;2;${BASEURL}/inst1_2d_wwi_Nx/inst1_2d_wwi_Nx.${TAG}
+OTFtarget1:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSMR;OTF://PressOTF/t
+OTFtarget2:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSMR;OTF://ThetaOTF/t/P
+OTFtarget3:= [${RUNDATE1}];;3;0;${FCST};LONFP;LATFP;PRSMR;OTF://ThetaDotOTF/dtdttot/t
+OTFtarget4:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSMR;OTF://PAltOTF/P
+OTFtarget5:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSMR;OTF://PAltDotOTF/omega/P
+OTFtarget6:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSMR;OTF://SZAOTF/slp
+OTFtarget7:= [${RUNDATE0}];;3;0;${FCST};LONFP;LATFP;PRSMR;OTF://TropOTF/t/p
 
 
 # Quantities
