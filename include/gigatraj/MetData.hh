@@ -558,6 +558,20 @@ class MetData {
       virtual void get_uvw( double time, int n, real* lons, real* lats, real* zs
       , real *u, real *v, real *w);
 
+     /// returns the forecast lead time for the U wind 
+     /*! This method returns the forecast lead time, in hours, for the U wind.
+
+         \param time the model time for which the U wind's forecast lead time is desired.
+         
+         \return The forecast lead time, in hours. If zero, then the data are from an analysis or assimilation.
+                 If less than zero, then the data source is a free-running model for which he concept of
+                 forecast lead time does not apply. If NaN, then the information is not available
+                 from this data source. 
+          
+     */
+     virtual double forecastLeadTime( double time );
+
+
       /// check the validity of a quantity name
       /*! This method checks that a quantity name is recognized by this data source.
           
@@ -1050,6 +1064,14 @@ class MetData {
       */
       bool bool2str( bool value, std::string& result ) const;
       
+
+      /// returns an invalid value for the time
+      /*! This method returns a Not-a-Number (NaN) for the time value.
+          It can be used to mark times that are invalid.
+          
+          \return a double-precision NaN value
+      */
+      double NaNTime() const;    
 
 };
 }

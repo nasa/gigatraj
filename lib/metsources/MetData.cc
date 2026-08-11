@@ -18,7 +18,7 @@
 #include "config.h"
 
 #include "gigatraj/MetData.hh"
-
+#include <math.h>
 #include <iostream>
 #include <fstream>
 #include <iosfwd>
@@ -75,6 +75,18 @@ void MetData::get_uvw( double time, int n, real* lons, real* lats, real* zs
         w[i] = 0.0;
     }
 }
+
+double MetData::NaNTime() const
+{
+     const char *nanstr = "";
+     return nan(nanstr);
+}
+
+double MetData::forecastLeadTime( double time )
+{
+     return NaNTime();
+}
+
 
 void MetData::setOption( const std::string &name, const std::string &value )
 {
